@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #1b1b22;
+    color: #333;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #153369;
+  position: relative; /* nécessaire pour centrer le texte */
+}
+
+/* Logo + solde */
+.header-left {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* petit espace entre logo et solde */
+}
+
+/* Logo */
+.header-left img {
+  height: 50px;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* Solde */
+.header-left .solde-box {
+  margin-left: 2.5vw;
+  background-color: #0e1f44;
+  padding: 8px 14px;
+  border-radius: 10px;
+  color: #ffea00;
+  font-weight: 600;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+}
+
+/* Texte centré au milieu de l'écran */
+.header-left .text {
+  position:absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 25px;
+  color: #2b6ac9;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Menu à droite */
+header ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+header ul li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+header ul li a:hover,
+header ul li a.active {
+  color: #ffea00;
+}
+
+
+.informations p {
+    font-size: 20px;
+    margin: 30px 400px;
+    color: #ddd;
+}
+
+ul li img {
+  width: 150px;
+  height: auto;
+  transition: transform 0.2s ease;
+  display: block;
+  margin: auto;
+  border-radius: 20px;
+}
+
+ul li img:hover {
+  transform: scale(0.9);
+}
+
+ul li img:active{
+    transform: scale(1);
+}
+
+.bitlabs {
+  width: 90%;
+  max-width: 800px;
+  height: auto;
+  margin: 20px auto;
+}
+
+#offerwall1 {
+  width: 100%;
+  height: 50%;
+}

@@ -1,0 +1,76 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blox Robux</title>
+    <link rel="stylesheet" href="style - Copie.css">
+    <link rel="stylesheet" href="style - Copie.css">
+</head>
+
+<body>
+    <header>
+    <a href="../templates/index.html"><img src="img/logo.png" alt="Logo De Blox Robux"></a>
+    <div class="text">BloxRobux</div>
+    <ul>
+        <li>
+            <a id="btn-connexion" href="../page de connexion/index.html">Connexion</a>
+        </li>
+        <li>
+            <a id="btn-inscription" href="../page de connexion/index2.html">Inscription</a>
+        </li>
+        <li>
+            <a id="lien-profil" href="#" style="display:flex; align-items:center; gap:10px;">
+                <span>Aucun compte</span>
+                <!--<img id="avatar-roblox" src="img/default-avatar.png" alt="Avatar Roblox" style="width:40px; height:40px; border-radius:50%;">-->
+            </a>
+        </li>
+    </ul>
+</header>
+    <div class="separator"></div>
+    <div class="welcome">
+        <div class="présentation" id="acceuil">
+            <img src="img/step1.png" alt="Image Inscription">
+            <div>
+                <p>Inscrivez-vous sur notre site à l'aide de votre nom d'utilisateur Roblox.</p>
+            </div>
+            <img src="img/pièces.png" alt="Image Pièces">
+            <div>
+                <p>Complétez des offres rapides et simples sur les sites partenaires.</p>
+            </div>
+            <div id="warn">
+                <span id="z">Êtes-vous sûr de vouloir vous déconnecter de votre compte BloxRobux ?</span>
+                <span id="a">Se déconnecter</span>
+                <span id="b">Annuler</span>
+            </div>
+             <script>
+                document.getElementById('a').addEventListener('click', function() {
+                    const frame = document.getElementById('warn')
+                    frame.style.display = "none"
+                    localStorage.removeItem('connectedUser');
+                    window.location.reload();
+                 });
+                 document.getElementById('b').addEventListener('click', function() {
+                    const frame = document.getElementById('warn')
+                    frame.style.display = "none"
+                 });
+            </script>
+            <img src="img/carte bancaire.png" alt="Image Retrait">
+            <div>
+                <p>Retirez vos Robux directement sur votre compte Roblox !</p>
+            </div>
+            <div class="separator"></div>
+            <div class="Crédits" id="acceuil">
+                <img src="img/discordlogo.png" alt="Logo Discord">
+                <div>
+                    <p><strong>Besoin d'aide ?</strong> Rejoignez <a href="https://discord.gg/QQMRtfBXpq">notre serveur Discord</a> !</p>
+                </div>
+                <div>
+                    <p>© 2025</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../Server.js"></script>
+</body>
+
+</html>

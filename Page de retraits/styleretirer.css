@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background-color: #1b1b22;
+  color: white;
+  min-height: 100vh;
+}
+
+/* ----- HEADER ----- */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #153369;
+  position: relative; /* nécessaire pour centrer le texte */
+}
+
+/* Logo + solde */
+.header-left {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* petit espace entre logo et solde */
+}
+
+/* Logo */
+.header-left img {
+  height: 50px;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* Solde */
+.header-left .solde-box {
+  margin-left: 2.5vw;
+  background-color: #0e1f44;
+  padding: 8px 14px;
+  border-radius: 10px;
+  color: #ffea00;
+  font-weight: 600;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+}
+
+/* Texte centré au milieu de l'écran */
+.header-left .text {
+  position:absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 25px;
+  color: #2b6ac9;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Menu à droite */
+header ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+header ul li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+header ul li a:hover,
+header ul li a.active {
+  color: #ffea00;
+}
+/* ----- PAGE ----- */
+main {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.retrait-container {
+  background: #222436;
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+.retrait-container h1 {
+  color: #ffea00;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.desc {
+  text-align: center;
+  color: #aaa;
+  margin-bottom: 25px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  width: 180px;
+  font-size: 15px;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #ffea00;
+  color: #1b1b22;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: #ffea00;
+}
+
+.error {
+  text-align: center;
+  color: #ff5555;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* Transactions */
+.transactions {
+  background-color: #1a1b28;
+  border-radius: 10px;
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.transaction {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #333;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction span {
+  font-size: 15px;
+}
+
+.neg {
+  color: #ff5555;
+  font-weight: 600;
+}
+
+.empty {
+  text-align: center;
+  color: #777;
+  font-size: 14px;
+}

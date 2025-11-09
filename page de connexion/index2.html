@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - BloxRobux</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="form-inscription">
+        <h4><span style="color: white;">Inscription</span></h4>
+        <h2><span style="color: #dec2c2">S'inscrire à BloxRobux !</span></h2>
+        <hr>
+        <div class="user-field">
+            <label><span style="color: white;">Nom d'utilisateur :</span></label>
+            <input type="text" id="username" required>
+        </div>
+        <label><span style="color: white;">Mot de passe :</span></label>
+        <input type="password" id="password" required>
+        <label>
+            <input type="checkbox" id="showPassword2">
+            <span class="checkbox-text">Afficher</span>
+        </label>
+        <label>
+            <span style="color: white;">Confirmez le mot de passe :</span>
+        </label>
+        <input type="password" id="confirmPassword" required>
+        <label>
+            <input type="checkbox" id="showPassword3">
+            <span class="checkbox-text">Afficher</span>
+        </label>
+        <input type="submit" value="Inscription">
+        <p><span style="color: white;">Déjà inscrit ? <a href="index.html" style="color: #dec2c2;">Connectez-vous ici</a></span></p>
+    </form>
+    <script src="../Server.js"></script>
+</body>
+</html>
