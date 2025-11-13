@@ -12,6 +12,29 @@ body {
     color: #333;
 }
 
+.fade-transition {
+  position: fixed;
+  inset: 0;
+  transform: scaleY(1);          /* départ : rideau plein */
+  transform-origin: bottom;
+  background: rgb(51, 39, 158);
+  pointer-events: all;
+  transition: transform 0.5s ease-in-out; /* uniquement slide */
+  z-index: 9999;
+}
+
+/* Rideau qui monte avant la redirection */
+.fade-transition.active {
+  transform: scaleY(1);          /* rideau plein */
+  pointer-events: all;           /* bloque la page */
+}
+
+/* Rideau descend au chargement */
+.fade-transition.slide-down {
+  transform: scaleY(0);          /* rideau complètement descendu */
+  pointer-events: none;          /* laisse la page cliquable */
+}
+
 header {
   display: flex;
   justify-content: space-between;
@@ -118,3 +141,4 @@ ul li img:active{
   width: 100%;
   height: 50%;
 }
+
