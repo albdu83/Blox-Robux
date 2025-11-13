@@ -9,14 +9,14 @@
 
 <body>
     <header>
-    <a href="index.html"><img src="img/logo.png" alt="Logo De Blox Robux"></a>
+    <a href="../templates/index.html"><img src="img/logo.png" alt="Logo De Blox Robux"></a>
     <div class="text">BloxRobux</div>
     <ul>
         <li>
-            <a id="btn-connexion" href="page de connexion/index.html">Connexion</a>
+            <a id="btn-connexion" href="../page de connexion/index.html">Connexion</a>
         </li>
         <li>
-            <a id="btn-inscription" href="page de connexion/index2.html">Inscription</a>
+            <a id="btn-inscription" href="../page de connexion/index2.html">Inscription</a>
         </li>
         <li>
             <a id="lien-profil" href="#" style="display:flex; align-items:center; gap:10px;">
@@ -42,7 +42,8 @@
                 <span id="a">Se déconnecter</span>
                 <span id="b">Annuler</span>
             </div>
-             <script>
+            <div id="transition" class="fade-transition active"></div>
+            <script>
                 document.getElementById('a').addEventListener('click', function() {
                     const frame = document.getElementById('warn')
                     frame.style.display = "none"
@@ -70,10 +71,13 @@
             </div>
         </div>
     </div>
-    <script src="Server.js"></script>
+    <script src="../Server.js"defer></script>
+    <script src="../Animation.js" defer></script>
 </body>
 
 </html>
+
+
 
 
 
