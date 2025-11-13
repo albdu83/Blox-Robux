@@ -14,6 +14,29 @@ body {
     height: 100vh;
 }
 
+.fade-transition {
+  position: fixed;
+  inset: 0;
+  transform: scaleY(1);          /* départ : rideau plein */
+  transform-origin: bottom;
+  background: rgb(51, 39, 158);
+  pointer-events: all;
+  transition: transform 0.5s ease-in-out; /* uniquement slide */
+  z-index: 9999;
+}
+
+/* Rideau qui monte avant la redirection */
+.fade-transition.active {
+  transform: scaleY(1);          /* rideau plein */
+  pointer-events: all;           /* bloque la page */
+}
+
+/* Rideau descend au chargement */
+.fade-transition.slide-down {
+  transform: scaleY(0);          /* rideau complètement descendu */
+  pointer-events: none;          /* laisse la page cliquable */
+}
+
 .checkbox-text {
     -webkit-text-stroke: 0.75px #030302;
     cursor: pointer;
