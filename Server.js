@@ -70,7 +70,7 @@ if (formInscription) {
             lienprofil.textContent = `${connectedUser}`
             btnInscription.textContent = "Déconnexion";
             btnConnexion.textContent = "Commencer";
-            btnConnexion.href = "Page de gain/gagner.html";
+            btnConnexion.href = "../Page de gain/gagner.html";
             btnInscription.removeAttribute('href')
             btnInscription.style.cursor = "pointer";
             // Actions
@@ -147,4 +147,5 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePassword("showPassword2", "password");          // formulaire inscription
     togglePassword("showPassword3", "confirmPassword");   // confirmation mot de passe
 });
+
 
