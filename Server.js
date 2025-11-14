@@ -49,7 +49,7 @@ if (formInscription) {
             if(username === savedUsername && password === savedPassword){
                 localStorage.setItem('connectedUser', username); 
                 alert(`Connexion réussie ✅! Bienvenue ${username}`);
-                window.location.href = "./Page de gain/gagner.html";
+                window.location.href = "../Page de gain/gagner.html";
             } else {
                 alert("Nom d'utilisateur ou mot de passe incorrect !❌");
             }
@@ -147,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePassword("showPassword2", "password");          // formulaire inscription
     togglePassword("showPassword3", "confirmPassword");   // confirmation mot de passe
 });
+
 
 
 
