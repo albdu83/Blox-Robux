@@ -79,8 +79,8 @@ if (formInscription) {
             frame.style.display = "inline-block"
             });
         } else {
-            btnInscription.setAttribute('href', "/page de connexion/index2.html");
-            btnConnexion.setAttribute('href', "/page de connexion/index.html");
+            btnInscription.setAttribute('href', "page de connexion/index2.html");
+            btnConnexion.setAttribute('href', "page de connexion/index.html");
         }
     }
 });
@@ -147,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePassword("showPassword2", "password");          // formulaire inscription
     togglePassword("showPassword3", "confirmPassword");   // confirmation mot de passe
 });
+
 
 
 
