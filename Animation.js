@@ -1,17 +1,28 @@
 const transition = document.getElementById("transition");
-const slideDuration = 500; // correspond au CSS
+const slideDuration = 750;
+const text = document.getElementById("text-chargement");
 
 document.addEventListener("DOMContentLoaded", () => {
     if (!transition) return;
 
-    // --- Descend le rideau au chargement ---
-    transition.classList.add("active"); // rideau visible
+    // Rideau descend après chargement
+    transition.classList.add("active");
     setTimeout(() => {
-        transition.classList.add("slide-down"); // descend le rideau
-        transition.style.pointerEvents = "none"; // page utilisable
+        transition.classList.add("slide-down");
+        transition.style.pointerEvents = "none";
     }, 50);
 
-    // --- Navigation interne ---
+    // Animation texte "Chargement..."
+    const steps = ["Chargement", "Chargement.", "Chargement..", "Chargement..."];
+    let step = 0;
+    function loop() {
+        text.textContent = steps[step];
+        step = (step + 1) % steps.length;
+        setTimeout(loop, 500);
+    }
+    loop();
+
+    // Navigation interne
     document.body.addEventListener("click", (e) => {
         const link = e.target.closest("a[href]");
         if (!link) return;
