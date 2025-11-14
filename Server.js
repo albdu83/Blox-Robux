@@ -30,7 +30,7 @@ if (formInscription) {
         localStorage.setItem('connectedUser', username);
 
         // Redirection vers la page principale
-        window.location.href = "Page de gain/gagner.html";
+        window.location.href = "/Page de gain/gagner.html";
     });
 }
 
@@ -147,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePassword("showPassword2", "password");          // formulaire inscription
     togglePassword("showPassword3", "confirmPassword");   // confirmation mot de passe
 });
+
 
 
 
