@@ -47,7 +47,9 @@
       <div id="transactions" class="transactions"></div>
     </section>
   </main>
-  <div id="transition" class="fade-transition active"></div>
+  <div id="transition" class="fade-transition active">
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
   <script>
     const el = (id) => document.getElementById(id);
     const formatMoney = (num) => {
@@ -138,6 +140,7 @@
   <script src="../Animation.js" defer></script>
 </body>
 </html>
+
 
 
 
