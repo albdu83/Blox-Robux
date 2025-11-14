@@ -16,24 +16,35 @@ body {
 .fade-transition {
   position: fixed;
   inset: 0;
-  transform: scaleY(1);          /* départ : rideau plein */
-  transform-origin: bottom;
-  background: rgb(51, 39, 158);
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+
+  transform: translateY(0%); /* rideau visible au début */
+  background: linear-gradient(#33279E, #7363ff);
+
   pointer-events: all;
-  transition: transform 0.5s ease-in-out; /* uniquement slide */
+  transition: transform 0.5s ease-in-out;
   z-index: 9999;
 }
 
-/* Rideau qui monte avant la redirection */
-.fade-transition.active {
-  transform: scaleY(1);          /* rideau plein */
-  pointer-events: all;           /* bloque la page */
+.fade-transition .text {
+  text-align: center;
+  font-weight: bolder;
+  font-size: xx-large;
+  color: #ffffff;
 }
 
-/* Rideau descend au chargement */
+/* Rideau visible (avant redirection) */
+.fade-transition.active {
+  transform: translateY(0%);
+  pointer-events: all;
+}
+
+/* Rideau descend après chargement */
 .fade-transition.slide-down {
-  transform: scaleY(0);          /* rideau complètement descendu */
-  pointer-events: none;          /* laisse la page cliquable */
+  transform: translateY(100%); /* entièrement descendu */
+  pointer-events: none;
 }
 
 /* ----- HEADER ----- */
@@ -207,3 +218,4 @@ button:hover {
   color: #777;
   font-size: 14px;
 }
+
