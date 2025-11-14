@@ -37,7 +37,9 @@
             <iframe src="https://web.bitlabs.ai/?uid=12345&token=5fe6d711-ec6d-4a09-b6a6-343b8f0d3c9b" id="offerwall1"></iframe>
         </div>
     </div>
-    <div id="transition" class="fade-transition active"></div>
+    <div id="transition" class="fade-transition active">
+      <div class="text" id="text-chargement">Chargement...</div>
+    </div>
     <script>
   document.getElementById('reload-bitlabs').addEventListener('click', function() {
     const iframe = document.getElementById('offerwall1');
@@ -47,6 +49,7 @@
 <script src="../Server.js" defer></script>
 <script src="../Animation.js" defer></script>
 </body>
+
 
 
 
