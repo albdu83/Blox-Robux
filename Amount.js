@@ -1,5 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    const db = window.db; // récupère la db initialisée dans Data.js
+if (!db) {
+    console.error("Firebase Database n'est pas initialisée !");
+    return;
+}
+
     const balanceEl = document.getElementById("balance");
     const amountEl = document.getElementById("amount");
     const labelEl = document.getElementById("label");
