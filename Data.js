@@ -15,3 +15,5 @@ firebase.initializeApp(firebaseConfig);
 
 // --- Accès à la Realtime Database ---
 const db = firebase.database();
+
+window.db = db;
