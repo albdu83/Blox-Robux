@@ -57,7 +57,7 @@ body {
     color: #353535;
     border: 2px solid #757463;
     border-radius: 10px;
-    display: inline-block;
+    display: none;
     box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
 }
 
@@ -177,4 +177,3 @@ header ul li a:hover {
     color: white;
     font-size: 14px;
 }
-
