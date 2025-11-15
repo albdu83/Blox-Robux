@@ -44,107 +44,16 @@
       <div id="error" class="error" style="display:none;"></div>
 
       <h2>Historique des retraits</h2>
-      <div id="transactions" class="transactions"></div>
     </section>
   </main>
   <div id="transition" class="fade-transition active">
     <div class="text" id="text-chargement">Chargement...</div>
   </div>
-  <script>
-    const el = (id) => document.getElementById(id);
-    const formatMoney = (num) => {
-      const n = (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
-      return n.replace('.', ',') + ' R$';
-    };
-
-    const STORAGE_KEY = "bloxrobux_balance";
-    function saveState(state) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-    function loadState() {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (!data) return { balance: 0, transactions: [] };
-      try { return JSON.parse(data); } catch { return { balance: 0, transactions: [] }; }
-    }
-
-    const balanceEl = el("balance");
-    const amountEl = el("amount");
-    const labelEl = el("label");
-    const withdrawBtn = el("withdrawBtn");
-    const transactionsEl = el("transactions");
-    const errorEl = el("error");
-
-    let state = loadState();
-
-    function render() {
-      balanceEl.textContent = formatMoney(state.balance);
-      renderTransactions();
-    }
-
-    function renderTransactions() {
-      transactionsEl.innerHTML = "";
-      if (state.transactions.length === 0) {
-        transactionsEl.innerHTML = '<p class="empty">Aucun retrait effectué.</p>';
-        return;
-      }
-      state.transactions.slice().reverse().forEach(tx => {
-        const div = document.createElement("div");
-        div.className = "transaction";
-        div.innerHTML = `
-          <span>${tx.label || 'Retrait'}</span>
-          <span class="neg">${formatMoney(tx.amount)}</span>
-        `;
-        transactionsEl.appendChild(div);
-      });
-    }
-
-    function showError(msg) {
-      errorEl.textContent = msg;
-      errorEl.style.display = "block";
-      setTimeout(() => errorEl.style.display = "none", 3000);
-    }
-
-    function addTransaction(value, label) {
-      const amount = Math.round(value * 100) / 100;
-
-      if (amount > state.balance) {
-        showError("Solde insuffisant !");
-        return;
-      }
-
-      const tx = {
-        id: Date.now(),
-        type: "withdraw",
-        amount: -amount,
-        label,
-        date: new Date().toISOString()
-      };
-
-      state.balance -= amount;
-      state.transactions.push(tx);
-      saveState(state);
-      render();
-    }
-
-    withdrawBtn.addEventListener("click", () => {
-      const value = parseFloat(amountEl.value);
-      if (isNaN(value) || value <= 0) return showError("Montant invalide !");
-      addTransaction(value, labelEl.value.trim());
-      amountEl.value = "";
-      labelEl.value = "";
-    });
-
-    render();
-  </script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="../Data.js" defer></script>
   <script src="../Server.js" defer></script>
   <script src="../Animation.js" defer></script>
+  <script src="../Amount.js" defer></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
