@@ -1,37 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
-
     const db = firebase.database();
+    const connectedUser = localStorage.getItem('connectedUser');
 
     // ==================== INSCRIPTION ====================
     const formInscription = document.getElementById('form-inscription');
     if (formInscription) {
         formInscription.addEventListener('submit', function(e) {
             e.preventDefault();
-
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const RobloxName = document.getElementById('RobloxName').value.trim();
 
             if (password !== confirmPassword) {
                 alert("Les mots de passe ne correspondent pas !❌");
                 return;
             }
 
-            // Vérifier si l'utilisateur existe déjà
             db.ref('users/' + username).get().then(snapshot => {
                 if (snapshot.exists()) {
                     alert("Ce pseudo est déjà inscrit !❌");
                 } else {
-                    // Créer l'utilisateur dans Firebase
                     db.ref('users/' + username).set({
-                        password: password,
+                        password,
+                        RobloxName,
                         balance: 0
-                    }).then(() => {
-                        localStorage.setItem('connectedUser', username);
-                        window.location.href = "../Page de gain/gagner.html";
-                    }).catch(err => console.error(err));
+                    })
+                        .then(() => {
+                            localStorage.setItem('connectedUser', username);
+                            window.location.href = "../Page de gain/gagner.html";
+                        })
+                        .catch(err => console.error(err));
                 }
-            }).catch(err => console.error(err));
+            });
         });
     }
 
@@ -40,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (formConnexion) {
         formConnexion.addEventListener('submit', function(e) {
             e.preventDefault();
-
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
 
@@ -56,45 +56,42 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ==================== AFFICHAGE SOLDE ====================
-    const connectedUser = localStorage.getItem('connectedUser');
+    // ==================== GESTION PROFIL + AVATAR ROBLOX ====================
     if (connectedUser) {
-        const balanceEl = document.getElementById('balance');
-        if (balanceEl) {
-            db.ref('users/' + connectedUser + '/balance').on('value', snapshot => {
-                const balance = snapshot.val() || 0;
-                balanceEl.textContent = balance + " R$";
-            });
-        }
+        db.ref('users/' + connectedUser).get().then(snapshot => {
+            if (snapshot.exists()) {
+                const robloxName = snapshot.val().RobloxName;
 
-        // ==================== AVATAR ROBLOX ====================
-        setRobloxAvatar(connectedUser);
+                // Mettre le nom Roblox dans le profil
+                const lienprofil = document.getElementById('lien-profil');
+                if (lienprofil) {
+                    const spanNom = lienprofil.querySelector("span");
+                    if (spanNom) spanNom.textContent = `${connectedUser} / ${robloxName}`;
+                }
 
-        // Modifier boutons si connecté
-        const btnInscription = document.getElementById('btn-inscription');
-        const btnConnexion = document.getElementById('btn-connexion');
-        const lienprofil = document.getElementById('lien-profil');
-        const frame = document.getElementById('warn');
-        frame.style.display = "none"
+                // Charger l'avatar Roblox
+                setRobloxAvatar(robloxName);
 
-        if (btnInscription && btnConnexion && lienprofil) {
-            lienprofil.textContent = connectedUser;
-            btnInscription.textContent = "Déconnexion";
-            btnConnexion.textContent = "Commencer";
-            btnConnexion.href = "./Page de gain/gagner.html";
-            btnConnexion.href = "./Page de gain/gagner.html"; btnInscription.removeAttribute('href') 
-            btnInscription.style.cursor = "pointer";
+                // Boutons
+                const btnInscription = document.getElementById('btn-inscription');
+                const btnConnexion = document.getElementById('btn-connexion');
+                const frame = document.getElementById('warn');
 
-            btnInscription.addEventListener('click', () => { 
-            const frame = document.getElementById('warn')
-            frame.style.display = "inline-block" 
+                if (frame) frame.style.display = "none";
+
+                if (btnInscription && btnConnexion) {
+                    btnInscription.textContent = "Déconnexion";
+                    btnConnexion.textContent = "Commencer";
+                    btnConnexion.href = "./Page de gain/gagner.html";
+                    btnInscription.removeAttribute('href')
+                    btnInscription.style.cursor = "pointer";
+                    btnInscription.addEventListener('click', () => {
+                        if (frame) frame.style.display = "inline-block";
+                    });
+                }
+            }
         });
-        } else { 
-        btnInscription.setAttribute('href', "./page de connexion/index2.html"); 
-        btnConnexion.setAttribute('href', "./page de connexion/index.html"); 
-        } 
-    } 
-
+    }
 
     // ==================== TOGGLE MOT DE PASSE ====================
     function togglePassword(checkboxId, inputId) {
@@ -109,10 +106,36 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePassword("showPassword", "loginPassword");
     togglePassword("showPassword2", "password");
     togglePassword("showPassword3", "confirmPassword");
-
 });
 
-// ==================== FONCTIONS ROBLOX ====================
+// ==================== FONCTION AVATAR ROBLOX ====================
+async function setRobloxAvatar(robloxName) {
+    try {
+        const res = await fetch(`http://localhost:3000/api/avatar/${robloxName}`);
+        const data = await res.json();
+        const avatarImg = document.getElementById("avatar-roblox");
+
+        if (!avatarImg) return;
+
+        // Sécurisation : si avatarUrl est vide, null, undefined → image par défaut
+        const avatar = (data && data.avatarUrl && data.avatarUrl.trim() !== "")
+            ? data.avatarUrl
+            : "img/default-avatar.png";
+
+        avatarImg.src = avatar;
+        avatarImg.style.display = "inline-block";
+
+    } catch (err) {
+        console.error("Erreur avatar Roblox :", err);
+
+        // Si le fetch échoue → image par défaut
+        const avatarImg = document.getElementById("avatar-roblox");
+        if (avatarImg) avatarImg.src = "img/default-avatar.png";
+    }
+}
+
+
+// ==================== GET USER ID ROBLOX ====================
 async function getRobloxUserId(username) {
     const response = await fetch("https://users.roblox.com/v1/usernames/users", {
         method: "POST",
@@ -120,23 +143,10 @@ async function getRobloxUserId(username) {
         body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
     });
     const data = await response.json();
+
     if (data.data && data.data.length > 0) {
         return data.data[0].id;
     } else {
         throw new Error("Utilisateur Roblox introuvable");
-    }
-}
-
-async function setRobloxAvatar(username) {
-    try {
-        const userId = await getRobloxUserId(username);
-        const avatarUrl = `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=100&height=100&format=png`;
-        const avatarImg = document.getElementById("avatar-roblox");
-        if (avatarImg) {
-            avatarImg.src = avatarUrl;
-            avatarImg.style.display = "inline-block";
-        }
-    } catch (err) {
-        console.error("Erreur avatar Roblox :", err);
     }
 }
