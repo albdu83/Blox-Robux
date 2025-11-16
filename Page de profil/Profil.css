@@ -1,0 +1,132 @@
+/* Importation d'une police Google */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #1b1b22;
+    color: #333;
+}
+
+.fade-transition {
+  position: fixed;
+  inset: 0;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+
+  transform: translateY(0%); /* rideau visible au début */
+  background: linear-gradient(#33279E, #7363ff);
+
+  pointer-events: all;
+  transition: transform 0.5s ease-in-out;
+  z-index: 9999;
+}
+
+.fade-transition .text {
+  text-align: center;
+  font-weight: bolder;
+  font-size: xx-large;
+  color: #ffffff;
+}
+
+/* Rideau visible (avant redirection) */
+.fade-transition.active {
+  transform: translateY(0%);
+  pointer-events: all;
+}
+
+/* Rideau descend après chargement */
+.fade-transition.slide-down {
+  transform: translateY(100%); /* entièrement descendu */
+  pointer-events: none;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #153369;
+}
+
+header img {
+    height: 50px;
+}
+
+header div {
+    text-decoration: none;
+    color:#2b6ac9;
+    font-size: 25px;
+    font-weight: bold;
+    position: center;
+    margin-left: 325px;
+}
+
+header ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+header ul li a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+#lien-Profil {
+    background-color: #0e1f44;
+    padding: 0 14px;
+    border-radius: 10px;
+    color: #ffea00;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+}
+
+header ul li a:hover {
+    color: #ffea00;
+}
+
+/* Sections */
+.welcome {
+    text-align: center;
+    padding: 50px;
+}
+
+.welcome img {
+    width: 100px;
+    margin-bottom: 10px;
+}
+
+.separator {
+    width: 100%;
+    height: 2px;
+    background-color: #ddd;
+    margin: 20px 0;
+}
+
+/* Texte dans la présentation */
+.présentation p {
+    font-size: 18px;
+    margin: 15px 0;
+    color: #ddd;
+}
+
+/* Footer ou crédits */
+.credits {
+    text-align: center;
+    padding: 15px;
+    background-color: #009bf9;
+    color: white;
+    font-size: 14px;
+}
