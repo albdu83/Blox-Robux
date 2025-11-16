@@ -95,12 +95,15 @@ if (!db) {
         }).catch(err => console.error(err));
     }
 
-    withdrawBtn.addEventListener("click", () => {
+    if (withdrawBtn) {
+        withdrawBtn.addEventListener("click", () => {
         const value = parseFloat(amountEl.value);
         if (isNaN(value)) return showError("Montant invalide !");
         addTransaction(value, labelEl.value.trim());
         amountEl.value = "";
         labelEl.value = "";
     });
+    }
 
 });
+
