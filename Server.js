@@ -109,15 +109,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==================== FONCTION AVATAR ROBLOX ====================
+const API_BASE_URL = location.hostname === "localhost" 
+    ? "http://localhost:3000"
+    : "https://blox-robux.onrender.com";
+
 async function setRobloxAvatar(robloxName) {
     try {
-        const res = await fetch(`http://localhost:3000/api/avatar/${robloxName}`);
+        const res = await fetch(`${API_BASE_URL}/api/avatar/${robloxName}`);
         const data = await res.json();
         const avatarImg = document.getElementById("avatar-roblox");
 
         if (!avatarImg) return;
 
-        // Sécurisation : si avatarUrl est vide, null, undefined → image par défaut
         const avatar = (data && data.avatarUrl && data.avatarUrl.trim() !== "")
             ? data.avatarUrl
             : "img/default-avatar.png";
@@ -127,8 +130,6 @@ async function setRobloxAvatar(robloxName) {
 
     } catch (err) {
         console.error("Erreur avatar Roblox :", err);
-
-        // Si le fetch échoue → image par défaut
         const avatarImg = document.getElementById("avatar-roblox");
         if (avatarImg) avatarImg.src = "img/default-avatar.png";
     }
