@@ -7,7 +7,7 @@
 }
 
 body {
-    background-color: #009bf9;
+    background: linear-gradient(#33279E, #110957);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -49,11 +49,10 @@ body {
 }
 
 .checkbox-text {
-    -webkit-text-stroke: 0.75px #030302;
     cursor:pointer;
     padding: 5px 10px;     
     border-radius: 5px;     
-    color: #969595;  
+    color: #000000;  
     font-weight: bold;
     font-size: 16px;
 }
@@ -62,7 +61,7 @@ body {
 form {
     display: flex;
     flex-direction: column;
-    background-color: #5b5454;
+    background: linear-gradient(#313131, #6b6b6b);
     padding: 10px;
     border-radius: 6px;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
@@ -110,4 +109,3 @@ p a {
 p a:hover {
     text-decoration: underline;
 }
-
