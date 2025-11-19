@@ -34,14 +34,10 @@
     <p>💳 Complétez des offres sur nos <strong>sites partenaires</strong> pour être récompensés ! Obtenez de l'aide sur <a href="https://discord.gg/QQMRtfBXpq">notre serveur Discord</a>.</p>
   </div>
 
-  <!-- BOUTON TIMEWALL -->
-  <div class="timewall-container">
-    <button id="btnGagner">Gagner des Robux</button>
-  </div>
-
   <!-- BITLABS -->
-  <ul>
+  <ul id="pk">
     <li><img src="../img/Bitlabs Logo.jfif" id="reload-bitlabs"></li>
+    <li><img src="../img/Timewall.png" id="btnGagner" alt="Gagner des Robux"></li>
   </ul>
   <div class="informations" id="info">
     <div class="bitLabs" id="bitlabs">
@@ -54,67 +50,56 @@
     <div class="text" id="text-chargement">Chargement...</div>
   </div>
 
-  <!-- SCRIPT TIMEWALL -->
+  <!-- SCRIPT TIMEWALL ET FIREBASE -->
   <script src="https://www.timewall.com/widget.js"></script>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- TON DATA JS -->
+  <!-- TES AUTRES SCRIPTS -->
   <script src="../Data.js" defer></script>
   <script src="../Server.js" defer></script>
   <script src="../Animation.js" defer></script>
   <script src="../Amount.js" defer></script>
 
+  <!-- SCRIPT PRINCIPAL RÉADAPTÉ -->
   <script>
-    // 1️⃣ Générer ou récupérer l'ID utilisateur unique
-    let userID = localStorage.getItem("userID");
-    if (!userID) {
-      userID = "user_" + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem("userID", userID);
-    }
-    console.log("ID utilisateur :", userID);
+    function getUserID() {
+      let userID = localStorage.getItem("userID");
+      if (!userID) {
+        userID = "user_" + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem("userID", userID);
 
-    // 2️⃣ Fonction pour afficher TimeWall
-    function showTimeWall() {
-      if (typeof TimeWall === "undefined") {
-        alert("Le widget TimeWall n'est pas chargé !");
-        return;
+        // Stocker dans Firebase
+        db.ref("users/" + userID).set({
+          createdAt: Date.now()
+        });
       }
+      return userID;
+    }
+    const userID = getUserID();
+
+    // --- TIMEWALL ---
+    document.getElementById("btnGagner").addEventListener("click", () => {
+      if (typeof TimeWall === "undefined") return alert("Widget non chargé !");
 
       TimeWall.show({
         userId: userID,
         onReward: function(data) {
           console.log("Récompense reçue :", data);
+          alert(`Vous avez gagné ${data.currencyAmount} Robux !`);
 
-          // Appel serveur Node.js pour créditer le compte
-          fetch(`https://ton-serveur.com/timewall?userID=${data.userId}&transactionID=${data.transactionId}&revenue=${data.revenue}&currencyAmount=${data.currencyAmount}&hash=${data.hash}`)
-            .then(res => res.text())
-            .then(result => {
-              console.log("Serveur TimeWall :", result);
-              alert("Robux crédités !");
-              updateBalanceDisplay(Number(data.currencyAmount));
-            })
-            .catch(err => {
-              console.error("Erreur serveur :", err);
-              alert("Erreur lors du crédit !");
-            });
+          // Enregistrer la récompense dans Firebase
+          db.ref("users/" + userID + "/lastReward").set({
+            amount: data.currencyAmount,
+            date: Date.now()
+          });
         }
       });
-    }
+    });
 
-    // 3️⃣ Mettre à jour le solde affiché
-    function updateBalanceDisplay(amount) {
-      const balanceElem = document.getElementById("balance");
-      let current = parseFloat(balanceElem.textContent.replace(",", ".").replace(" R$", "")) || 0;
-      current += amount;
-      balanceElem.textContent = current.toFixed(2) + " R$";
-    }
-
-    // 4️⃣ Événement bouton TimeWall
-    document.getElementById("btnGagner").addEventListener("click", showTimeWall);
-
-    // 5️⃣ Recharger l'iframe BitLabs
+    // --- RECHARGEMENT IFRAME BITLABS ---
     document.getElementById('reload-bitlabs').addEventListener('click', function() {
       const iframe = document.getElementById('offerwall1');
       iframe.src = iframe.src;
