@@ -65,6 +65,7 @@
 
   <!-- SCRIPT PRINCIPAL RÉADAPTÉ -->
   <script>
+    // --- USER ID ---
     function getUserID() {
       let userID = localStorage.getItem("userID");
       if (!userID) {
@@ -73,12 +74,24 @@
 
         // Stocker dans Firebase
         db.ref("users/" + userID).set({
-          createdAt: Date.now()
+          createdAt: Date.now(),
+          balance: 0
         });
       }
       return userID;
     }
     const userID = getUserID();
+
+    // --- FONCTION POUR METTRE À JOUR LE SOLDE ---
+    function updateBalance(amount) {
+      const balanceEl = document.getElementById("balance");
+      const current = parseFloat(balanceEl.innerText.replace(" R$", "").replace(",", ".")) || 0;
+      const newBalance = current + amount;
+      balanceEl.innerText = newBalance.toFixed(2) + " R$";
+
+      // Mettre à jour Firebase
+      db.ref("users/" + userID + "/balance").set(newBalance);
+    }
 
     // --- TIMEWALL ---
     document.getElementById("btnGagner").addEventListener("click", () => {
@@ -86,15 +99,36 @@
 
       TimeWall.show({
         userId: userID,
-        onReward: function(data) {
+        onReward: async function(data) {
           console.log("Récompense reçue :", data);
-          alert(`Vous avez gagné ${data.currencyAmount} Robux !`);
 
-          // Enregistrer la récompense dans Firebase
+          // 1️⃣ Enregistrer localement dans Firebase
           db.ref("users/" + userID + "/lastReward").set({
             amount: data.currencyAmount,
             date: Date.now()
           });
+
+          // 2️⃣ Mettre à jour le solde local
+          updateBalance(Number(data.currencyAmount));
+
+          // 3️⃣ Envoyer la transaction à Render pour vérification
+          try {
+            const params = new URLSearchParams({
+              userID,
+              transactionID: data.transactionID,
+              revenue: data.revenue,
+              currencyAmount: data.currencyAmount,
+              type: data.type,
+              hash: data.hash
+            });
+
+            const response = await fetch(`https://blox-robux.onrender.com/timewall?${params.toString()}`);
+            if (!response.ok) throw new Error("Erreur serveur TimeWall");
+
+            console.log("✅ Postback envoyé à Render avec succès");
+          } catch (err) {
+            console.error("❌ Erreur postback TimeWall:", err);
+          }
         }
       });
     });
@@ -107,3 +141,4 @@
   </script>
 </body>
 </html>
+
