@@ -1,56 +1,124 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blox Robux - Gagner</title>
-    <link rel="stylesheet" href="stylegagner.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blox Robux - Gagner</title>
+  <link rel="stylesheet" href="stylegagner.css">
 </head>
 <body>
+  <!-- HEADER -->
   <header>
-  <div class="header-left">
-    <a href="../index.html">
-      <img src="../img/logo.png" alt="Logo Blox Robux" />
-    </a>
+    <div class="header-left">
+      <a href="../index.html">
+        <img src="../img/logo.png" alt="Logo Blox Robux" />
+      </a>
 
-    <div class="solde-box">
-      <span>💰 Solde :</span>
-      <span id="balance">0,00 R$</span>
+      <div class="solde-box">
+        <span>💰 Solde :</span>
+        <span id="balance">0,00 R$</span>
+      </div>
+
+      <div class="text">BloxRobux</div>
     </div>
 
-    <div class="text">BloxRobux</div>
+    <ul>
+      <li><a href="../index.html">Accueil</a></li>
+      <li><a href="gagner.html">Gagner des Robux</a></li>
+      <li><a href="../Page de retraits/retirer.html">Retirer</a></li>
+    </ul>
+  </header>
+
+  <!-- INFORMATIONS -->
+  <div class="informations" id="info">
+    <p>💳 Complétez des offres sur nos <strong>sites partenaires</strong> pour être récompensés ! Obtenez de l'aide sur <a href="https://discord.gg/QQMRtfBXpq">notre serveur Discord</a>.</p>
   </div>
 
-  <ul>
-    <li><a href="../index.html">Accueil</a></li>
-    <li><a href="gagner.html">Gagner des Robux</a></li>
-    <li><a href="../Page de retraits/retirer.html">Retirer</a></li>
-  </ul>
-  </header>
-    <div class="informations" id="info">
-        <p>💳  Complétez des offres sur nos <strong>sites partenaires</strong> pour être récompensés ! Obtenez de l'aide sur <a href="https://discord.gg/QQMRtfBXpq">notre serveur Discord</a>.</p>
-    </div>
-    <ul>
-        <li><img src="../img/Bitlabs Logo.jfif" id="reload-bitlabs"></li>
-    </ul>
-    <div class="informations" id="info">
-        <div class="bitLabs" id="bitlabs">
-            <iframe src="https://web.bitlabs.ai/?uid=12345&token=5fe6d711-ec6d-4a09-b6a6-343b8f0d3c9b" id="offerwall1"></iframe>
-        </div>
-    </div>
-    <div id="transition" class="fade-transition active">
-      <div class="text" id="text-chargement">Chargement...</div>
-    </div>
-    <script>
-  document.getElementById('reload-bitlabs').addEventListener('click', function() {
-    const iframe = document.getElementById('offerwall1');
-    iframe.src = iframe.src;
-  });
-</script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="../Data.js" defer></script>
-<script src="../Server.js" defer></script>
-<script src="../Animation.js" defer></script>
-<script src="../Amount.js" defer></script>
-</body>
+  <!-- BOUTON TIMEWALL -->
+  <div class="timewall-container">
+    <button id="btnGagner">Gagner des Robux</button>
+  </div>
 
+  <!-- BITLABS -->
+  <ul>
+    <li><img src="../img/Bitlabs Logo.jfif" id="reload-bitlabs"></li>
+  </ul>
+  <div class="informations" id="info">
+    <div class="bitLabs" id="bitlabs">
+      <iframe src="https://web.bitlabs.ai/?uid=12345&token=5fe6d711-ec6d-4a09-b6a6-343b8f0d3c9b" id="offerwall1"></iframe>
+    </div>
+  </div>
+
+  <!-- TRANSITION -->
+  <div id="transition" class="fade-transition active">
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+
+  <!-- SCRIPT TIMEWALL -->
+  <script src="https://www.timewall.com/widget.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- TON DATA JS -->
+  <script src="../Data.js" defer></script>
+  <script src="../Server.js" defer></script>
+  <script src="../Animation.js" defer></script>
+  <script src="../Amount.js" defer></script>
+
+  <script>
+    // 1️⃣ Générer ou récupérer l'ID utilisateur unique
+    let userID = localStorage.getItem("userID");
+    if (!userID) {
+      userID = "user_" + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem("userID", userID);
+    }
+    console.log("ID utilisateur :", userID);
+
+    // 2️⃣ Fonction pour afficher TimeWall
+    function showTimeWall() {
+      if (typeof TimeWall === "undefined") {
+        alert("Le widget TimeWall n'est pas chargé !");
+        return;
+      }
+
+      TimeWall.show({
+        userId: userID,
+        onReward: function(data) {
+          console.log("Récompense reçue :", data);
+
+          // Appel serveur Node.js pour créditer le compte
+          fetch(`https://ton-serveur.com/timewall?userID=${data.userId}&transactionID=${data.transactionId}&revenue=${data.revenue}&currencyAmount=${data.currencyAmount}&hash=${data.hash}`)
+            .then(res => res.text())
+            .then(result => {
+              console.log("Serveur TimeWall :", result);
+              alert("Robux crédités !");
+              updateBalanceDisplay(Number(data.currencyAmount));
+            })
+            .catch(err => {
+              console.error("Erreur serveur :", err);
+              alert("Erreur lors du crédit !");
+            });
+        }
+      });
+    }
+
+    // 3️⃣ Mettre à jour le solde affiché
+    function updateBalanceDisplay(amount) {
+      const balanceElem = document.getElementById("balance");
+      let current = parseFloat(balanceElem.textContent.replace(",", ".").replace(" R$", "")) || 0;
+      current += amount;
+      balanceElem.textContent = current.toFixed(2) + " R$";
+    }
+
+    // 4️⃣ Événement bouton TimeWall
+    document.getElementById("btnGagner").addEventListener("click", showTimeWall);
+
+    // 5️⃣ Recharger l'iframe BitLabs
+    document.getElementById('reload-bitlabs').addEventListener('click', function() {
+      const iframe = document.getElementById('offerwall1');
+      iframe.src = iframe.src;
+    });
+  </script>
+</body>
+</html>
