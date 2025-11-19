@@ -117,15 +117,11 @@ async function setRobloxAvatar(robloxName) {
     try {
         const res = await fetch(`${API_BASE_URL}/api/avatar/${robloxName}`);
         const data = await res.json();
-        const avatarImg = document.getElementById("avatar-roblox");
 
+        const avatarImg = document.getElementById("avatar-roblox");
         if (!avatarImg) return;
 
-        const avatar = (data && data.avatarUrl && data.avatarUrl.trim() !== "")
-            ? data.avatarUrl
-            : "img/default-avatar.png";
-
-        avatarImg.src = avatar;
+        avatarImg.src = data.avatarUrl || "img/default-avatar.png";
         avatarImg.style.display = "inline-block";
 
     } catch (err) {
@@ -134,6 +130,7 @@ async function setRobloxAvatar(robloxName) {
         if (avatarImg) avatarImg.src = "img/default-avatar.png";
     }
 }
+
 
 
 // ==================== GET USER ID ROBLOX ====================
@@ -151,3 +148,4 @@ async function getRobloxUserId(username) {
         throw new Error("Utilisateur Roblox introuvable");
     }
 }
+
