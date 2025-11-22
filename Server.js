@@ -26,11 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         RobloxName,
                         balance: 0
                     })
-                        .then(() => {
-                            localStorage.setItem('connectedUser', username);
-                            window.location.href = "../Page de gain/gagner.html";
-                        })
-                        .catch(err => console.error(err));
+                    .then(() => {
+                        localStorage.setItem('connectedUser', username);
+                        window.location.href = "../Page de gain/gagner.html";
+                    })
+                    .catch(err => console.error(err));
                 }
             });
         });
@@ -56,40 +56,56 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ==================== GESTION PROFIL + AVATAR ROBLOX ====================
+    // ==================== GESTION PROFIL + AVATAR + TIMEWALL ====================
     if (connectedUser) {
         db.ref('users/' + connectedUser).get().then(snapshot => {
-            if (snapshot.exists()) {
-                const robloxName = snapshot.val().RobloxName;
+            if (!snapshot.exists()) return;
 
-                // Mettre le nom Roblox dans le profil
-                const lienprofil = document.getElementById('lien-profil');
-                if (lienprofil) {
-                    const spanNom = lienprofil.querySelector("span");
-                    if (spanNom) spanNom.textContent = `${connectedUser} / ${robloxName}`;
-                }
+            const robloxName = snapshot.val().RobloxName;
 
-                // Charger l'avatar Roblox
-                setRobloxAvatar(robloxName);
-
-                // Boutons
-                const btnInscription = document.getElementById('btn-inscription');
-                const btnConnexion = document.getElementById('btn-connexion');
-                const frame = document.getElementById('warn');
-
-                if (frame) frame.style.display = "none";
-
-                if (btnInscription && btnConnexion) {
-                    btnInscription.textContent = "Déconnexion";
-                    btnConnexion.textContent = "Commencer";
-                    btnConnexion.href = "./Page de gain/gagner.html";
-                    btnInscription.removeAttribute('href')
-                    btnInscription.style.cursor = "pointer";
-                    btnInscription.addEventListener('click', () => {
-                        if (frame) frame.style.display = "inline-block";
-                    });
-                }
+            // Mettre le nom Roblox
+            const lienprofil = document.getElementById('lien-profil');
+            if (lienprofil) {
+                const spanNom = lienprofil.querySelector("span");
+                if (spanNom) spanNom.textContent = `${connectedUser} / ${robloxName}`;
             }
+
+            // Avatar Roblox
+            setRobloxAvatar(robloxName);
+
+            // === TIMEWALL ===
+            const container = document.getElementById("timewall-container");
+
+            if (container) {
+                const iframe = document.createElement("iframe");
+                iframe.title = "TimeWall";
+                iframe.src = `https://timewall.io/users/login?oid=2578908b35321055&uid=${robloxName}`;
+                iframe.frameBorder = "0";
+                iframe.width = "100%";
+                iframe.height = "1000";
+                iframe.scrolling = "auto";
+
+                container.appendChild(iframe);
+            }
+
+            // Boutons connexion/déco
+            const btnInscription = document.getElementById('btn-inscription');
+            const btnConnexion = document.getElementById('btn-connexion');
+            const frame = document.getElementById('warn');
+
+            if (frame) frame.style.display = "none";
+
+            if (btnInscription && btnConnexion) {
+                btnInscription.textContent = "Déconnexion";
+                btnConnexion.textContent = "Commencer";
+                btnConnexion.href = "./Page de gain/gagner.html";
+                btnInscription.removeAttribute('href');
+                btnInscription.style.cursor = "pointer";
+                btnInscription.addEventListener('click', () => {
+                    if (frame) frame.style.display = "inline-block";
+                });
+            }
+
         });
     }
 
@@ -148,4 +164,6 @@ async function getRobloxUserId(username) {
         throw new Error("Utilisateur Roblox introuvable");
     }
 }
+
+
 
