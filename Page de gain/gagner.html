@@ -43,9 +43,7 @@
     </div>
   </div>
   <div class="informations" id="info">
-    <div class="TimeWall" id="TimeWall">
-      <div id="timewall-container"></div>
-    </div>
+    <div id="timewall-container" style="display:none;"></div>
   </div>
   <!-- TRANSITION -->
   <div id="transition" class="fade-transition active">
@@ -64,105 +62,62 @@
   <script src="../Amount.js" defer></script>
 
   <!-- SCRIPT PRINCIPAL -->
-  <script defer>
+<script defer>
 document.addEventListener("DOMContentLoaded", () => {
-  const db = window.db;
-  if (!db) {
-      console.error("Firebase Database n'est pas initialisée !");
-      return;
-  }
 
+  const db = window.db;
   const balanceEl = document.getElementById("balance");
   const btnGagner = document.getElementById("btnGagner");
   const reloadBtn = document.getElementById("reload-bitlabs");
 
-  // --- Génération ou récupération de l'ID utilisateur ---
+  // ID utilisateur
   function getUserID() {
-    let userID = localStorage.getItem("userID");
-    if (!userID) {
-      userID = "user_" + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem("userID", userID);
-
-      db.ref("users/" + userID).set({ createdAt: Date.now(), balance: 0 })
-        .catch(err => console.error("Erreur création user :", err));
+    let id = localStorage.getItem("userID");
+    if (!id) {
+      id = "user_" + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem("userID", id);
+      db.ref("users/" + id).set({ balance: 0, createdAt: Date.now() });
     }
-    return userID;
+    return id;
   }
   const userID = getUserID();
 
-  // --- Mise à jour du solde ---
-  function updateBalance(amount) {
-    const current = parseFloat(balanceEl.innerText.replace(" R$", "").replace(",", ".")) || 0;
-    const newBalance = current + amount;
-    balanceEl.textContent = newBalance.toFixed(2) + " R$";
-    db.ref("users/" + userID + "/balance").set(newBalance).catch(err => console.error(err));
-  }
 
-  // --- Gestion TimeWall ---
-  if (btnGagner) {
-    btnGagner.addEventListener("click", () => {
-      if (typeof TimeWall === "undefined") {
-        return alert("ok")
-      }else{
-        const timewallcontainer = document.getElementById('timewall-container')
-        const Bitlabs = document.getElementById('offerwall1')
-        timewallcontainer.style.display = "Block"
-        Bitlabs.style.display = "none"
-      }
+  // --- Display TimeWall ---
+  btnGagner.addEventListener("click", () => {
+    const container = document.getElementById("timewall-container");
+    const bitlabs = document.getElementById("offerwall1");
 
-      TimeWall.show({
-        userId: userID,
-        onReward: async (data) => {
-          console.log("Récompense reçue :", data);
+    bitlabs.style.display = "none";
+    container.style.display = "block";
 
-          // Stockage Firebase
-          db.ref("users/" + userID + "/lastReward").set({
-            amount: data.currencyAmount,
-            date: Date.now()
-          });
-
-          // Mise à jour du solde local
-          updateBalance(Number(data.currencyAmount));
-
-          // Postback vers Render
-          try {
-            const params = new URLSearchParams({
-              userID: data.userID || userID,
-              transactionID: data.transactionID,
-              revenue: data.revenue,
-              currencyAmount: data.currencyAmount,
-              type: data.type || "credit",
-              hash: data.hash
-            });
-
-            const response = await fetch(`https://blox-robux.onrender.com/timewall?${params.toString()}`);
-            if (!response.ok) throw new Error("Erreur serveur TimeWall");
-            console.log("✅ Postback envoyé à Render avec succès");
-          } catch (err) {
-            console.error("❌ Erreur postback TimeWall:", err);
-          }
-        }
-      });
-    });
-  }
-
-  // --- Reload Bitlabs iframe ---
-  if (reloadBtn) {
-    reloadBtn.addEventListener('click', () => {
-      const iframe = document.getElementById('offerwall1');
-      const timewallcontainer = document.getElementById('timewall-container')
-      timewallcontainer.style.display = "none"
-      iframe.style.display = "Block"
-      if (iframe) iframe.src = iframe.src;
-    });
-  }
-
-  // --- Affichage solde depuis Firebase ---
-  db.ref("users/" + userID + "/balance").on('value', snapshot => {
-    const value = snapshot.val();
-    balanceEl.textContent = parseFloat(value || 0).toFixed(2) + " R$";
+    container.innerHTML = `
+      <iframe 
+        src="https://www.timewall.io/wall?site_id=2578908b35321055&user_id=${userID}"
+        style="width:100%; height:600px; border:none;"
+      ></iframe>
+    `;
   });
+
+
+  // Reload BitLabs
+  reloadBtn.addEventListener("click", () => {
+    const iframe = document.getElementById("offerwall1");
+    const container = document.getElementById("timewall-container");
+
+    container.style.display = "none";
+    iframe.style.display = "block";
+    iframe.src = iframe.src;
+  });
+
+    
+  // Mise à jour solde Firebase
+  db.ref("users/" + userID + "/balance").on("value", snap => {
+    const value = snap.val() || 0;
+    balanceEl.textContent = Number(value).toFixed(2) + " R$";
+  });
+
 });
-  </script>
+</script>
 </body>
 </html>
