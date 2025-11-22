@@ -176,3 +176,17 @@ ul li img:active{
   height: 50vh; /* 50% de la hauteur de l'écran */
   border: none;
 }
+
+.TimeWall {
+  display: flex;
+  justify-content: center; /* centre horizontalement */
+  align-items: center;  
+}
+
+#timewall-container {
+  width: 50%;
+  height: 50vh; /* 50% de la hauteur de l'écran */
+  border: none;
+  display: none;
+}
+
