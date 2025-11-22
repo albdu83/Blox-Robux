@@ -41,6 +41,9 @@
     <div class="bitLabs" id="bitlabs">
       <iframe src="https://web.bitlabs.ai/?uid=12345&token=5fe6d711-ec6d-4a09-b6a6-343b8f0d3c9b" id="offerwall1"></iframe>
     </div>
+  </div>
+
+  <div class="TimeWall" id="TimeWall">
     <div id="timewall-container"></div>
   </div>
 
@@ -61,95 +64,123 @@
   <script src="../Amount.js" defer></script>
 
   <!-- SCRIPT PRINCIPAL -->
-  <script defer>
+<script defer>
 document.addEventListener("DOMContentLoaded", () => {
-  const db = window.db;
-  if (!db) {
-      console.error("Firebase Database n'est pas initialisée !");
-      return;
-  }
+    const db = window.db;
+    if (!db) return console.error("Firebase Database non initialisée !");
 
-  const balanceEl = document.getElementById("balance");
-  const btnGagner = document.getElementById("btnGagner");
-  const reloadBtn = document.getElementById("reload-bitlabs");
+    const balanceEl = document.getElementById("balance");
+    const btnGagner = document.getElementById("btnGagner");
+    const reloadBtn = document.getElementById("reload-bitlabs");
 
-  // --- Génération ou récupération de l'ID utilisateur ---
-  function getUserID() {
-    let userID = localStorage.getItem("userID");
-    if (!userID) {
-      userID = "user_" + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem("userID", userID);
+    const API_BASE = "https://blox-robux.onrender.com";
 
-      db.ref("users/" + userID).set({ createdAt: Date.now(), balance: 0 })
-        .catch(err => console.error("Erreur création user :", err));
-    }
-    return userID;
-  }
-  const userID = getUserID();
-
-  // --- Mise à jour du solde ---
-  function updateBalance(amount) {
-    const current = parseFloat(balanceEl.innerText.replace(" R$", "").replace(",", ".")) || 0;
-    const newBalance = current + amount;
-    balanceEl.textContent = newBalance.toFixed(2) + " R$";
-    db.ref("users/" + userID + "/balance").set(newBalance).catch(err => console.error(err));
-  }
-
-  // --- Gestion TimeWall ---
-  if (btnGagner) {
-    btnGagner.addEventListener("click", () => {
-      if (typeof TimeWall === "undefined") return alert("ok")
-
-      TimeWall.show({
-        userId: userID,
-        onReward: async (data) => {
-          console.log("Récompense reçue :", data);
-
-          // Stockage Firebase
-          db.ref("users/" + userID + "/lastReward").set({
-            amount: data.currencyAmount,
-            date: Date.now()
-          });
-
-          // Mise à jour du solde local
-          updateBalance(Number(data.currencyAmount));
-
-          // Postback vers Render
-          try {
-            const params = new URLSearchParams({
-              userID: data.userID || userID,
-              transactionID: data.transactionID,
-              revenue: data.revenue,
-              currencyAmount: data.currencyAmount,
-              type: data.type || "credit",
-              hash: data.hash
-            });
-
-            const response = await fetch(`https://blox-robux.onrender.com/timewall?${params.toString()}`);
-            if (!response.ok) throw new Error("Erreur serveur TimeWall");
-            console.log("✅ Postback envoyé à Render avec succès");
-          } catch (err) {
-            console.error("❌ Erreur postback TimeWall:", err);
-          }
+    // --- Récupération ou création ID utilisateur ---
+    function getUserID() {
+        let userID = localStorage.getItem("userID");
+        if (!userID) {
+            userID = "user_" + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem("userID", userID);
+            db.ref("users/" + userID).set({ createdAt: Date.now(), balance: 0 })
+              .catch(err => console.error("Erreur création utilisateur :", err));
         }
-      });
-    });
-  }
+        return userID;
+    }
+    const userID = getUserID();
 
-  // --- Reload Bitlabs iframe ---
-  if (reloadBtn) {
-    reloadBtn.addEventListener('click', () => {
-      const iframe = document.getElementById('offerwall1');
-      if (iframe) iframe.src = iframe.src;
-    });
-  }
+    // --- Mise à jour du solde ---
+    function updateBalance(amount) {
+        const current = parseFloat(balanceEl.innerText.replace(" R$", "").replace(",", ".")) || 0;
+        const newBalance = current + amount;
+        balanceEl.textContent = newBalance.toFixed(2) + " R$";
+        db.ref("users/" + userID + "/balance").set(newBalance).catch(err => console.error(err));
+    }
 
-  // --- Affichage solde depuis Firebase ---
-  db.ref("users/" + userID + "/balance").on('value', snapshot => {
-    const value = snapshot.val();
-    balanceEl.textContent = parseFloat(value || 0).toFixed(2) + " R$";
-  });
+    if (btnGagner) {
+        btnGagner.addEventListener("click", () => {
+          const iframe = document.getElementById("timewall-container");
+            if (iframe) iframe.src = iframe.src;
+            const timewall = document.getElementById("offerwall1");
+            if (timewall) timewall.style.display = "none";
+        })
+      };
+
+    // --- Gestion TimeWall ---
+    if (btnGagner) {
+        btnGagner.addEventListener("click", () => {
+            if (typeof TimeWall === "undefined") return console.warn("TimeWall non chargé");
+
+            const container = document.getElementById("timewall-container");
+            if (container) container.style.display = "block";
+
+            TimeWall.show({
+                userId: userID,
+                onReward: async (data) => {
+                    console.log("Récompense reçue :", data);
+
+                    // Mise à jour Firebase
+                    db.ref("users/" + userID + "/lastReward").set({
+                        amount: data.currencyAmount,
+                        date: Date.now()
+                    });
+                    updateBalance(Number(data.currencyAmount));
+
+                    // Postback vers Render
+                    try {
+                        const params = new URLSearchParams({
+                            userID: userID,
+                            transactionID: data.transactionID,
+                            revenue: data.revenue,
+                            currencyAmount: data.currencyAmount,
+                            type: data.type || "credit",
+                            hash: data.hash
+                        });
+                        const res = await fetch(`${API_BASE}/timewall?${params.toString()}`);
+                        if (!res.ok) throw new Error("Erreur postback Render");
+                        console.log("✅ Postback envoyé à Render");
+                    } catch (err) {
+                        console.error("❌ Erreur postback TimeWall :", err);
+                    }
+                }
+            });
+        });
+    }
+
+    // --- Reload BitLabs iframe ---
+    if (reloadBtn) {
+        reloadBtn.addEventListener("click", () => {
+            const iframe = document.getElementById("offerwall1");
+            if (iframe) 
+            iframe.src = iframe.src;
+            iframe.style.display = "Block"
+            const timewall = document.getElementById("timewall-container");
+            if (timewall) timewall.style.display = "none";
+        });
+    }
+
+    // --- Sync solde Firebase en direct ---
+    db.ref("users/" + userID + "/balance").on("value", snapshot => {
+        const value = snapshot.val();
+        balanceEl.textContent = parseFloat(value || 0).toFixed(2) + " R$";
+    });
+
+    // --- Récupération avatar Roblox via Render ---
+    async function setRobloxAvatar(robloxName) {
+        try {
+            const res = await fetch(`${API_BASE}/api/avatar/${robloxName}`);
+            if (!res.ok) throw new Error("Avatar non trouvé");
+            const data = await res.json();
+            const avatarImg = document.getElementById("avatar-roblox");
+            if (!avatarImg) return;
+            avatarImg.src = data.avatarUrl || "../img/default-avatar.png";
+            avatarImg.style.display = "inline-block";
+        } catch (err) {
+            console.error("Erreur avatar Roblox :", err);
+        }
+    }
+
 });
-  </script>
+</script>
 </body>
 </html>
+
