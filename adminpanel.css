@@ -1,11 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
+/* RESET GLOBAL */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
+
+/* ------------------------------------------------ */
+/*                 RIDEAU DE CHARGEMENT             */
+/* ------------------------------------------------ */
 
 .fade-transition {
   position: fixed;
@@ -14,7 +19,7 @@
   justify-content: center;
   align-items: center;
 
-  transform: translateY(0%); /* rideau visible au début */
+  transform: translateY(0%); /* rideau visible */
   background: linear-gradient(#33279E, #7363ff);
 
   pointer-events: all;
@@ -36,22 +41,25 @@
   color: #ffffff;
 }
 
-/* Rideau visible (avant redirection) */
+/* Rideau visible */
 .fade-transition.active {
   transform: translateY(0%);
   pointer-events: all;
 }
 
-/* Rideau descend après chargement */
+/* Rideau descend */
 .fade-transition.slide-down {
-  transform: translateY(100%); /* entièrement descendu */
+  transform: translateY(100%);
   pointer-events: none;
 }
 
+/* ------------------------------------------------ */
+/*                    STYLE PAGE                     */
+/* ------------------------------------------------ */
+
 body {
-  background-color: #1b1b22;
+  background: #1c1c26;
   color: white;
-  min-height: 100vh;
 }
 
 /* ----- HEADER ----- */
@@ -109,22 +117,21 @@ header ul li a.active {
   color: #ffea00;
 }
 
-/* ----- PAGE ----- */
+/* MAIN */
 main {
   width: 90%;
-  max-width: 600px;
-  margin: 40px auto;
+  margin: 30px auto;
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
 
-/* ----- CARDS ----- */
+/* CARD */
 .card {
-  background: #222436;
+  background: #242436;
   padding: 25px;
   border-radius: 15px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  box-shadow: 0 0 10px #0004;
 }
 
 .card h2 {
@@ -133,52 +140,85 @@ main {
   text-align: center;
 }
 
-/* Form */
-.form-group {
-  margin-bottom: 15px;
-}
-
-label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 5px;
-  color: #cfcfcf;
-}
-
-input {
+/* TABLE */
+.table {
   width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  background-color: #1a1b28;
-  color: white;
-  font-size: 15px;
+  border-collapse: collapse;
+  margin-top: 15px;
 }
 
-/* Button */
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #ffea00;
-  border: none;
-  border-radius: 8px;
+.table th {
+  background: #0e1b3d;
+  padding: 12px;
   font-weight: 600;
-  font-size: 16px;
-  color: #1b1b22;
+  text-align: left;
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.table tr:hover {
+  background: #2d2e43;
+}
+
+/* BUTTONS */
+.btn {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s;
+  font-weight: 600;
 }
 
-button:hover {
-  background-color: #ffea00;
+.profil { background: #00b7ff; }
+.credit { background: #00ff62; color: black; }
+.ban { background: #ff2b2b; }
+.promote { background: #ffae00; }
+
+.create-promo { background: #00c7f9; margin-bottom: 15px; }
+
+.apply { background: #ffea00; color: black; }
+.create-rain { background: #ffae00; }
+
+/* STATUS */
+.status.active {
+  color: #00ff62;
+  font-weight: bold;
 }
 
-/* Messages */
-.msg {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 15px;
-  height: 18px;
+.status.inactive {
+  color: #ff2b2b;
+  font-weight: bold;
+}
+
+#search {
+  width: 80%;
+  padding: 10px;
+  background: #141421;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+/* FORMS */
+.multiplier-box input,
+.rain-form input {
+  width: 100%;
+  padding: 10px;
+  background: #141421;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+/* MULTIPLIER */
+.current-multiplier {
+  color: #00ff62;
+  font-weight: bold;
 }
 
 #lien-Profil {
@@ -190,4 +230,15 @@ button:hover {
     display: flex;
     align-items: center;
     box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+}
+
+#NBU {
+  position: absolute;
+  width: 16.5%;
+  padding: 10px;
+  background: #141421;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-left: 1%;
 }
