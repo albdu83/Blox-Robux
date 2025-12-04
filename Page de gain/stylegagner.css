@@ -27,6 +27,13 @@ body {
   z-index: 9999;
 }
 
+.fade-transition img {
+  height: 50px;
+  display: block;
+  margin: 0;
+  padding: 5px;
+}
+
 .fade-transition .text {
   text-align: center;
   font-weight: bolder;
@@ -189,4 +196,3 @@ ul li img:active{
   border: none;
   display: none;
 }
-
