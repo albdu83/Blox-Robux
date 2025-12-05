@@ -8,11 +8,11 @@ app.use(cors());
 app.use(express.json());
 
 // --- SECRET_KEY TimeWall ---
-const SECRET_KEY = "21b4dc719da5c227745e9d1f23ab1cc0";
+const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 
-// --- Stockage temporaire (à remplacer par Firebase ou DB réelle) ---
-const users = {}; // { userID: { balance: 0 } }
-const transactions = {}; // { transactionID: true }
+// --- Stockage temporaire ---
+const users = {};
+const transactions = {};
 
 // --- Endpoint Roblox avatar ---
 app.get("/api/avatar/:username", async (req, res) => {
@@ -26,9 +26,7 @@ app.get("/api/avatar/:username", async (req, res) => {
         });
 
         const data = await response.json();
-        if (!data.data || data.data.length === 0) {
-            return res.status(404).json({ error: "Utilisateur introuvable" });
-        }
+        if (!data.data || data.data.length === 0) return res.status(404).json({ error: "Utilisateur introuvable" });
 
         const userId = data.data[0].id;
 
@@ -37,13 +35,9 @@ app.get("/api/avatar/:username", async (req, res) => {
         );
 
         const avatarData = await avatarRes.json();
+        if (!avatarData.data || avatarData.data.length === 0) return res.status(500).json({ error: "Erreur avatar Roblox" });
 
-        if (!avatarData.data || avatarData.data.length === 0) {
-            return res.status(500).json({ error: "Erreur avatar Roblox" });
-        }
-
-        const avatarUrl = avatarData.data[0].imageUrl;
-        res.json({ avatarUrl });
+        res.json({ avatarUrl: avatarData.data[0].imageUrl });
 
     } catch (err) {
         console.error(err);
@@ -53,40 +47,30 @@ app.get("/api/avatar/:username", async (req, res) => {
 
 // --- Endpoint TimeWall ---
 app.get("/timewall", async (req, res) => {
-  const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
+    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
-  try {
-    // Vérification hash
-    const computedHash = crypto.createHash("sha256")
-      .update(userID + revenue + SECRET_KEY)
-      .digest("hex");
+    try {
+        const computedHash = crypto.createHash("sha256")
+            .update(userID + revenue + SECRET_KEY)
+            .digest("hex");
 
-    if (computedHash !== hash) {
-      console.log("❌ HASH INVALID");
-      return res.status(400).send("Invalid hash");
+        if (computedHash !== hash) return res.status(400).send("Invalid hash");
+        if (transactions[transactionID]) return res.status(200).send("duplicate");
+
+        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
+        if (!users[userID]) users[userID] = { balance: 0 };
+        users[userID].balance += Number(currencyAmount);
+
+        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
+        res.status(200).send("OK");
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server error");
     }
-
-    // Vérifier transaction unique
-    if (transactions[transactionID]) return res.status(200).send("duplicate");
-
-    // Enregistrer transaction
-    transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
-
-    // Crédits/débits
-    if (!users[userID]) users[userID] = { balance: 0 };
-    users[userID].balance += Number(currencyAmount);
-
-    console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
-
-    // Retourner OK à TimeWall
-    res.status(200).send("OK");
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
 });
 
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur en ligne sur port ${PORT}`));
+
