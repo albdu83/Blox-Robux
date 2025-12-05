@@ -1,6 +1,7 @@
 const transition = document.getElementById("transition");
 const slideDuration = 750;
 const text = document.getElementById("text-chargement");
+const img = document.getElementById("image")
 
 document.addEventListener("DOMContentLoaded", () => {
     if (!transition) return;
@@ -21,6 +22,23 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(loop, 500);
     }
     loop();
+
+    let lastTime = 0;
+    let angle = 0;
+    const speed = 500; // degrés par seconde
+
+    function animate(time) {
+        if (lastTime !== 0) {
+            const delta = (time - lastTime) / 1000; 
+            angle += speed * delta;
+            img.style.transform = `rotate(${angle}deg)`;
+        }
+
+        lastTime = time;
+        requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
 
     // Navigation interne
     document.body.addEventListener("click", (e) => {
