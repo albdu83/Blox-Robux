@@ -5,44 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - BloxRobux</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="../img/imagePrinc.webp" type="image/x-icon">
 </head>
 <body>
     <div id="transition" class="fade-transition active">
-      <div class="text" id="text-chargement">Chargement...</div>
-    </div>
-    <form id="form-inscription">
-        <h4><span style="color: white;">Inscription</span></h4>
-        <h2><span style="color: #dec2c2">S'inscrire à BloxRobux !</span></h2>
-        <hr>
-        <div class="user-field">
-            <label><span style="color: white;">Nom d'utilisateur :</span></label>
-            <input type="text" id="username" required>
-        </div>
-        <label><span style="color: white;">Mot de passe :</span></label>
-        <input type="password" id="password" required>
-        <label>
-            <input type="checkbox" id="showPassword2">
-            <span class="checkbox-text">Afficher</span>
-        </label>
-        <label>
-            <span style="color: white;">Confirmez le mot de passe :</span>
-        </label>
-        <input type="password" id="confirmPassword" required>
-        <label>
-            <input type="checkbox" id="showPassword3">
-            <span class="checkbox-text">Afficher</span>
-        </label>
-        <label>
-            <span style="color: white;">Pseudo Roblox :</span>
-        </label>
-        <input type="text" id="RobloxName" required>
-        <input type="submit" value="Inscription">
-        <p><span style="color: white;">Déjà inscrit ? <a href="index.html" style="color: #dec2c2;">Connectez-vous ici</a></span></p>
-    </form>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="../Data.js" defer></script>
-    <script src="../Server.js" defer></script>
-    <script src="../Animation.js" defer></script>
+        <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+        <div class="text" id="text-chargement">Chargement...</div>
+      </div>
+
+      <form id="form-inscription">
+    <h4 style="color: white;">Inscription</h4>
+    <h2 style="color: #dec2c2;">S'inscrire à BloxRobux !</h2>
+    <hr>
+
+<!-- Nom d'utilisateur -->
+<div class="user-field">
+    <label for="username" style="color: white;">Nom d'utilisateur :</label>
+    <input type="text" id="username" name="username" required autocomplete="username">
+</div>
+
+<!-- Mot de passe -->
+<div class="user-field">
+    <label for="password" style="color: white;">Mot de passe :</label>
+    <input type="password" id="password" name="password" required autocomplete="new-password">
+    <label for="showPassword2">
+        <input type="checkbox" id="showPassword2" name="showPassword2">
+        <span class="checkbox-text">Afficher</span>
+    </label>
+</div>
+
+<!-- Confirmation mot de passe -->
+<div class="user-field">
+    <label for="confirmPassword" style="color: white;">Confirmez le mot de passe :</label>
+    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+    <label for="showPassword3">
+        <input type="checkbox" id="showPassword3" name="showPassword3">
+        <span class="checkbox-text">Afficher</span>
+    </label>
+</div>
+
+<!-- Pseudo Roblox -->
+<div class="user-field">
+    <label for="RobloxName" style="color: white;">Pseudo Roblox :</label>
+    <input type="text" id="RobloxName" name="RobloxName" required autocomplete="username">
+</div>
+
+<input type="submit" value="Inscription">
+
+<p style="color: white;">
+    Déjà inscrit ? <a href="index.html" style="color: #dec2c2;">Connectez-vous ici</a>
+</p>
+
+</form>
+
+
+<script src="https://www.timewall.com/widget.js?site_id=2578908b35321055"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="../Data.js" defer></script>
+<script src="../Server.js" defer></script>
+<script src="../Animation.js" defer></script>
+
+
 </body>
 </html>
