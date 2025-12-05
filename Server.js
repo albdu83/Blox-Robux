@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const RobloxName = document.getElementById('RobloxName').value.trim();
-
             if (password !== confirmPassword) {
                 alert("Les mots de passe ne correspondent pas !❌");
                 return;
