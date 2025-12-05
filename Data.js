@@ -1,4 +1,3 @@
-// Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDwZ7eVgxjrkh6U1kycVyPdjNKJ6b-_xZc",
   authDomain: "bloxrobux-e9244.firebaseapp.com",
@@ -17,3 +16,33 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 window.db = db;
+
+const list = document.getElementById("list");
+
+if (list) {
+    db.ref("users").get().then(snapshot => {
+    if (!snapshot.exists()) return;
+
+    const users = snapshot.val();
+
+    list.innerHTML = ""; // On vide le tableau avant d'ajouter
+
+    Object.keys(users).forEach(username => {
+        const user = users[username];
+
+        list.innerHTML += `
+            <tr>
+                <td>${username}</td>
+                <td>${user.balance ||0} R$</td>
+                <td>${user.role || "Utilisateur"}</td>
+                <td class="actions">
+                    <button class="btn profil">Profil</button>
+                    <button class="btn credit">Créditer</button>
+                    <button class="btn ban">Bannir</button>
+                    <button class="btn promote">Promouvoir</button>
+                </td>
+            </tr>
+        `;
+    });
+});
+}
