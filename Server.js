@@ -164,5 +164,22 @@ async function getRobloxUserId(username) {
     }
 }
 
+async function getPrivateServers(robloxUsername) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/privateservers/${robloxUsername}`);
+        const data = await res.json();
 
+        const container = document.getElementById("private-servers");
+        if (!container) return;
 
+        container.innerHTML = "";
+        data.data.forEach(server => {
+            const div = document.createElement("div");
+            div.textContent = `${server.name} - Status: ${server.status}`;
+            container.appendChild(div);
+        });
+
+    } catch (err) {
+        console.error("Erreur récupération serveurs privés :", err);
+    }
+}
