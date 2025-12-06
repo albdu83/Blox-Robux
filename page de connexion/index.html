@@ -13,24 +13,24 @@
         <div class="text" id="text-chargement">Chargement...</div>
       </div>
     <form id="form-connexion">
-        <h4><span style="color: white;">Connexion</span></h4>
-        <h2><span style="color: #dec2c2">Se connecter à BloxRobux !</span></h2>
-        <hr>
-        <div class="user-field">
-            <label><span style="color: white;">Nom d'utilisateur :</span></label>
-            <input type="text" id="loginUsername" required>
-        </div>
-        <div class="password-field">
-            <label><span style="color: white;">Mot de passe :</span></label>
-            <input type="password" id="loginPassword" required>
-            <label>
-                <input type="checkbox" id="showPassword">
-                <span class="checkbox-text" id="r">Afficher</span>
-            </label>
-        </div>
-        <input type="submit" value="Connexion">
-        <p><span style="color: white;">Pas encore inscrit ? <a href="index2.html" style="color: #dec2c2;">Inscrivez-vous ici</a></span></p>
-    </form>
+    <h4><span style="color: white;">Connexion</span></h4>
+    <h2><span style="color: #dec2c2">Se connecter à BloxRobux !</span></h2>
+    <hr>
+    <div class="user-field">
+        <label for="loginUsername"><span style="color: white;">Nom d'utilisateur :</span></label>
+        <input type="text" id="loginUsername" name="loginUsername" required autocomplete="username">
+    </div>
+    <div class="password-field">
+        <label for="loginPassword"><span style="color: white;">Mot de passe :</span></label>
+        <input type="password" id="loginPassword" name="loginPassword" required autocomplete="current-password">
+        <label for="showPassword">
+            <input type="checkbox" id="showPassword">
+            <span class="checkbox-text" id="r">Afficher</span>
+        </label>
+    </div>
+    <input type="submit" value="Connexion">
+    <p><span style="color: white;">Pas encore inscrit ? <a href="index2.html" style="color: #dec2c2;">Inscrivez-vous ici</a></span></p>
+</form>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="../Data.js" defer></script>
@@ -38,3 +38,4 @@
     <script src="../Animation.js" defer></script>
 </body>
 </html>
+
