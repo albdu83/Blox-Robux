@@ -97,65 +97,39 @@ document.addEventListener("DOMContentLoaded", () => {
         db.ref("users/" + userID + "/balance").set(newBalance).catch(err => console.error(err));
     }
 
+    // --- Attendre que TimeWall soit chargé ---
+    function waitForTimeWall(callback) {
+        if (typeof TimeWall !== "undefined") {
+            callback();
+        } else {
+            setTimeout(() => waitForTimeWall(callback), 100);
+        }
+    }
+
+    // --- Gestion bouton Gagner ---
     if (btnGagner) {
         btnGagner.addEventListener("click", () => {
-          const iframe = document.getElementById("timewall-container");
-            if (iframe) iframe.src = iframe.src;
-            const timewall = document.getElementById("offerwall1");
-            if (timewall) timewall.style.display = "none";
-        })
-      };
+            // Masquer BitLabs
+            const offerwall = document.getElementById("offerwall1");
+            if (offerwall) offerwall.style.display = "none";
 
-    // --- Gestion TimeWall ---
-    if (btnGagner) {
-        btnGagner.addEventListener("click", () => {
-            if (typeof TimeWall === "undefined") return console.warn("TimeWall non chargé");
-
+            // Afficher container TimeWall
             const container = document.getElementById("timewall-container");
             if (container) container.style.display = "block";
-
-            TimeWall.show({
-                userId: userID,
-                onReward: async (data) => {
-                    console.log("Récompense reçue :", data);
-
-                    // Mise à jour Firebase
-                    db.ref("users/" + userID + "/lastReward").set({
-                        amount: data.currencyAmount,
-                        date: Date.now()
-                    });
-                    updateBalance(Number(data.currencyAmount));
-
-                    // Postback vers Render
-                    try {
-                        const params = new URLSearchParams({
-                            userID: userID,
-                            transactionID: data.transactionID,
-                            revenue: data.revenue,
-                            currencyAmount: data.currencyAmount,
-                            type: data.type || "credit",
-                            hash: data.hash
-                        });
-                        const res = await fetch(`${API_BASE}/timewall?${params.toString()}`);
-                        if (!res.ok) throw new Error("Erreur postback Render");
-                        console.log("✅ Postback envoyé à Render");
-                    } catch (err) {
-                        console.error("❌ Erreur postback TimeWall :", err);
-                    }
-                }
-            });
         });
     }
+
 
     // --- Reload BitLabs iframe ---
     if (reloadBtn) {
         reloadBtn.addEventListener("click", () => {
             const iframe = document.getElementById("offerwall1");
-            if (iframe) 
-            iframe.src = iframe.src;
-            iframe.style.display = "Block"
-            const timewall = document.getElementById("timewall-container");
-            if (timewall) timewall.style.display = "none";
+            if (iframe) {
+                iframe.src = iframe.src;
+                iframe.style.display = "block";
+            }
+            const container = document.getElementById("timewall-container");
+            if (container) container.style.display = "none";
         });
     }
 
@@ -179,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erreur avatar Roblox :", err);
         }
     }
-
 });
 </script>
 </body>
