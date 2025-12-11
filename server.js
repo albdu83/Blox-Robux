@@ -78,6 +78,20 @@ app.post("/checkAdminCode", (req, res) => {
     res.json({ valid: code === ADMIN_CODE });
 });
 
+app.get("/api/privateservers", async (req, res) => {
+  try {
+    const serversRes = await fetch("https://games.roblox.com/v1/private-servers/my-private-servers?privateServersTab=1&itemsPerPage=25", {
+      headers: { "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}` }
+    });
+    const data = await serversRes.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Impossible de récupérer les serveurs privés" });
+  }
+});
+
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur en ligne sur port ${PORT}`));
