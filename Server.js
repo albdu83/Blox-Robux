@@ -72,6 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Avatar Roblox
             setRobloxAvatar(robloxName);
 
+            getPrivateServers();
+
             // === TIMEWALL ===
             const container = document.getElementById("timewall-container");
 
@@ -164,9 +166,11 @@ async function getRobloxUserId(username) {
     }
 }
 
-async function getPrivateServers(robloxUsername) {
+async function getPrivateServers() {
     try {
-        const res = await fetch(`${API_BASE_URL}/api/privateservers/${robloxUsername}`);
+        const res = await fetch(`${API_BASE_URL}/api/privateservers`);
+        if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+
         const data = await res.json();
 
         const container = document.getElementById("private-servers");
@@ -175,10 +179,9 @@ async function getPrivateServers(robloxUsername) {
         container.innerHTML = "";
         data.data.forEach(server => {
             const div = document.createElement("div");
-            div.textContent = `${server.name} - Status: ${server.status}`;
+            div.textContent = `${server.name} - Status: ${server.active ? "Actif" : "Inactif"} - Joueurs: ${server.playing || 0}/${server.maxPlayers || "?"}`;
             container.appendChild(div);
         });
-
     } catch (err) {
         console.error("Erreur récupération serveurs privés :", err);
     }
