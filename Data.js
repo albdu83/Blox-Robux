@@ -19,43 +19,49 @@ const db = firebase.database();
 window.auth = auth;
 window.db = db;
 
-// Vérification si utilisateur connecté (OPTIONNEL)
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    console.warn("Utilisateur non connecté !");
-    return;
-  }
+// --- Attendre que le DOM soit prêt ---
+document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("Utilisateur connecté :", user.uid);
-});
+  // Vérification si utilisateur connecté
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      console.warn("Utilisateur non connecté !");
+      return;
+    }
+    console.log("Utilisateur connecté :", user.uid);
 
+    // --- Lecture de la DB ---
     const list = document.getElementById("list");
     if (!list) return;
 
-    // --- Lecture de la DB ---
-    db.ref("users").get().then(snapshot => {
+    db.ref("users").get()
+      .then(snapshot => {
         if (!snapshot.exists()) return;
 
         const users = snapshot.val();
         list.innerHTML = ""; // vide le tableau
 
         Object.keys(users).forEach(username => {
-            const userData = users[username];
-
-            list.innerHTML += `
-                <tr>
-                    <td>${username}</td>
-                    <td>${userData.balance || 0} R$</td>
-                    <td>${userData.role || "Utilisateur"}</td>
-                    <td class="actions">
-                        <button class="btn profil">Profil</button>
-                        <button class="btn credit">Créditer</button>
-                        <button class="btn ban">Bannir</button>
-                        <button class="btn promote">Promouvoir</button>
-                    </td>
-                </tr>
-            `;
+          const userData = users[username];
+          list.innerHTML += `
+            <tr>
+              <td>${username}</td>
+              <td>${userData.balance || 0} R$</td>
+              <td>${userData.role || "Utilisateur"}</td>
+              <td class="actions">
+                <button class="btn profil">Profil</button>
+                <button class="btn credit">Créditer</button>
+                <button class="btn ban">Bannir</button>
+                <button class="btn promote">Promouvoir</button>
+              </td>
+            </tr>
+          `;
         });
-    }).catch(err => console.error("Erreur DB:", err));
+      })
+      .catch(err => console.error("Erreur DB:", err));
+  });
+
 });
+
+
 
