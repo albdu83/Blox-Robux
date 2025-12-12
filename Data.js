@@ -11,12 +11,6 @@ const firebaseConfig = {
 
 // --- Initialisation Firebase ---
 firebase.initializeApp(firebaseConfig);
-
-firebase.auth().signInAnonymously()
-  .then(() => console.log("Connecté en mode anonyme"))
-  .catch(err => console.error(err));
-
-
 // --- Auth + Database ---
 const auth = firebase.auth();
 const db = firebase.database();
@@ -67,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
 
 
