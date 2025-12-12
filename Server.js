@@ -172,17 +172,28 @@ async function getPrivateServers() {
         if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
 
         const data = await res.json();
+        const servers = data.data || []; // <-- important
 
         const container = document.getElementById("private-servers");
         if (!container) return;
 
         container.innerHTML = "";
-        data.data.forEach(server => {
+        if (servers.length === 0) {
+            container.textContent = "Aucun serveur privé disponible ou cookie ROBLOSECURITY invalide.";
+            return;
+        }
+
+        servers.forEach(server => {
             const div = document.createElement("div");
             div.textContent = `${server.name} - Status: ${server.active ? "Actif" : "Inactif"} - Joueurs: ${server.playing || 0}/${server.maxPlayers || "?"}`;
             container.appendChild(div);
         });
     } catch (err) {
         console.error("Erreur récupération serveurs privés :", err);
+        const container = document.getElementById("private-servers");
+        if (container) container.textContent = "Erreur récupération serveurs privés.";
     }
 }
+  }
+}
+
