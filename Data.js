@@ -1,4 +1,3 @@
-// --- Config et initialisation Firebase ---
 const firebaseConfig = {
   apiKey: "AIzaSyDwZ7eVgxjrkh6U1kycVyPdjNKJ6b-_xZc",
   authDomain: "bloxrobux-e9244.firebaseapp.com",
@@ -10,21 +9,25 @@ const firebaseConfig = {
   measurementId: "G-YWK7EDQ55E"
 };
 
+// --- Initialisation Firebase ---
 firebase.initializeApp(firebaseConfig);
 
-// --- Accès à la Realtime Database et Auth ---
-const db = firebase.database();
+// --- Auth + Database ---
 const auth = firebase.auth();
+const db = firebase.database();
+
+window.auth = auth;
 window.db = db;
 
-// --- Vérifier la connexion de l'utilisateur ---
-auth.onAuthStateChanged((user) => {
-    if (!user) {
-        console.log("Utilisateur non connecté !");
-        return; // On stoppe si non connecté
-    }
+// Vérification si utilisateur connecté (OPTIONNEL)
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    console.warn("Utilisateur non connecté !");
+    return;
+  }
 
-    console.log("Utilisateur connecté :", user.uid);
+  console.log("Utilisateur connecté :", user.uid);
+});
 
     const list = document.getElementById("list");
     if (!list) return;
@@ -55,3 +58,4 @@ auth.onAuthStateChanged((user) => {
         });
     }).catch(err => console.error("Erreur DB:", err));
 });
+
