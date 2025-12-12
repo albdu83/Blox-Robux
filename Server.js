@@ -172,27 +172,42 @@ async function getPrivateServers() {
         if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
 
         const data = await res.json();
-        const servers = data.data || []; // <-- important
 
         const container = document.getElementById("private-servers");
         if (!container) return;
 
         container.innerHTML = "";
-        if (servers.length === 0) {
-            container.textContent = "Aucun serveur privé disponible ou cookie ROBLOSECURITY invalide.";
+
+        if (!data.data || data.data.length === 0) {
+            container.textContent = "Aucun serveur privé disponible.";
             return;
         }
 
-        servers.forEach(server => {
+        // Utiliser un Set pour éviter les doublons sur le nom du serveur
+        const seenNames = new Set();
+
+        data.data.forEach(server => {
+            if (seenNames.has(server.name)) return; // ignorer doublons
+            seenNames.add(server.name);
+
             const div = document.createElement("div");
-            div.textContent = `${server.name} - Status: ${server.active ? "Actif" : "Inactif"} - Joueurs: ${server.playing || 0}/${server.maxPlayers || "?"}`;
+
+            const serverName = server.name || "Nom inconnu";
+            const status = server.active ? "Actif" : "Inactif";
+            const playing = server.playing !== undefined ? server.playing : "?";
+            const maxPlayers = server.maxPlayers !== undefined ? server.maxPlayers : "?";
+
+            div.textContent = `${serverName} - Status: ${status} - Joueurs: ${playing}/${maxPlayers}`;
             container.appendChild(div);
         });
+
     } catch (err) {
         console.error("Erreur récupération serveurs privés :", err);
         const container = document.getElementById("private-servers");
-        if (container) container.textContent = "Erreur récupération serveurs privés.";
+        if (container) container.textContent = "Impossible de récupérer les serveurs privés ou cookie ROBLOSECURITY invalide.";
     }
 }
+
+
 
 
