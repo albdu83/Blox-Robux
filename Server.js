@@ -194,6 +194,5 @@ async function getPrivateServers() {
         if (container) container.textContent = "Erreur récupération serveurs privés.";
     }
 }
-  }
-}
+
 
