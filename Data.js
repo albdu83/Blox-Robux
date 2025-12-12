@@ -1,3 +1,4 @@
+// --- Config et initialisation Firebase ---
 const firebaseConfig = {
   apiKey: "AIzaSyDwZ7eVgxjrkh6U1kycVyPdjNKJ6b-_xZc",
   authDomain: "bloxrobux-e9244.firebaseapp.com",
@@ -9,36 +10,48 @@ const firebaseConfig = {
   measurementId: "G-YWK7EDQ55E"
 };
 
-// --- Initialisation Firebase (obligatoire) ---
 firebase.initializeApp(firebaseConfig);
 
-// --- Accès à la Realtime Database ---
+// --- Accès à la Realtime Database et Auth ---
 const db = firebase.database();
-
+const auth = firebase.auth();
 window.db = db;
 
-const list = document.getElementById("list");
+// --- Vérifier la connexion de l'utilisateur ---
+auth.onAuthStateChanged((user) => {
+    if (!user) {
+        console.log("Utilisateur non connecté !");
+        return; // On stoppe si non connecté
+    }
 
-if (list) {
+    console.log("Utilisateur connecté :", user.uid);
+
+    const list = document.getElementById("list");
+    if (!list) return;
+
+    // --- Lecture de la DB ---
     db.ref("users").get().then(snapshot => {
-    if (!snapshot.exists()) return;
-    const users = snapshot.val();
-    list.innerHTML = ""; // On vide le tableau avant d'ajouter
-    Object.keys(users).forEach(username => {
-        const user = users[username];
-        list.innerHTML += `
-            <tr>
-                <td>${username}</td>
-                <td>${user.balance ||0} R$</td>
-                <td>${user.role || "Utilisateur"}</td>
-                <td class="actions">
-                    <button class="btn profil">Profil</button>
-                    <button class="btn credit">Créditer</button>
-                    <button class="btn ban">Bannir</button>
-                    <button class="btn promote">Promouvoir</button>
-                </td>
-            </tr>
-        `;
-    });
+        if (!snapshot.exists()) return;
+
+        const users = snapshot.val();
+        list.innerHTML = ""; // vide le tableau
+
+        Object.keys(users).forEach(username => {
+            const userData = users[username];
+
+            list.innerHTML += `
+                <tr>
+                    <td>${username}</td>
+                    <td>${userData.balance || 0} R$</td>
+                    <td>${userData.role || "Utilisateur"}</td>
+                    <td class="actions">
+                        <button class="btn profil">Profil</button>
+                        <button class="btn credit">Créditer</button>
+                        <button class="btn ban">Bannir</button>
+                        <button class="btn promote">Promouvoir</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }).catch(err => console.error("Erreur DB:", err));
 });
-}
