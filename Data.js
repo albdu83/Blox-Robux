@@ -19,7 +19,7 @@ window.auth = auth;
 window.db = db;
 
 auth.signInAnonymously()
-  .then(() => console.log(""))
+  .then(() => console.log("Authentification success"))
   .catch(err => console.error("Erreur connexion anonyme :", err));
 
 // --- Attendre que le DOM soit prêt ---
@@ -31,8 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Utilisateur non connecté !");
       return;
     }
-    console.log("");
-
     // --- Lecture de la DB ---
     const list = document.getElementById("list");
     if (!list) return;
@@ -65,6 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
 
 
