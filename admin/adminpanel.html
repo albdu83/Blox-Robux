@@ -110,10 +110,7 @@ window.addEventListener("DOMContentLoaded", () => {
         let count = 0;
 
         for (const user of allUsers) {
-            // filtre recherche
             if (!user.username.toLowerCase().includes(search)) continue;
-
-            // limite max
             if (count >= limit) break;
             count++;
 
@@ -135,32 +132,38 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // 🔥 Quand on tape dans la barre de search → mettre à jour
     searchInput.addEventListener("input", renderUsers);
-
-    // 🔥 Quand on change la limite → mettre à jour
     if (nbuInput) nbuInput.addEventListener("input", renderUsers);
 
-    // 📌 Chargement des utilisateurs Firebase
-    db.ref("users").get().then(snapshot => {
-        if (!snapshot.exists()) {
-            list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
+    // --- 🔐 Attendre que l'utilisateur soit connecté ---
+    firebase.auth().onAuthStateChanged(user => {
+        if (!user) {
+            console.warn("Utilisateur non connecté !");
+            list.innerHTML = "<tr><td colspan='4'>Veuillez vous connecter pour voir la liste.</td></tr>";
             return;
         }
 
-        const users = snapshot.val();
+        // 📌 Chargement des utilisateurs Firebase
+        db.ref("users").get()
+        .then(snapshot => {
+            if (!snapshot.exists()) {
+                list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
+                return;
+            }
 
-        // On transforme en tableau
-        allUsers = Object.keys(users).map(username => ({
-            username,
-            balance: users[username].balance || 0,
-            role: users[username].role || "Utilisateur"
-        }));
+            const users = snapshot.val();
+            allUsers = Object.keys(users).map(username => ({
+                username,
+                balance: users[username].balance || 0,
+                role: users[username].role || "Utilisateur"
+            }));
 
-        renderUsers(); // affichage initial
-    }).catch(err => console.error("Erreur Firebase:", err));
+            renderUsers(); // affichage initial
+        })
+        .catch(err => console.error("Erreur Firebase:", err));
+    });
 
 });
 </script>
-
 </section>
 
         <!-- ===== PROMOCODES ===== -->
