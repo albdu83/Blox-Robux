@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Vérification si utilisateur connecté
   auth.onAuthStateChanged(user => {
     if (!user) {
-      console.warn("Utilisateur non connecté !");
+      console.log("Utilisateur non connecté !");
       return;
     }
     console.log("Utilisateur connecté :", user.uid);
@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
 
 
