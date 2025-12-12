@@ -18,6 +18,10 @@ const db = firebase.database();
 window.auth = auth;
 window.db = db;
 
+auth.signInAnonymously()
+  .then(() => console.log("Connecté anonymement"))
+  .catch(err => console.error("Erreur connexion anonyme :", err));
+
 // --- Attendre que le DOM soit prêt ---
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -61,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
 
 
