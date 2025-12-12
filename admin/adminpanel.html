@@ -1,3 +1,4 @@
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +9,7 @@
 </head>
 
 <body>
+
     <!-- ===== RIDEAU CHARGEMENT (UN SEUL !) ===== -->
     <div id="transition" class="fade-transition active">
         <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
@@ -109,7 +111,10 @@ window.addEventListener("DOMContentLoaded", () => {
         let count = 0;
 
         for (const user of allUsers) {
+            // filtre recherche
             if (!user.username.toLowerCase().includes(search)) continue;
+
+            // limite max
             if (count >= limit) break;
             count++;
 
@@ -131,38 +136,32 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // 🔥 Quand on tape dans la barre de search → mettre à jour
     searchInput.addEventListener("input", renderUsers);
+
+    // 🔥 Quand on change la limite → mettre à jour
     if (nbuInput) nbuInput.addEventListener("input", renderUsers);
 
-    // --- 🔐 Attendre que l'utilisateur soit connecté ---
-    firebase.auth().onAuthStateChanged(user => {
-        if (!user) {
-            console.warn("Utilisateur non connecté !");
-            list.innerHTML = "<tr><td colspan='4'>Veuillez vous connecter pour voir la liste.</td></tr>";
+    // 📌 Chargement des utilisateurs Firebase
+    db.ref("users").get().then(snapshot => {
+        if (!snapshot.exists()) {
+            list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
             return;
         }
 
-        // 📌 Chargement des utilisateurs Firebase
-        db.ref("users").get()
-        .then(snapshot => {
-            if (!snapshot.exists()) {
-                list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
-                return;
-            }
+        const users = snapshot.val();
 
-            const users = snapshot.val();
-            allUsers = Object.keys(users).map(username => ({
-                username,
-                balance: users[username].balance || 0,
-                role: users[username].role || "Utilisateur"
-            }));
+        // On transforme en tableau
+        allUsers = Object.keys(users).map(username => ({
+            username,
+            balance: users[username].balance || 0,
+            role: users[username].role || "Utilisateur"
+        }));
 
-            renderUsers(); // affichage initial
-        })
-        .catch(err => console.error("Erreur Firebase:", err));
-    });
+        renderUsers(); // affichage initial
+    }).catch(err => console.error("Erreur Firebase:", err));
 
 });
 </script>
+
 </section>
 
         <!-- ===== PROMOCODES ===== -->
@@ -229,8 +228,8 @@ window.addEventListener("DOMContentLoaded", () => {
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="../Data.js"></script>
-    <script src="../Server.js"></script>
-    <script src="../Animation.js"></script>
+    <script src="../Data.js" defer></script>
+    <script src="../Server.js" defer></script>
+    <script src="../Animation.js" defer></script>
 </body>
 </html>
