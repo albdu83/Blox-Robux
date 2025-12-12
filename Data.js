@@ -1,8 +1,3 @@
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get, child } from "firebase/database";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-
-// --- Config ---
 const firebaseConfig = {
   apiKey: "AIzaSyDwZ7eVgxjrkh6U1kycVyPdjNKJ6b-_xZc",
   authDomain: "bloxrobux-e9244.firebaseapp.com",
@@ -14,45 +9,36 @@ const firebaseConfig = {
   measurementId: "G-YWK7EDQ55E"
 };
 
-// --- Initialisation ---
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+// --- Initialisation Firebase (obligatoire) ---
+firebase.initializeApp(firebaseConfig);
+
+// --- Accès à la Realtime Database ---
+const db = firebase.database();
+
+window.db = db;
 
 const list = document.getElementById("list");
 
-// --- On attend que l'utilisateur soit connecté ---
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    console.log("Utilisateur non connecté !");
-    return;
-  }
-
-  // --- Lecture de la DB ---
-  get(child(ref(db), "users"))
-    .then((snapshot) => {
-      if (!snapshot.exists()) return;
-
-      const users = snapshot.val();
-      list.innerHTML = ""; // vide le tableau
-
-      Object.keys(users).forEach((username) => {
+if (list) {
+    db.ref("users").get().then(snapshot => {
+    if (!snapshot.exists()) return;
+    const users = snapshot.val();
+    list.innerHTML = ""; // On vide le tableau avant d'ajouter
+    Object.keys(users).forEach(username => {
         const user = users[username];
         list.innerHTML += `
-          <tr>
-              <td>${username}</td>
-              <td>${user.balance || 0} R$</td>
-              <td>${user.role || "Utilisateur"}</td>
-              <td class="actions">
-                  <button class="btn profil">Profil</button>
-                  <button class="btn credit">Créditer</button>
-                  <button class="btn ban">Bannir</button>
-                  <button class="btn promote">Promouvoir</button>
-              </td>
-          </tr>
+            <tr>
+                <td>${username}</td>
+                <td>${user.balance ||0} R$</td>
+                <td>${user.role || "Utilisateur"}</td>
+                <td class="actions">
+                    <button class="btn profil">Profil</button>
+                    <button class="btn credit">Créditer</button>
+                    <button class="btn ban">Bannir</button>
+                    <button class="btn promote">Promouvoir</button>
+                </td>
+            </tr>
         `;
-      });
-    })
-    .catch((err) => console.error("Erreur DB:", err));
+    });
 });
-
+}
