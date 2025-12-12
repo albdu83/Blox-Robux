@@ -80,7 +80,7 @@ app.post("/checkAdminCode", (req, res) => {
 
 app.get("/api/privateservers", async (req, res) => {
   try {
-    const serversRes = await fetch("https://games.roblox.com/v1/private-servers/my-private-servers?privateServersTab=1&itemsPerPage=25", {
+    const serversRes = await fetch("https://games.roblox.com/v1/private-servers/my-private-servers", {
       headers: { "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}` }
     });
     const data = await serversRes.json();
