@@ -190,14 +190,14 @@ async function getPrivateServers() {
             if (seenNames.has(server.name)) return; // ignorer doublons
             seenNames.add(server.name);
 
-            const div = document.createElement("div");
+            const div = document.createElement("option");
 
             const serverName = server.name || "Nom inconnu";
             const status = server.active ? "Actif" : "Inactif";
             const playing = server.playing !== undefined ? server.playing : "?";
             const maxPlayers = server.maxPlayers !== undefined ? server.maxPlayers : "?";
 
-            div.textContent = `${serverName} - Status: ${status} - Joueurs: ${playing}/${maxPlayers}`;
+            div.textContent = `${serverName}`
             container.appendChild(div);
         });
 
@@ -207,6 +207,8 @@ async function getPrivateServers() {
         if (container) container.textContent = "Impossible de récupérer les serveurs privés ou cookie ROBLOSECURITY invalide.";
     }
 }
+
+
 
 
 
