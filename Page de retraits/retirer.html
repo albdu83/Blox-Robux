@@ -38,19 +38,23 @@
 
       <div class="actions">
         <input id="amount" type="number" placeholder="Montant à retirer (ex : 50)" />
-        <input id="label" type="text" placeholder="Pseudo Roblox" />
         <button id="withdrawBtn">Retirer</button>
       </div>
 
       <div id="error" class="error" style="display:none;"></div>
 
       <h2>Historique des retraits</h2>
+      <div class="template">aucun retrait effectuer...</div>
     </section>
   </main>
-  <div id="private-servers"></div>
   <div id="transition" class="fade-transition active">
     <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
     <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+  <div class="private-servers">
+    <select id="private-servers">
+      <option></option>
+    </select>
   </div>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -61,6 +65,3 @@
   <script src="../Amount.js" defer></script>
 </body>
 </html>
-
-
-
