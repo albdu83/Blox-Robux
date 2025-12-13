@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         state.balance -= amount;
         state.transactions.push(tx);
 
-        userRef.set({
+        userRef.update({
             balance: state.balance,
             transactions: state.transactions
         }).catch(err => console.error(err));
@@ -114,3 +114,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
