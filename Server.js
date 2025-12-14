@@ -70,9 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Avatar Roblox
-            setRobloxAvatar(robloxName);
-
-            getPrivateServers();
+            setRobloxAvatar(robloxName); // met à jour l'image
 
             // === TIMEWALL ===
             const container = document.getElementById("timewall-container");
@@ -123,6 +121,29 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePassword("showPassword", "loginPassword");
     togglePassword("showPassword2", "password");
     togglePassword("showPassword3", "confirmPassword");
+
+document.addEventListener("click", (e) => {
+    // Vérifie si on clique sur l'image ou sur le texte
+    if (!e.target.classList.contains("copy-img") && !e.target.classList.contains("copy-id")) return;
+
+    const parent = e.target.closest(".copy-id");
+    if (!parent) return;
+
+    const idToCopy = parent.dataset.copy;
+    const originalHTML = parent.innerHTML;
+
+    navigator.clipboard.writeText(idToCopy)
+        .then(() => {
+            // Remplace tout le contenu par "Copié ✅"
+            parent.innerHTML = "Copié ✅";
+
+            setTimeout(() => {
+                // Remet le contenu original après 1,2 seconde
+                parent.innerHTML = originalHTML;
+            }, 1200);
+        })
+        .catch(() => alert("Impossible de copier"));
+});
 });
 
 // ==================== FONCTION AVATAR ROBLOX ====================
@@ -137,7 +158,10 @@ async function setRobloxAvatar(robloxName) {
 
         const avatarImg = document.getElementById("avatar-roblox");
         if (!avatarImg) return;
-
+        if (data.targetId) {
+            console.log("UserId récupéré :", data.targetId)
+            getPublicsPlaces(data.targetId)
+        }
         avatarImg.src = data.avatarUrl || "img/default-avatar.png";
         avatarImg.style.display = "inline-block";
 
@@ -158,7 +182,6 @@ async function getRobloxUserId(username) {
         body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
     });
     const data = await response.json();
-
     if (data.data && data.data.length > 0) {
         return data.data[0].id;
     } else {
@@ -186,19 +209,19 @@ async function getPrivateServers() {
         // Utiliser un Set pour éviter les doublons sur le nom du serveur
         const seenNames = new Set();
 
+        const div2 = document.createElement("option");
+            div2.textContent = "selectionner un serveur"
+            container.appendChild(div2);
+
         data.data.forEach(server => {
             if (seenNames.has(server.name)) return; // ignorer doublons
             seenNames.add(server.name);
+            let serverName = server.name || "Nom inconnu";
 
-            const div = document.createElement("option");
-
-            const serverName = server.name || "Nom inconnu";
-            const status = server.active ? "Actif" : "Inactif";
-            const playing = server.playing !== undefined ? server.playing : "?";
-            const maxPlayers = server.maxPlayers !== undefined ? server.maxPlayers : "?";
-
-            div.textContent = `${serverName}`
-            container.appendChild(div);
+            // Tronquer à 10 caractères si nécessaire
+            if (serverName.length > 10) {
+                serverName = serverName.slice(0, 10) + "...";
+            }
         });
 
     } catch (err) {
@@ -207,6 +230,40 @@ async function getPrivateServers() {
         if (container) container.textContent = "Impossible de récupérer les serveurs privés ou cookie ROBLOSECURITY invalide.";
     }
 }
+
+
+async function getPublicsPlaces(targetId) {
+    if (!targetId) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/places?userId=${targetId}`);
+        const data = await res.json();
+
+        const select = document.getElementById("private-servers");
+        if (!select) return;
+
+        select.innerHTML = "";
+
+        if (!data || !data.data || data.data.length === 0) {
+            const option = document.createElement("option");
+            option.text = "Aucun emplacement public trouvé";
+            option.value = "";
+            select.appendChild(option);
+            return;
+        }
+
+        data.data.forEach(place => {
+            const option = document.createElement("option");
+            option.text = `${place.name} (ID: ${place.placeId})`;
+            option.value = place.placeId;
+            select.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error("Erreur lors de la récupération des places :", err);
+    }
+}
+
 
 
 
