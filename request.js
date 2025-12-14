@@ -28,10 +28,10 @@ app.get("/api/avatar/:username", async (req, res) => {
         const data = await response.json();
         if (!data.data || data.data.length === 0) return res.status(404).json({ error: "Utilisateur introuvable" });
 
-        const userID = data.data[0].id;
+        const userId = data.data[0].id;
 
         const avatarRes = await fetch(
-            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userID}&size=150x150&format=Png&isCircular=false`
+            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`
         );
 
         const avatarData = await avatarRes.json();
@@ -40,7 +40,7 @@ app.get("/api/avatar/:username", async (req, res) => {
         res.json({
             avatarUrl: avatarData.data[0].imageUrl,
             targetId: userId
-            });
+        });
 
     } catch (err) {
         console.error(err);
@@ -94,12 +94,6 @@ app.get("/api/privateservers", async (req, res) => {
   }
 });
 
-
-// --- Lancement serveur ---
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Serveur en ligne sur port ${PORT}`));
-
-
 app.get("/api/places", async (req, res) => {
     const { targetId } = req.query;
     try {
@@ -112,6 +106,7 @@ app.get("/api/places", async (req, res) => {
         res.status(500).json({ error: "Impossible de récupérer les emplacements" });
     }
 });
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur en ligne sur port ${PORT}`));
