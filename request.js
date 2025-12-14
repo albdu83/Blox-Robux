@@ -95,18 +95,44 @@ app.get("/api/privateservers", async (req, res) => {
 });
 
 app.get("/api/places", async (req, res) => {
-    const { targetId } = req.query;
+    const { targetId  } = req.query;
+
     try {
-        if (!targetId) return res.status(400).json({ error: "userId manquant" });
-        const Places = await fetch(`https://games.roblox.com/v2/users/${targetId}/games?accessFilter=Public`)
-        const data = await Places.json()
-        res.json(data)
+        if (!targetId ) {
+            return res.status(400).json({ error: "userId manquant" });
+        }
+
+        const placesRes = await fetch(
+            `https://games.roblox.com/v2/users/${targetId }/games?accessFilter=Public`
+        );
+
+        if (!placesRes.ok) {
+            return res.status(placesRes.status).json({
+                error: "Erreur API Roblox"
+            });
+        }
+
+        const data = await placesRes.json();
+
+        // On renvoie uniquement ce qui est utile au front
+        const formatted = {
+            data: data.data.map(game => ({
+                name: game.name,
+                placeId: game.rootPlace?.id || null
+            })).filter(game => game.placeId !== null)
+        };
+
+        res.json(formatted);
+
     } catch (err) {
-        console.error(err)
+        console.error("Erreur récupération places :", err);
         res.status(500).json({ error: "Impossible de récupérer les emplacements" });
     }
 });
 
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Serveur en ligne sur port ${PORT}`));
+
+app.listen(PORT, () => {
+    console.log(`✅ Serveur en ligne sur le port ${PORT}`);
+});
