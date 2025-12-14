@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
+/* RESET GLOBAL */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
 
-body {
-    background-color: #1b1b22;
-    color: #333;
-}
+/* ------------------------------------------------ */
+/*                 RIDEAU DE CHARGEMENT             */
+/* ------------------------------------------------ */
 
 .fade-transition {
   position: fixed;
@@ -19,7 +19,7 @@ body {
   justify-content: center;
   align-items: center;
 
-  transform: translateY(0%); /* rideau visible au début */
+  transform: translateY(0%); /* rideau visible */
   background: linear-gradient(#33279E, #7363ff);
 
   pointer-events: all;
@@ -41,46 +41,47 @@ body {
   color: #ffffff;
 }
 
-/* Rideau visible (avant redirection) */
+/* Rideau visible */
 .fade-transition.active {
   transform: translateY(0%);
   pointer-events: all;
 }
 
-/* Rideau descend après chargement */
+/* Rideau descend */
 .fade-transition.slide-down {
-  transform: translateY(100%); /* entièrement descendu */
+  transform: translateY(100%);
   pointer-events: none;
 }
 
+/* ------------------------------------------------ */
+/*                    STYLE PAGE                     */
+/* ------------------------------------------------ */
+
+body {
+  background: #1c1c26;
+  color: white;
+}
+
+/* ----- HEADER ----- */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px;
   background-color: #153369;
-  position: relative; /* nécessaire pour centrer le texte */
 }
 
-/* Logo + solde */
 .header-left {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px; /* petit espace entre logo et solde */
+  gap: 15px;
 }
 
-/* Logo */
-.header-left img {
+header img {
   height: 50px;
-  display: block;
-  margin: 0;
-  padding: 0;
 }
 
-/* Solde */
-.header-left .solde-box {
-  margin-left: 2.5vw;
+.solde-box {
   background-color: #0e1f44;
   padding: 8px 14px;
   border-radius: 10px;
@@ -92,20 +93,12 @@ header {
   box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
 }
 
-/* Texte centré au milieu de l'écran */
-.header-left .text {
-  position:absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 25px;
+header .text {
   color: #2b6ac9;
+  font-size: 25px;
   font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Menu à droite */
 header ul {
   list-style: none;
   display: flex;
@@ -124,75 +117,128 @@ header ul li a.active {
   color: #ffea00;
 }
 
-.informations p {
-    font-size: 20px;
-    margin: 30px 400px;
-    color: #ddd;
-}
-
-#pk {
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   gap: 2%;
-   margin-bottom: 20px;
-}
-
-ul li img {
-  width: 150px;
-  height: auto;
-  transition: transform 0.2s ease;
-  display: block;
-  margin: auto;
-  border-radius: 20px;
-}
-
-ul li img:hover {
-  transform: scale(0.9);
-}
-
-ul li img:active{
-    transform: scale(1);
-}
-
-#btnGagner {
-  width: 120.5px;
-  height: auto;
-  transition: transform 0.2s ease;
-  display: block;
-  margin: auto;
-  border-radius: 20px;
-}
-
-#btnGagner:hover {
-  transform: scale(0.9);
-}
-
-#btnGagner:active {
-    transform: scale(1);
-}
-
-.bitLabs {
+/* MAIN */
+main {
+  width: 90%;
+  margin: 30px auto;
   display: flex;
-  justify-content: center; /* centre horizontalement */
-  align-items: center;     /* centre verticalement si hauteur fixe */
+  flex-direction: column;
+  gap: 30px;
 }
 
-#offerwall1 {
-  width: 50%;
-  height: 50vh; /* 50% de la hauteur de l'écran */
+/* CARD */
+.card {
+  background: #242436;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px #0004;
+}
+
+.card h2 {
+  color: #ffea00;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* TABLE */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.table th {
+  background: #0e1b3d;
+  padding: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.table tr:hover {
+  background: #2d2e43;
+}
+
+/* BUTTONS */
+.btn {
+  padding: 7px 12px;
   border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.TimeWall {
-  display: flex;
-  justify-content: center; /* centre horizontalement */
-  align-items: center;  
+.profil { background: #00b7ff; }
+.credit { background: #00ff62; color: black; }
+.ban { background: #ff2b2b; }
+.promote { background: #ffae00; }
+
+.create-promo { background: #00c7f9; margin-bottom: 15px; }
+
+.apply { background: #ffea00; color: black; }
+.create-rain { background: #ffae00; }
+
+/* STATUS */
+.status.active {
+  color: #00ff62;
+  font-weight: bold;
 }
 
-#timewall-container {
-  width: 50%;
-  height: 50vh; /* 50% de la hauteur de l'écran */
+.status.inactive {
+  color: #ff2b2b;
+  font-weight: bold;
+}
+
+#search {
+  width: 80%;
+  padding: 10px;
+  background: #141421;
   border: none;
-  display: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+/* FORMS */
+.multiplier-box input,
+.rain-form input {
+  width: 100%;
+  padding: 10px;
+  background: #141421;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+/* MULTIPLIER */
+.current-multiplier {
+  color: #00ff62;
+  font-weight: bold;
+}
+
+#lien-Profil {
+    background-color: #0e1f44;
+    padding: 0 14px;
+    border-radius: 10px;
+    color: #ffea00;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+}
+
+#NBU {
+  position: absolute;
+  width: 16.5%;
+  padding: 10px;
+  background: #141421;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-left: 1%;
 }
