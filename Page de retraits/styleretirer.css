@@ -244,6 +244,20 @@ button:hover {
     gap: 12px;
 }
 
+.Interface2 {
+      margin-top: 200px;
+    opacity: 0;
+    transition: opacity 0.5s ease, margin-top 0.5s ease;
+    width: 35%;
+    height: 30%;
+    background-color: #222436;
+    border-radius: 20px;
+    border: 5px solid black;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+}
+
 .explain {
   font-size: 1.25rem;
   text-align: center;
@@ -258,7 +272,17 @@ button:hover {
     margin-bottom: 0;
 }
 
-.private-servers {
+.Interface.active2 {
+    opacity: 0;
+    margin-bottom: 200px;
+}
+
+.Interface2.active3 {
+    margin-top: 0;
+    opacity: 1;
+}
+
+.public-places {
   margin-top: 2.5%;
   margin-left: 1%;
   box-sizing: border-box;
@@ -273,7 +297,7 @@ button:hover {
   cursor: pointer;
 }
 
-#private-servers {
+#public-places {
   display: block;
   margin: 0 auto;
   width: fit-content; /* s’adapte au contenu */
@@ -285,7 +309,6 @@ button:hover {
   border-radius: 6px;
   background-color: #0d0e16;
   color: #ffffff;
-  text-align: center;
 }
 
 .divHeader {
