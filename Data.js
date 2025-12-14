@@ -18,10 +18,6 @@ const db = firebase.database();
 window.auth = auth;
 window.db = db;
 
-auth.signInAnonymously()
-  .then(() => console.log("Authentification success"))
-  .catch(err => console.error("Erreur connexion anonyme :", err));
-
 // --- Attendre que le DOM soit prêt ---
 document.addEventListener("DOMContentLoaded", () => {
   // Vérification si utilisateur connecté
@@ -40,22 +36,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const users = snapshot.val();
         list.innerHTML = ""; // vide le tableau
 
-        Object.keys(users).forEach(username => {
-          const userData = users[username];
-          list.innerHTML += `
-            <tr>
-              <td>${username}</td>
-              <td>${userData.balance || 0} R$</td>
-              <td>${userData.role || "Utilisateur"}</td>
-              <td class="actions">
-                <button class="btn profil">Profil</button>
-                <button class="btn credit">Créditer</button>
-                <button class="btn ban">Bannir</button>
-                <button class="btn promote">Promouvoir</button>
-              </td>
-            </tr>
-          `;
-        });
+      Object.keys(users).forEach(uid => {
+        const userData = users[uid];
+
+        const username = userData.username || "Inconnu";
+        const balance = userData.balance || 0;
+        const role = userData.role || "Utilisateur";
+
+        list.innerHTML += `
+          <tr>
+            <td>${username}</td>
+            <td>${balance} R$</td>
+            <td>${role}</td>
+            <td class="actions">
+              <button class="btn profil" data-uid="${uid}">Profil</button>
+              <button class="btn credit" data-uid="${uid}">Créditer</button>
+              <button class="btn ban" data-uid="${uid}">Bannir</button>
+              <button class="btn promote" data-uid="${uid}">Promouvoir</button>
+            </td>
+          </tr>
+        `;
+      });
       })
       .catch(err => console.error("Erreur DB:", err));
   });
