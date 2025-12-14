@@ -11,8 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const withdrawBtn = document.getElementById("withdrawBtn");
     const transactionsEl = document.getElementById("transactions");
     const errorEl = document.getElementById("error");
-
+    const template = document.getElementById("background")
     const connectedUser = localStorage.getItem("connectedUser");
+    const finalStep = document.getElementById("finalStep")
     if (!connectedUser) {
         if (balanceEl) balanceEl.textContent = "0,00 R$";
         showError("Vous devez être connecté pour retirer des Robux !");
@@ -29,6 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function formatMoney(num) {
         const n = (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
         return n.replace('.', ',') + ' R$';
+    }
+
+    function showTemplate() {
+        template.style.display = "flex"
+        setTimeout(() => {
+            template.classList.add("active")
+            finalStep.classList.add("active")
+        }, 0);
     }
 
     function showError(msg) {
@@ -48,21 +57,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const total = state.transactions.length;
 
-            state.transactions
-            .slice()
-            .reverse()
-            .forEach((tx, index) => {
-            const order = total - index;
+            // Création du header
+        const divHeader = document.createElement("div");
+        divHeader.className = "divHeader";
+        divHeader.innerHTML = `
+            <span>Retrait n° :</span>
+            <span>Retrait ID :</span>
+            <span>Retrait valeur :</span>
+        `;
+        transactionsEl.appendChild(divHeader);
+
+        // Prendre les 10 dernières transactions et les inverser
+        const transactionsToShow = state.transactions.slice(-10).reverse();
+
+        transactionsToShow.forEach((tx, index) => {
+            const order = total - index; // Numéro d'ordre global
 
             const div = document.createElement("div");
             div.className = "transaction";
             div.innerHTML = `
                 <span>${order} - Retrait</span>
+                <span class="copy-id" data-copy="${tx.id}">ID : ${tx.id}
+                    <img 
+                        src="../img/copy (2).png"
+                        class="copy-img"
+                        id="copyimg"
+                        data-copy="${tx.id}"
+                    >
+                </span>
                 <span class="neg">${formatMoney(Math.abs(tx.amount))}</span>
             `;
-        transactionsEl.appendChild(div);
-    });
-
+            transactionsEl.appendChild(div);
+        });
     }
 
     function render() {
@@ -105,13 +131,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (withdrawBtn) {
         withdrawBtn.addEventListener("click", () => {
-            if (!amountEl) return showError("Champ montant introuvable !");
-            const value = parseFloat(amountEl.value);
-            if (isNaN(value)) return showError("Montant invalide !");
-            addTransaction(value);
+            //if (!amountEl) return showError("Champ montant introuvable !");
+            //const value = parseFloat(amountEl.value);
+            //if (isNaN(value)) return showError("Montant invalide !");
+            //addTransaction(value);
             amountEl.value = "";
+            showTemplate()
         });
     }
 
 });
-
