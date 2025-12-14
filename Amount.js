@@ -14,8 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const template = document.getElementById("background")
     const connectedUser = localStorage.getItem("connectedUser");
     const finalStep = document.getElementById("finalStep")
+    const finalStep2 = document.getElementById("finalStep2")
+    const helpbutton = document.getElementById("HELP")
     if (!connectedUser) {
-        if (balanceEl) balanceEl.textContent = "0,00 R$";
+        if (balanceEl) balanceEl.textContent = "0.00 R$";
         showError("Vous devez être connecté pour retirer des Robux !");
         if (withdrawBtn) withdrawBtn.disabled = true;
         return;
@@ -37,6 +39,20 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             template.classList.add("active")
             finalStep.classList.add("active")
+        }, 0);
+    }
+
+    function HideTemplate() {
+        setTimeout(() => {
+            finalStep.classList.add("active2")
+        }, 0);
+    }
+
+    function ShowTemplate2() {
+        finalStep.style.display = "none"
+        finalStep2.style.display = "flex"
+        setTimeout(() => {
+            finalStep2.classList.add("active3")
         }, 0);
     }
 
@@ -137,9 +153,13 @@ document.addEventListener("DOMContentLoaded", () => {
             //addTransaction(value);
             amountEl.value = "";
             showTemplate()
-            
+        });
+    }
+
+    if (helpbutton) {
+        helpbutton.addEventListener("click", () => {
+            HideTemplate()
+            ShowTemplate2()
         });
     }
 });
-});
-
