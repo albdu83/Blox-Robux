@@ -28,16 +28,19 @@ app.get("/api/avatar/:username", async (req, res) => {
         const data = await response.json();
         if (!data.data || data.data.length === 0) return res.status(404).json({ error: "Utilisateur introuvable" });
 
-        const userId = data.data[0].id;
+        const userID = data.data[0].id;
 
         const avatarRes = await fetch(
-            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`
+            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userID}&size=150x150&format=Png&isCircular=false`
         );
 
         const avatarData = await avatarRes.json();
         if (!avatarData.data || avatarData.data.length === 0) return res.status(500).json({ error: "Erreur avatar Roblox" });
 
-        res.json({ avatarUrl: avatarData.data[0].imageUrl });
+        res.json({
+            avatarUrl: avatarData.data[0].imageUrl,
+            targetId: userId
+            });
 
     } catch (err) {
         console.error(err);
@@ -47,21 +50,21 @@ app.get("/api/avatar/:username", async (req, res) => {
 
 // --- Endpoint TimeWall ---
 app.get("/timewall", async (req, res) => {
-    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
+    const { targetId, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
     try {
         const computedHash = crypto.createHash("sha256")
-            .update(userID + revenue + SECRET_KEY)
+            .update(targetId + revenue + SECRET_KEY)
             .digest("hex");
 
         if (computedHash !== hash) return res.status(400).send("Invalid hash");
         if (transactions[transactionID]) return res.status(200).send("duplicate");
 
-        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
-        if (!users[userID]) users[userID] = { balance: 0 };
-        users[userID].balance += Number(currencyAmount);
+        transactions[transactionID] = { targetId, revenue, currencyAmount, type, date: Date.now() };
+        if (!users[targetId]) users[targetId] = { balance: 0 };
+        users[targetId].balance += Number(currencyAmount);
 
-        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
+        console.log(`✅ User ${targetId} new balance: ${users[targetId].balance}`);
         res.status(200).send("OK");
 
     } catch (err) {
@@ -92,6 +95,23 @@ app.get("/api/privateservers", async (req, res) => {
 });
 
 
+// --- Lancement serveur ---
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Serveur en ligne sur port ${PORT}`));
+
+
+app.get("/api/places", async (req, res) => {
+    const { targetId } = req.query;
+    try {
+        if (!targetId) return res.status(400).json({ error: "userId manquant" });
+        const Places = await fetch(`https://games.roblox.com/v2/users/${targetId}/games?accessFilter=Public`)
+        const data = await Places.json()
+        res.json(data)
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Impossible de récupérer les emplacements" });
+    }
+});
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur en ligne sur port ${PORT}`));
