@@ -137,7 +137,9 @@ document.addEventListener("DOMContentLoaded", () => {
             //addTransaction(value);
             amountEl.value = "";
             showTemplate()
+            
         });
     }
-
 });
+});
+
