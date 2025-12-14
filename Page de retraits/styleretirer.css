@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=BBH+Hegarty&display=swap');
 * {
   margin: 0;
   padding: 0;
@@ -202,7 +202,7 @@ button:hover {
 
 .template {
   background-color: #1b2146;
-  padding: 75px 20px;
+  padding: 25px 20px;
   display: block;
   margin-top: 1%;
   border-radius: 50px;
@@ -212,22 +212,86 @@ button:hover {
   font-weight: 600;
 }
 
+.background {
+  position: absolute;
+    height: 100%;       /* Prend toute la hauteur de la fenêtre */
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0);
+    transition: background-color 0.5s ease;
+    display: none;
+    justify-content: center; /* centre horizontalement le contenu */
+    align-items: center;
+    
+}
+
+.background.active {
+  background-color: rgb(0, 0, 0, 0.6);
+}
+
+.Interface {
+    margin-bottom: 200px;
+    opacity: 0;
+    transition: opacity 0.5s ease, margin-bottom 0.5s ease;
+    width: 35%;
+    height: 30%;
+    background-color: #222436;
+    border-radius: 20px;
+    border: 5px solid black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.explain {
+  font-size: 1.25rem;
+  text-align: center;
+  font-family: "BBH Hegarty", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+  color: #9b9b9b;
+}
+
+.Interface.active {
+    opacity: 1;
+    margin-bottom: 0;
+}
+
 .private-servers {
   margin-top: 2.5%;
-  height: 100%;
-  display: flex;
-  justify-content: center; /* centre horizontalement */
-  align-items: center;     /* centre verticalement */
+  margin-left: 1%;
+  box-sizing: border-box;
+  display: block;
+}
+
+#copyimg {
+  height: 20px;
+}
+
+.copy-id {
+  cursor: pointer;
 }
 
 #private-servers {
-  font-size: 0.9rem;
-  padding: 10px 20px;
-  border-radius: 5px;
-  background-color: #222436;
-  color: #fff;
+  display: block;
+  margin: 0 auto;
+  width: fit-content; /* s’adapte au contenu */
+  max-width: 90%;
+
+  font-size: 1rem; /* lisible */
+  padding: 12px 18px;
+
+  border-radius: 6px;
+  background-color: #0d0e16;
+  color: #ffffff;
+  text-align: center;
 }
 
+.divHeader {
+  display: flex;
+  justify-content: space-between;
+}
 
 .transaction {
   display: flex;
