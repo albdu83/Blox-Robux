@@ -1,3 +1,6 @@
+/* ===================== */
+/* POLICE & BASE GLOBALE */
+/* ===================== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 * {
@@ -7,192 +10,229 @@
     font-family: 'Poppins', sans-serif;
 }
 
-body {
-    background-color: #1b1b22;
-    color: #333;
+html {
+    font-size: 16px;
 }
 
+body {
+    background-color: #1b1b22;
+    color: #ddd;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ===================== */
+/* TRANSITION CHARGEMENT  */
+/* ===================== */
 .fade-transition {
-  position: fixed;
-  inset: 0;
-  display: flex; 
-  justify-content: center;
-  align-items: center;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
 
-  transform: translateY(0%); /* rideau visible au début */
-  background: linear-gradient(#33279E, #7363ff);
+    background: linear-gradient(#33279E, #7363ff);
+    transition: transform 0.5s ease-in-out;
+    z-index: 9999;
+}
 
-  pointer-events: all;
-  transition: transform 0.5s ease-in-out;
-  z-index: 9999;
+.fade-transition.active {
+    transform: translateY(0%);
+}
+
+.fade-transition.slide-down {
+    transform: translateY(100%);
+    pointer-events: none;
 }
 
 .fade-transition img {
-  height: 50px;
-  display: block;
-  margin: 0;
-  padding: 5px;
+    width: clamp(30px, 7vw, 45px);
+    height: auto;
 }
 
 .fade-transition .text {
-  text-align: center;
-  font-weight: bolder;
-  font-size: xx-large;
-  color: #ffffff;
+    font-size: clamp(18px, 5vw, 32px);
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
 }
 
-/* Rideau visible (avant redirection) */
-.fade-transition.active {
-  transform: translateY(0%);
-  pointer-events: all;
-}
-
-/* Rideau descend après chargement */
-.fade-transition.slide-down {
-  transform: translateY(100%); /* entièrement descendu */
-  pointer-events: none;
-}
-
+/* ===================== */
+/* HEADER                */
+/* ===================== */
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 30px;
-  background-color: #153369;
-  position: relative; /* nécessaire pour centrer le texte */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: clamp(10px, 3vw, 20px);
+    background-color: #153369;
+    flex-wrap: wrap; /* pour mobile */
 }
 
-/* Logo + solde */
+/* LEFT : logo + solde */
 .header-left {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px; /* petit espace entre logo et solde */
+    display: flex;
+    align-items: center;
+    gap: clamp(10px, 2vw, 15px);
 }
 
-/* Logo */
 .header-left img {
-  height: 50px;
-  display: block;
-  margin: 0;
-  padding: 0;
+    width: clamp(32px, 6vw, 45px);
+    height: auto;
 }
 
-/* Solde */
-.header-left .solde-box {
-  margin-left: 2.5vw;
-  background-color: #0e1f44;
-  padding: 8px 14px;
-  border-radius: 10px;
-  color: #ffea00;
-  font-weight: 600;
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+.solde-box {
+    background-color: #0e1f44;
+    padding: clamp(4px, 1.5vw, 8px) clamp(8px, 2vw, 14px);
+    border-radius: 10px;
+    color: #ffea00;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
 }
 
-/* Texte centré au milieu de l'écran */
-.header-left .text {
-  position:absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 25px;
-  color: #2b6ac9;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* TITRE CENTRÉ DANS LE FLEX */
+.header-title {
+    flex: 1; /* prend tout l’espace disponible */
+    text-align: center;
+    font-size: clamp(18px, 4vw, 25px);
+    font-weight: bold;
+    color: #2b6ac9;
+    white-space: nowrap; /* empêche le retour à la ligne */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Menu à droite */
-header ul {
-  list-style: none;
-  display: flex;
-  gap: 20px;
+/* NAVIGATION */
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: clamp(10px, 3vw, 20px);
+    padding: 0;
+    margin: 0;
 }
 
-header ul li a {
-  text-decoration: none;
-  color: white;
-  font-weight: bold;
-  transition: 0.3s;
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: color 0.3s;
 }
 
-header ul li a:hover,
-header ul li a.active {
-  color: #ffea00;
+nav ul li a:hover,
+nav ul li a.active {
+    color: #ffea00;
 }
 
-.informations p {
-    font-size: 20px;
-    margin: 30px 400px;
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .header-title {
+        font-size: clamp(16px, 5vw, 22px);
+    }
+
+    nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: clamp(5px, 3vw, 10px);
+    }
+}
+
+@media (max-width: 480px) {
+    .header-title {
+        font-size: clamp(14px, 5vw, 18px);
+    }
+
+    nav ul {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+
+
+
+/* ===================== */
+/* INFORMATIONS           */
+/* ===================== */
+.informations {
+    padding: clamp(15px, 4vw, 30px);
+    max-width: 90%;
+    margin: 0 auto 20px auto;
     color: #ddd;
+    font-size: clamp(14px, 3vw, 20px);
 }
 
+.informations a {
+    color: #009bf9;
+    text-decoration: underline;
+}
+
+/* ===================== */
+/* BITLABS / TIMEWALL     */
+/* ===================== */
 #pk {
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   gap: 2%;
-   margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(10px, 5vw, 30px);
+    margin-bottom: 20px;
 }
 
-ul li img {
-  width: 150px;
-  height: auto;
-  transition: transform 0.2s ease;
-  display: block;
-  margin: auto;
-  border-radius: 20px;
-}
 
-ul li img:hover {
-  transform: scale(0.9);
-}
-
-ul li img:active{
-    transform: scale(1);
+#reload-bitlabs {
+    width: clamp(80px, 20vw, 150px);
+    height: auto;
+    border-radius: 20px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
 }
 
 #btnGagner {
-  width: 120.5px;
-  height: auto;
-  transition: transform 0.2s ease;
-  display: block;
-  margin: auto;
-  border-radius: 20px;
+    width: clamp(60px, 15vw, 120px);
+    height: auto;
+    border-radius: 20px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
 }
 
+#pk img:hover,
 #btnGagner:hover {
-  transform: scale(0.9);
+    transform: scale(0.9);
 }
 
+#pk img:active,
 #btnGagner:active {
     transform: scale(1);
 }
 
-.bitLabs {
-  display: flex;
-  justify-content: center; /* centre horizontalement */
-  align-items: center;     /* centre verticalement si hauteur fixe */
-}
-
-#offerwall1 {
-  width: 50%;
-  height: 50vh; /* 50% de la hauteur de l'écran */
-  border: none;
-}
-
+.bitLabs,
 .TimeWall {
-  display: flex;
-  justify-content: center; /* centre horizontalement */
-  align-items: center;  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#offerwall1,
+#timewall-container {
+    width: 80%;
+    max-width: 800px;
+    height: 50vh;
+    border: none;
 }
 
 #timewall-container {
-  width: 50%;
-  height: 50vh; /* 50% de la hauteur de l'écran */
-  border: none;
-  display: none;
+    display: none;
 }
+
+
+
