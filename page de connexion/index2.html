@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - BloxRobux</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="../img/imagePrinc.webp" type="image/x-icon">
+    <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div id="transition" class="fade-transition active">
@@ -28,20 +28,18 @@
 <div class="user-field">
     <label for="password" style="color: white;">Mot de passe :</label>
     <input type="password" id="password" name="password" required autocomplete="new-password">
-    <label for="showPassword2">
-        <input type="checkbox" id="showPassword2" name="showPassword2">
-        <span class="checkbox-text">Afficher</span>
-    </label>
+    <div id="showPassword3" class="toggle-img">
+        <img src="../img/unchecked.png" id="checkimg2">
+    </div>
 </div>
 
 <!-- Confirmation mot de passe -->
 <div class="user-field">
     <label for="confirmPassword" style="color: white;">Confirmez le mot de passe :</label>
     <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
-    <label for="showPassword3">
-        <input type="checkbox" id="showPassword3" name="showPassword3">
-        <span class="checkbox-text">Afficher</span>
-    </label>
+    <div id="showPassword3" class="toggle-img">
+        <img src="../img/unchecked.png" id="checkimg3">
+    </div>
 </div>
 
 <!-- Pseudo Roblox -->
@@ -69,4 +67,5 @@
 
 </body>
 </html>
+
 
