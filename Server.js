@@ -144,19 +144,28 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =======================
      TOGGLE PASSWORD
   ======================= */
-  function togglePassword(checkId, inputId) {
-    const check = document.getElementById(checkId);
-    const input = document.getElementById(inputId);
-    if (check && input) {
-      check.addEventListener("change", () => {
-        input.type = check.checked ? "text" : "password";
-      });
-    }
-  }
+function togglePasswordImage(imgId, inputId) {
+  const img = document.getElementById(imgId);
+  const input = document.getElementById(inputId);
 
-  togglePassword("showPassword", "loginPassword");
-  togglePassword("showPassword2", "password");
-  togglePassword("showPassword3", "confirmPassword");
+  if (img && input) {
+    img.addEventListener("click", () => {
+      if (input.type === "password") {
+        input.type = "text";
+        img.src = "../img/checked.png"; // optionnel : changer l'image
+      } else {
+        input.type = "password";
+        img.src = "../img/unchecked.png";
+      }
+    });
+  }
+}
+
+// Appel pour chaque input
+togglePasswordImage("checkimg", "loginPassword");
+togglePasswordImage("checkimg2", "password");
+togglePasswordImage("checkimg3", "confirmPassword");
+
 
   document.addEventListener("click", (e) => {
     // Vérifie si on clique sur l'image ou sur le texte
@@ -316,11 +325,3 @@ async function getPublicsPlaces(targetId) {
         //if (container) container.textContent = "Impossible de récupérer les serveurs privés ou cookie ROBLOSECURITY invalide.";
     //}
 //}
-
-
-
-
-
-
-
-
