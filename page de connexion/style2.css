@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;400;500&display=swap');
-*{
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -11,179 +12,73 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 10px; /* évite que le contenu touche les bords sur mobile */
 }
 
+/* ----- FADE TRANSITION ----- */
 .fade-transition {
-  position: fixed;
-  inset: 0;
-  display: flex; 
-  justify-content: center;
-  align-items: center;
-
-  transform: translateY(0%); /* rideau visible au début */
-  background: linear-gradient(#33279E, #7363ff);
-
-  pointer-events: all;
-  transition: transform 0.5s ease-in-out;
-  z-index: 9999;
-}
-
-.fade-transition .text {
-  text-align: center;
-  font-weight: bolder;
-  font-size: xx-large;
-  color: #ffffff;
-}
-
-/* Rideau visible (avant redirection) */
-.fade-transition.active {
-  transform: translateY(0%);
-  pointer-events: all;
-}
-
-/* Rideau descend après chargement */
-.fade-transition.slide-down {
-  transform: translateY(100%); /* entièrement descendu */
-  pointer-events: none;
-}
-
-.checkbox-text {
-    cursor: pointer;
-    padding: 5px 10px;     
-    border-radius: 5px;     
-    color: #000000;  
-    font-weight: bold;
-    font-size: 16px;
-}
-
-#r {
-    cursor: pointer;
-    padding: 5px 10px;     
-    border-radius: 5px;     
-    color: #000000;  
-    font-weight: bold;
-    font-size: 16px;
-}
-
-form {
+    position: fixed;
+    inset: 0;
     display: flex;
-    flex-direction: column;
-    background: linear-gradient(#313131, #6b6b6b);
-    padding: 10px;
-    border-radius: 6px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-}
-h4 {
-    text-align: center;
-    font-size: 20px;
-}
-h2 {
-    text-align: center;
-    font-size: 12px;
-}
-hr {
-    margin: 10px 0;
-    background-color: #938f8f;
-    border: 0;
-    height: 1px;
-    width: 100%;
-}
-.user-field {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-}@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;400;500&display=swap');
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
-}
-
-body {
-    background-color: #15405a;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    height: 100vh;
-}
-
-.fade-transition {
-  position: fixed;
-  inset: 0;
-  display: flex; 
-  justify-content: center;
-  align-items: center;
-
-  transform: translateY(0%); /* rideau visible au début */
-  background: linear-gradient(#33279E, #7363ff);
-
-  pointer-events: all;
-  transition: transform 0.5s ease-in-out;
-  z-index: 9999;
+    align-items: center;
+    transform: translateY(0%);
+    background: linear-gradient(#33279E, #7363ff);
+    pointer-events: all;
+    transition: transform 0.5s ease-in-out;
+    z-index: 9999;
 }
 
 .fade-transition img {
-  height: 50px;
-  display: block;
-  margin: 0;
-  padding: 5px;
+    height: 50px;
+    display: block;
+    margin: 0;
+    padding: 5px;
 }
 
 .fade-transition .text {
-  text-align: center;
-  font-weight: bolder;
-  font-size: xx-large;
-  color: #ffffff;
+    text-align: center;
+    font-weight: bolder;
+    font-size: clamp(18px, 4vw, 28px);
+    color: #ffffff;
 }
 
-/* Rideau visible (avant redirection) */
 .fade-transition.active {
-  transform: translateY(0%);
-  pointer-events: all;
+    transform: translateY(0%);
+    pointer-events: all;
 }
 
-/* Rideau descend après chargement */
 .fade-transition.slide-down {
-  transform: translateY(100%); /* entièrement descendu */
-  pointer-events: none;
+    transform: translateY(100%);
+    pointer-events: none;
 }
 
-.checkbox-text {
-    cursor: pointer;
-    padding: 5px 10px;     
-    border-radius: 5px;     
-    color: #000000;  
-    font-weight: bold;
-    font-size: 16px;
-}
-
-#r {
-    cursor: pointer;
-    padding: 5px 10px;     
-    border-radius: 5px;     
-    color: #000000;  
-    font-weight: bold;
-    font-size: 16px;
-}
-
+/* ----- FORMULAIRE ----- */
 form {
     display: flex;
     flex-direction: column;
     background: linear-gradient(#313131, #6b6b6b);
-    padding: 10px;
-    border-radius: 6px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 400px;
+    gap: 12px;
 }
+
 h4 {
     text-align: center;
-    font-size: 20px;
+    font-size: clamp(18px, 4vw, 22px);
+    color: white;
 }
+
 h2 {
     text-align: center;
-    font-size: 12px;
+    font-size: clamp(12px, 3vw, 14px);
+    color: #ccc;
 }
+
 hr {
     margin: 10px 0;
     background-color: #938f8f;
@@ -191,33 +86,110 @@ hr {
     height: 1px;
     width: 100%;
 }
+
+/* Champs utilisateur */
 .user-field {
     display: flex;
     width: 100%;
+    flex-wrap: wrap;
     justify-content: space-between;
-}
-input:focus {
-    border: 1px solid #009bf9;
+    gap: 10px;
 }
 
+input[type="text"],
+input[type="password"] {
+    flex: 1 1 60%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #222;
+    color: white;
+    min-width: 0; /* empêche les débordements */
+}
+
+input:focus {
+    border: 1px solid #009bf9;
+    outline: none;
+}
+
+/* Submit */
 input[type="submit"]{
     margin-top: 15px;
+    padding: 10px;
     background-color: #009bf9;
     color: white;
     border: 1px solid #009bf9;
+    border-radius: 6px;
     cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
 }
 
+input[type="submit"]:hover {
+    background-color: #007acc;
+    border-color: #007acc;
+}
+
+/* Texte et liens */
 p {
     text-align: center;
     margin: 5px 0;
-    font-size: 14px;
+    font-size: clamp(12px, 3vw, 14px);
+    color: #ddd;
 }
+
 p a {
-    text-decoration: 0;
+    text-decoration: none;
     color: #1a4864;
 }
+
 p a:hover {
     text-decoration: underline;
 }
+
+/* Texte style bouton ou checkbox */
+.checkbox-text,
+#r {
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: #000000;
+    font-weight: bold;
+    font-size: clamp(12px, 3vw, 16px);
+}
+
+/* ===== MEDIA QUERIES ===== */
+@media (max-width: 480px) {
+    form {
+        padding: 15px;
+        gap: 8px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        flex: 1 1 100%;
+        padding: 8px;
+    }
+
+    input[type="submit"] {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    h4 {
+        font-size: 18px;
+    }
+
+    h2 {
+        font-size: 12px;
+    }
+
+    .checkbox-text,
+    #r {
+        font-size: 14px;
+        padding: 4px 8px;
+    }
+}
+
+
 
