@@ -7,16 +7,21 @@
   font-family: 'Poppins', sans-serif;
 }
 
+body {
+  background-color: #1b1b22;
+  color: white;
+  min-height: 100vh;
+}
+
+/* ----- FADE TRANSITION ----- */
 .fade-transition {
   position: fixed;
   inset: 0;
   display: flex; 
   justify-content: center;
   align-items: center;
-
-  transform: translateY(0%); /* rideau visible au début */
+  transform: translateY(0%);
   background: linear-gradient(#33279E, #7363ff);
-
   pointer-events: all;
   transition: transform 0.5s ease-in-out;
   z-index: 9999;
@@ -36,22 +41,14 @@
   color: #ffffff;
 }
 
-/* Rideau visible (avant redirection) */
 .fade-transition.active {
   transform: translateY(0%);
   pointer-events: all;
 }
 
-/* Rideau descend après chargement */
 .fade-transition.slide-down {
-  transform: translateY(100%); /* entièrement descendu */
+  transform: translateY(100%);
   pointer-events: none;
-}
-
-body {
-  background-color: #1b1b22;
-  color: white;
-  min-height: 100vh;
 }
 
 /* ----- HEADER ----- */
@@ -61,6 +58,7 @@ header {
   align-items: center;
   padding: 15px 30px;
   background-color: #153369;
+  flex-wrap: wrap; /* permet de passer à la ligne si écran petit */
 }
 
 .header-left {
@@ -89,12 +87,15 @@ header .text {
   color: #2b6ac9;
   font-size: 25px;
   font-weight: bold;
+  white-space: nowrap;
+  text-align: center;
 }
 
 header ul {
   list-style: none;
   display: flex;
   gap: 20px;
+  flex-wrap: wrap; /* permet de passer à la ligne si écran petit */
 }
 
 header ul li a {
@@ -133,7 +134,7 @@ main {
   text-align: center;
 }
 
-/* Form */
+/* ----- FORM ----- */
 .form-group {
   margin-bottom: 15px;
 }
@@ -155,8 +156,23 @@ input {
   font-size: 15px;
 }
 
-/* Button */
-button {
+#Retour {
+  align-self: center;
+  width: auto;                /* ne prend plus toute la largeur */
+  padding: 8px 16px;          /* réduit le padding vertical */
+  font-size: 16px;
+  display: flex;
+  align-items: center;        /* centre le texte dans le bouton */
+  justify-content: center;    /* centre horizontalement */
+  border-radius: 8px;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* ----- BUTTON ----- */
+body button {
   width: 100%;
   padding: 10px;
   background-color: #ffea00;
@@ -167,6 +183,10 @@ button {
   color: #1b1b22;
   cursor: pointer;
   transition: 0.3s;
+}
+
+#Retour:hover {
+  color: #ffea00;
 }
 
 button:hover {
@@ -182,12 +202,68 @@ button:hover {
 }
 
 #lien-Profil {
-    background-color: #0e1f44;
-    padding: 0 14px;
-    border-radius: 10px;
-    color: #ffea00;
-    font-weight: 600;
-    display: flex;
+  background-color: #0e1f44;
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: #ffea00;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+}
+
+#avatar-roblox {
+    width: clamp(28px, 6vw, 40px);
+    height: clamp(28px, 6vw, 40px);
+    border-radius: 50%;
+}
+
+
+/* ===== MEDIA QUERIES ===== */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
     align-items: center;
-    box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+    gap: 10px;
+  }
+
+  .header-left {
+    justify-content: center;
+    gap: 10px;
+  }
+
+  header .text {
+    font-size: 20px;
+  }
+
+  header ul {
+    justify-content: center;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  header .text {
+    font-size: 18px;
+  }
+
+  header ul {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .solde-box {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  input {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 8px;
+  }
 }
