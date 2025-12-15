@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - BloxRobux</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="../img/imagePrinc.webp" type="image/x-icon">
+    <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div id="transition" class="fade-transition active">
@@ -23,10 +23,9 @@
     <div class="password-field">
         <label for="loginPassword"><span style="color: white;">Mot de passe :</span></label>
         <input type="password" id="loginPassword" name="loginPassword" required autocomplete="current-password">
-        <label for="showPassword">
-            <input type="checkbox" id="showPassword">
-            <span class="checkbox-text" id="r">Afficher</span>
-        </label>
+        <div id="showPassword" class="toggle-img">
+            <img src="../img/unchecked.png" id="checkimg">
+        </div>
     </div>
     <input type="submit" value="Connexion">
     <p><span style="color: white;">Pas encore inscrit ? <a href="index2.html" style="color: #dec2c2;">Inscrivez-vous ici</a></span></p>
@@ -39,5 +38,3 @@
     <script src="../Animation.js" defer></script>
 </body>
 </html>
-
-
