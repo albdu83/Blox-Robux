@@ -1,188 +1,238 @@
-/* Importation d'une police Google */
+/* ===================== */
+/* POLICE & BASE GLOBALE */
+/* ===================== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+html {
+  font-size: 16px;
 }
 
 body {
-    background-color: #1b1b22;
-    color: #333;
+  background-color: #1b1b22;
+  color: #ddd;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
+/* ===================== */
+/* RIDEAU DE CHARGEMENT  */
+/* ===================== */
 .fade-transition {
   position: fixed;
   inset: 0;
-  display: flex; 
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
   justify-content: center;
   align-items: center;
 
-  transform: translateY(0%); /* rideau visible au début */
   background: linear-gradient(#33279E, #7363ff);
-
-  pointer-events: all;
   transition: transform 0.5s ease-in-out;
   z-index: 9999;
 }
 
-#image {
-  height: 50px;
-  width: 50px;
-  display: block;
-  margin: 0;
-  padding: 5px;
-}
-
-.fade-transition .text {
-  text-align: center;
-  font-weight: bolder;
-  font-size: xx-large;
-  color: #ffffff;
-}
-
-/* Rideau visible (avant redirection) */
 .fade-transition.active {
   transform: translateY(0%);
-  pointer-events: all;
 }
 
-/* Rideau descend après chargement */
 .fade-transition.slide-down {
-  transform: translateY(100%); /* entièrement descendu */
+  transform: translateY(100%);
   pointer-events: none;
 }
 
+#image {
+  width: clamp(30px, 7vw, 45px);
+  height: auto;
+}
+
+.fade-transition .text {
+  font-size: clamp(18px, 5vw, 32px);
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+}
+
+/* ===================== */
+/* MODALE WARNING        */
+/* ===================== */
 #warn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 175px 200px;
-    background-color: #161616;
-    color: #353535;
-    border: 2px solid #757463;
-    border-radius: 10px;
-    display: none;
-    box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 9998;
+}
+
+#warn > div {
+  background-color: #161616;
+  border: 2px solid #757463;
+  border-radius: 12px;
+  padding: clamp(20px, 6vw, 40px);
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
 }
 
 #z {
-    display:inline-block;
-    font-weight: bold;
-    font-size:x-large;
-    color: #ffffff;
-    transform:translate(0%, -100%);
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 25px;
+}
+
+/* Boutons */
+#a,
+#b {
+  display: inline-block;
+  cursor: pointer;
+  padding: clamp(10px, 3vw, 14px) clamp(25px, 6vw, 50px);
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: clamp(14px, 4vw, 20px);
+  margin: 10px;
+  color: #ddd;
 }
 
 #a {
-    display: inline-block;
-    cursor: pointer;
-    padding: 10px 50px;
-    background-color: rgb(0, 139, 0);
-    color: #ddd;
-    border-radius: 10px;
-    transform: translate(-30%, 130%);
-    font-weight: bold;
-    font-size: x-large;
- 
+  background-color: rgb(139, 0, 0);
 }
 
 #b {
-    display: inline-block;
-    cursor: pointer;
-    padding: 15px 60px;
-    background-color: rgb(139, 0, 0);
-    color: #ddd;
-    border-radius: 10px;
-    transform: translate(30%, 100%);
-    font-weight: bold;
-    font-size: x-large;
+  background-color: rgb(0, 139, 0);
 }
 
-/* Header */
-header {
-    display: flex;
-    justify-content: space-between;
+/* ===================== */
+/* HEADER                */
+/* ===================== */
+.header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     padding: 15px 30px;
     background-color: #153369;
-}
-
-header img {
-    height: 50px;
-}
-
-header div {
-    text-decoration: none;
-    color:#2b6ac9;
-    font-size: 25px;
-    font-weight: bold;
-    position: center;
-    margin-left: 325px;
-}
-
-header ul {
-    list-style: none;
-    display: flex;
     gap: 20px;
 }
 
-header ul li a {
+/* Logo */
+.logo img {
+    height: 50px;
+}
+
+/* TITRE CENTRÉ */
+.title {
+    text-align: center;
+    font-size: clamp(18px, 4vw, 25px);
+    font-weight: bold;
+    color: #2b6ac9;
+    /* on supprime white-space: nowrap pour permettre le retour à la ligne */
+    overflow-wrap: break-word; /* coupe le mot si nécessaire */
+}
+
+/* Menu */
+.nav {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.nav img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+/* Liens */
+.nav a {
     text-decoration: none;
     color: white;
     font-weight: bold;
-    transition: 0.3s;
+    transition: color 0.3s;
 }
 
-#lien-Profil {
+.nav a:hover {
+    color: #ffea00;
+}
+
+/* Profil */
+#lien-profil {
     background-color: #0e1f44;
-    padding: 0 14px;
+    padding: 6px 12px;
     border-radius: 10px;
     color: #ffea00;
     font-weight: 600;
     display: flex;
     align-items: center;
+    gap: 8px;
     box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
 }
 
-header ul li a:hover {
-    color: #ffea00;
+/* Avatar */
+#avatar-roblox {
+    width: clamp(28px, 6vw, 40px);
+    height: clamp(28px, 6vw, 40px);
+    border-radius: 50%;
 }
 
-/* Sections */
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .title {
+        font-size: clamp(14px, 5vw, 20px);
+    }
+
+    .nav {
+        gap: 5px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
+
+
+/* ===================== */
+/* CONTENU               */
+/* ===================== */
 .welcome {
-    text-align: center;
-    padding: 50px;
+  text-align: center;
+  padding: clamp(20px, 6vw, 50px);
 }
 
 .welcome img {
-    width: 100px;
-    margin-bottom: 10px;
+  width: clamp(70px, 20vw, 100px);
+  margin-bottom: 10px;
 }
 
 .separator {
-    width: 100%;
-    height: 2px;
-    background-color: #ddd;
-    margin: 20px 0;
+  width: 100%;
+  height: 2px;
+  background-color: #ddd;
+  margin: 20px 0;
 }
 
-/* Texte dans la présentation */
 .présentation p {
-    font-size: 18px;
-    margin: 15px 0;
-    color: #ddd;
+  font-size: clamp(14px, 4vw, 18px);
+  margin: 15px 0;
+  color: #ddd;
 }
 
-/* Footer ou crédits */
+/* ===================== */
+/* FOOTER                */
+/* ===================== */
 .credits {
-    text-align: center;
-    padding: 15px;
-    background-color: #009bf9;
-    color: white;
-    font-size: 14px;
+  text-align: center;
+  padding: 15px;
+  background-color: #009bf9;
+  color: white;
+  font-size: clamp(12px, 3vw, 14px);
 }
+
 
