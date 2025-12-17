@@ -50,21 +50,21 @@ app.get("/api/avatar/:username", async (req, res) => {
 
 // --- Endpoint TimeWall ---
 app.get("/timewall", async (req, res) => {
-    const { targetId, transactionID, revenue, currencyAmount, hash, type } = req.query;
+    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
     try {
         const computedHash = crypto.createHash("sha256")
-            .update(targetId + revenue + SECRET_KEY)
+            .update(userID + revenue + SECRET_KEY)
             .digest("hex");
 
         if (computedHash !== hash) return res.status(400).send("Invalid hash");
         if (transactions[transactionID]) return res.status(200).send("duplicate");
 
-        transactions[transactionID] = { targetId, revenue, currencyAmount, type, date: Date.now() };
-        if (!users[targetId]) users[targetId] = { balance: 0 };
-        users[targetId].balance += Number(currencyAmount);
+        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
+        if (!users[userID]) users[userID] = { balance: 0 };
+        users[userID].balance += Number(currencyAmount);
 
-        console.log(`✅ User ${targetId} new balance: ${users[targetId].balance}`);
+        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
         res.status(200).send("OK");
 
     } catch (err) {
