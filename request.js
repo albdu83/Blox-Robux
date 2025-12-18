@@ -49,42 +49,25 @@ app.get("/api/avatar/:username", async (req, res) => {
 
 // --- Endpoint Roblox avatar ---
 app.get("/timewall", async (req, res) => {
-    const { userID, transactionID, currencyAmount, hash, type } = req.query;
+    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
     try {
-        if (!userID || !transactionID || !currencyAmount || !hash)
-            return res.status(400).send("Missing params");
-
-        const computedHash = crypto
-            .createHash("sha256")
-            .update(userID + currencyAmount + SECRET_KEY)
+        const computedHash = crypto.createHash("sha256")
+            .update(userID + revenue + SECRET_KEY)
             .digest("hex");
 
-        if (computedHash !== hash)
-            return res.status(400).send("Invalid hash");
+        if (computedHash !== hash) return res.status(400).send("Invalid hash");
+        if (transactions[transactionID]) return res.status(200).send("duplicate");
 
-        if (transactions[transactionID])
-            return res.status(200).send("duplicate");
-
-        const amount = parseInt(currencyAmount, 10);
-        if (isNaN(amount))
-            return res.status(400).send("Invalid amount");
-
-        transactions[transactionID] = {
-            userID,
-            amount,
-            type,
-            date: Date.now()
-        };
-
+        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
         if (!users[userID]) users[userID] = { balance: 0 };
-        users[userID].balance += amount;
+        users[userID].balance += Number(currencyAmount);
 
-        console.log(`✅ Timewall → User ${userID} +${amount} (${users[userID].balance})`);
+        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
         res.status(200).send("OK");
 
     } catch (err) {
-        console.error("Timewall error:", err);
+        console.error(err);
         res.status(500).send("Server error");
     }
 });
