@@ -71,6 +71,64 @@ app.get("/timewall", async (req, res) => {
     }
 });
 
+import crypto from "crypto";
+import admin from "firebase-admin";
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    ),
+    databaseURL: "https://bloxrobux-e9244-default-rtdb.europe-west1.firebasedatabase.app"
+  });
+}
+
+const db = admin.database();
+
+app.get("/timewall", async (req, res) => {
+  const { userID, transactionID, currencyAmount, hash, type } = req.query;
+
+  try {
+    if (!userID || !transactionID || !currencyAmount || !hash)
+      return res.status(400).send("Missing params");
+
+    const computedHash = crypto
+      .createHash("sha256")
+      .update(userID + currencyAmount + process.env.TIMEWALL_SECRET)
+      .digest("hex");
+
+    if (computedHash !== hash)
+      return res.status(400).send("Invalid hash");
+
+    const amount = Math.round(Number(currencyAmount));
+    if (isNaN(amount) || amount <= 0)
+      return res.status(400).send("Invalid amount");
+
+    // 🔒 Anti-doublon
+    const txRef = db.ref("transactions/" + transactionID);
+    if ((await txRef.get()).exists())
+      return res.status(200).send("duplicate");
+
+    await txRef.set({
+      userID,
+      amount,
+      type,
+      date: Date.now()
+    });
+
+    // 💰 Crédit atomique
+    const balanceRef = db.ref("users/" + userID + "/balance");
+    await balanceRef.transaction(current => (current || 0) + amount);
+
+    console.log(`✅ Timewall validé → ${userID} +${amount}`);
+    res.status(200).send("OK");
+
+  } catch (err) {
+    console.error("Timewall error:", err);
+    res.status(500).send("Server error");
+  }
+});
+
 
 
 // --- Endpoint Admin ---
