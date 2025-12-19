@@ -47,20 +47,6 @@ app.get("/api/avatar/:username", async (req, res) => {
     }
 });
 
-
-
-import crypto from "crypto";
-import admin from "firebase-admin";
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(
-      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    ),
-    databaseURL: "https://bloxrobux-e9244-default-rtdb.europe-west1.firebasedatabase.app"
-  });
-}
-
 app.get("/timewall", async (req, res) => {
     const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
