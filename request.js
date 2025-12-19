@@ -69,7 +69,18 @@ app.get("/timewall", async (req, res) => {
       return res.status(200).send("OK"); // Toujours OK pour TimeWall
     }
 
-    // Cherche le UID Firebase correspondant au RobloxName
+    // 🔹 Vérifie le hash avec le RobloxName
+    const computedHash = crypto
+      .createHash("sha256")
+      .update(userID + currencyAmount + SECRET_KEY)
+      .digest("hex");
+
+    if (computedHash !== hash) {
+      console.log("❌ Hash invalide pour", userID);
+      return res.status(200).send("OK");
+    }
+
+    // 🔹 Récupère le UID Firebase correspondant au RobloxName
     const snapshot = await db.ref("users")
       .orderByChild("RobloxName")
       .equalTo(userID)
@@ -77,18 +88,7 @@ app.get("/timewall", async (req, res) => {
 
     if (!snapshot.exists()) return res.status(200).send("OK");
 
-    const uid = Object.keys(snapshot.val())[0]; // récupère le UID
-
-    // Vérifie le hash avec le UID Firebase
-    const computedHash = crypto
-      .createHash("sha256")
-      .update(uid + currencyAmount + SECRET_KEY)
-      .digest("hex");
-
-    if (computedHash !== hash) {
-      console.log("❌ Hash invalide pour", uid);
-      return res.status(200).send("OK");
-    }
+    const uid = Object.keys(snapshot.val())[0];
 
     const amount = Math.round(Number(currencyAmount));
     if (amount <= 0) return res.status(200).send("OK");
