@@ -61,17 +61,17 @@ if (!admin.apps.length) {
 const db = admin.database();
 
 app.get("/timewall", async (req, res) => {
-  const { userID, transactionID, currencyAmount, hash, type } = req.query;
+  const { uid, transactionID, currencyAmount, hash, type } = req.query;
 
   try {
-    // ⚠️ Toujours répondre OK à TimeWall
-    if (!userID || !transactionID || !currencyAmount || !hash) {
-      return res.status(200).send("OK");
+    if (!uid || !transactionID || !currencyAmount || !hash) {
+      return res.status(200).send("OK"); // Toujours répondre OK à TimeWall
     }
 
+    // Vérifie le hash
     const computedHash = crypto
       .createHash("sha256")
-      .update(userID + currencyAmount + SECRET_KEY) // 👈 UN SEUL SECRET
+      .update(uid + currencyAmount + SECRET_KEY)
       .digest("hex");
 
     if (computedHash !== hash) {
@@ -80,31 +80,34 @@ app.get("/timewall", async (req, res) => {
     }
 
     const amount = Math.round(Number(currencyAmount));
-    if (isNaN(amount) || amount <= 0) {
-      return res.status(200).send("OK");
-    }
+    if (amount <= 0) return res.status(200).send("OK");
+
+    const userRef = db.ref("users/" + uid);
+
+    // Crée le noeud user si inexistant
+    await userRef.update({ balance: 0 });
 
     const txRef = db.ref("transactions/" + transactionID);
-    if ((await txRef.get()).exists()) {
-      return res.status(200).send("OK");
+    if ((await txRef.get()).exists()) return res.status(200).send("OK");
+
+    // Enregistre la transaction
+    await txRef.set({ uid, amount, type, date: Date.now() });
+
+    // Transaction atomique pour le solde
+    const balanceRef = userRef.child("balance");
+    const result = await balanceRef.transaction(current => (current || 0) + amount);
+
+    if (result.committed) {
+      console.log(`✅ TimeWall crédité → ${uid} +${amount} (nouveau solde: ${result.snapshot.val()})`);
+    } else {
+      console.log(`❌ Transaction non appliquée pour ${uid}`);
     }
 
-    await txRef.set({
-      userID,
-      amount,
-      type,
-      date: Date.now()
-    });
-
-    const balanceRef = db.ref("users/" + userID + "/balance");
-    await balanceRef.transaction(current => (current || 0) + amount);
-
-    console.log(`✅ TimeWall validé → ${userID} +${amount}`);
     return res.status(200).send("OK");
 
   } catch (err) {
-    console.error("Timewall error:", err);
-    return res.status(200).send("OK"); // 🔒 JAMAIS FAIL
+    console.error("TimeWall error:", err);
+    return res.status(200).send("OK");
   }
 });
 
