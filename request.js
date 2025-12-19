@@ -47,7 +47,6 @@ app.get("/api/avatar/:username", async (req, res) => {
     }
 });
 
-const crypto = require("crypto");
 const admin = require("firebase-admin");
 
 if (!admin.apps.length) {
