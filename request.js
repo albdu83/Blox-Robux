@@ -49,6 +49,7 @@ app.get("/api/avatar/:username", async (req, res) => {
 
 const admin = require("firebase-admin");
 
+
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(
@@ -61,21 +62,31 @@ if (!admin.apps.length) {
 const db = admin.database();
 
 app.get("/timewall", async (req, res) => {
-  const { uid, transactionID, currencyAmount, hash, type } = req.query;
+  const { userID, transactionID, currencyAmount, hash, type } = req.query; // userID = RobloxName
 
   try {
-    if (!uid || !transactionID || !currencyAmount || !hash) {
-      return res.status(200).send("OK"); // Toujours répondre OK à TimeWall
+    if (!userID || !transactionID || !currencyAmount || !hash) {
+      return res.status(200).send("OK"); // Toujours OK pour TimeWall
     }
 
-    // Vérifie le hash
+    // Cherche le UID Firebase correspondant au RobloxName
+    const snapshot = await db.ref("users")
+      .orderByChild("RobloxName")
+      .equalTo(userID)
+      .get();
+
+    if (!snapshot.exists()) return res.status(200).send("OK");
+
+    const uid = Object.keys(snapshot.val())[0]; // récupère le UID
+
+    // Vérifie le hash avec le UID Firebase
     const computedHash = crypto
       .createHash("sha256")
       .update(uid + currencyAmount + SECRET_KEY)
       .digest("hex");
 
     if (computedHash !== hash) {
-      console.log("❌ Hash invalide");
+      console.log("❌ Hash invalide pour", uid);
       return res.status(200).send("OK");
     }
 
@@ -84,9 +95,10 @@ app.get("/timewall", async (req, res) => {
 
     const userRef = db.ref("users/" + uid);
 
-    // Crée le noeud user si inexistant
+    // Crée le noeud balance si inexistant
     await userRef.update({ balance: 0 });
 
+    // Vérifie les doublons
     const txRef = db.ref("transactions/" + transactionID);
     if ((await txRef.get()).exists()) return res.status(200).send("OK");
 
