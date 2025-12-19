@@ -9,7 +9,6 @@ app.use(express.json());
 
 // --- SECRET_KEY TimeWall ---
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
-const TIMEWALL_SECRET = process.env.TIMEWALL_SECRET;
 
 // --- Stockage temporaire ---
 const users = {};
@@ -65,24 +64,30 @@ app.get("/timewall", async (req, res) => {
   const { userID, transactionID, currencyAmount, hash, type } = req.query;
 
   try {
-    if (!userID || !transactionID || !currencyAmount || !hash)
-      return res.status(400).send("Missing params");
+    // ⚠️ Toujours répondre OK à TimeWall
+    if (!userID || !transactionID || !currencyAmount || !hash) {
+      return res.status(200).send("OK");
+    }
 
     const computedHash = crypto
       .createHash("sha256")
-      .update(userID + currencyAmount + TIMEWALL_SECRET)
+      .update(userID + currencyAmount + SECRET_KEY) // 👈 UN SEUL SECRET
       .digest("hex");
 
-    if (computedHash !== hash)
-      return res.status(400).send("Invalid hash");
+    if (computedHash !== hash) {
+      console.log("❌ Hash invalide");
+      return res.status(200).send("OK");
+    }
 
     const amount = Math.round(Number(currencyAmount));
-    if (isNaN(amount) || amount <= 0)
-      return res.status(400).send("Invalid amount");
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(200).send("OK");
+    }
 
     const txRef = db.ref("transactions/" + transactionID);
-    if ((await txRef.get()).exists())
-      return res.status(200).send("duplicate");
+    if ((await txRef.get()).exists()) {
+      return res.status(200).send("OK");
+    }
 
     await txRef.set({
       userID,
@@ -94,15 +99,14 @@ app.get("/timewall", async (req, res) => {
     const balanceRef = db.ref("users/" + userID + "/balance");
     await balanceRef.transaction(current => (current || 0) + amount);
 
-    console.log(`✅ Timewall validé → ${userID} +${amount}`);
-    res.status(200).send("OK");
+    console.log(`✅ TimeWall validé → ${userID} +${amount}`);
+    return res.status(200).send("OK");
 
   } catch (err) {
     console.error("Timewall error:", err);
-    res.status(500).send("Server error");
+    return res.status(200).send("OK"); // 🔒 JAMAIS FAIL
   }
 });
-
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
