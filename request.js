@@ -61,53 +61,29 @@ if (!admin.apps.length) {
   });
 }
 
-const db = admin.database();
-
 app.get("/timewall", async (req, res) => {
-  const { userID, transactionID, currencyAmount, hash, type } = req.query;
+    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
-  try {
-    if (!userID || !transactionID || !currencyAmount || !hash)
-      return res.status(400).send("Missing params");
+    try {
+        const computedHash = crypto.createHash("sha256")
+            .update(userID + revenue + SECRET_KEY)
+            .digest("hex");
 
-    const computedHash = crypto
-      .createHash("sha256")
-      .update(userID + currencyAmount + process.env.TIMEWALL_SECRET)
-      .digest("hex");
+        if (computedHash !== hash) return res.status(400).send("Invalid hash");
+        if (transactions[transactionID]) return res.status(200).send("duplicate");
 
-    if (computedHash !== hash)
-      return res.status(400).send("Invalid hash");
+        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
+        if (!users[userID]) users[userID] = { balance: 0 };
+        users[userID].balance += Number(currencyAmount);
 
-    const amount = Math.round(Number(currencyAmount));
-    if (isNaN(amount) || amount <= 0)
-      return res.status(400).send("Invalid amount");
+        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
+        res.status(200).send("OK");
 
-    // 🔒 Anti-doublon
-    const txRef = db.ref("transactions/" + transactionID);
-    if ((await txRef.get()).exists())
-      return res.status(200).send("duplicate");
-
-    await txRef.set({
-      userID,
-      amount,
-      type,
-      date: Date.now()
-    });
-
-    // 💰 Crédit atomique
-    const balanceRef = db.ref("users/" + userID + "/balance");
-    await balanceRef.transaction(current => (current || 0) + amount);
-
-    console.log(`✅ Timewall validé → ${userID} +${amount}`);
-    res.status(200).send("OK");
-
-  } catch (err) {
-    console.error("Timewall error:", err);
-    res.status(500).send("Server error");
-  }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server error");
+    }
 });
-
-
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
