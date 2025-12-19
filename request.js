@@ -9,6 +9,7 @@ app.use(express.json());
 
 // --- SECRET_KEY TimeWall ---
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
+const TIMEWALL_SECRET = process.env.TIMEWALL_SECRET;
 
 // --- Stockage temporaire ---
 const users = {};
@@ -69,7 +70,7 @@ app.get("/timewall", async (req, res) => {
 
     const computedHash = crypto
       .createHash("sha256")
-      .update(userID + currencyAmount + SECRET_KEY)
+      .update(userID + currencyAmount + TIMEWALL_SECRET)
       .digest("hex");
 
     if (computedHash !== hash)
