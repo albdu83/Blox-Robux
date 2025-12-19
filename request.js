@@ -47,31 +47,6 @@ app.get("/api/avatar/:username", async (req, res) => {
     }
 });
 
-// --- Endpoint Roblox avatar ---
-app.get("/timewall", async (req, res) => {
-    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
-
-    try {
-        const computedHash = crypto.createHash("sha256")
-            .update(userID + revenue + SECRET_KEY)
-            .digest("hex");
-
-        if (computedHash !== hash) return res.status(400).send("Invalid hash");
-        if (transactions[transactionID]) return res.status(200).send("duplicate");
-
-        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
-        if (!users[userID]) users[userID] = { balance: 0 };
-        users[userID].balance += Number(currencyAmount);
-
-        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
-        res.status(200).send("OK");
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Server error");
-    }
-});
-
 app.get("/timewall", async (req, res) => {
     const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
