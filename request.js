@@ -70,7 +70,7 @@ app.get("/timewall", async (req, res) => {
 
     const computedHash = crypto
       .createHash("sha256")
-      .update(userID + currencyAmount + process.env.TIMEWALL_SECRET)
+      .update(userID + currencyAmount + SECRET_KEY)
       .digest("hex");
 
     if (computedHash !== hash)
