@@ -62,65 +62,52 @@ if (!admin.apps.length) {
 const db = admin.database();
 
 app.get("/timewall", async (req, res) => {
-  const { userID, transactionID, currencyAmount, hash, type } = req.query;
-  // userID = RobloxName EXACT envoyé par TimeWall
+  const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
 
   try {
-    if (!userID || !transactionID || !currencyAmount || !hash) {
+    if (!userID || !transactionID || !hash)
       return res.status(200).send("OK");
-    }
 
-    // ✅ HASH = RobloxName + amount + SECRET
+    const amountRaw = revenue || currencyAmount;
+
     const computedHash = crypto
       .createHash("sha256")
-      .update(userID + currencyAmount + SECRET_KEY)
+      .update(userID + amountRaw + SECRET_KEY)
       .digest("hex");
 
     if (computedHash !== hash) {
       console.log("❌ Hash invalide", {
-        received: hash,
-        expected: computedHash,
         userID,
-        currencyAmount
+        amountRaw,
+        received: hash,
+        expected: computedHash
       });
       return res.status(200).send("OK");
     }
 
-    // 🔎 Trouve l'utilisateur Firebase via RobloxName
-    const snapshot = await db
-      .ref("users")
+    const amount = Math.floor(Number(amountRaw));
+    if (amount <= 0) return res.status(200).send("OK");
+
+    // 🔎 lookup Firebase UID par RobloxName
+    const snap = await db.ref("users")
       .orderByChild("RobloxName")
       .equalTo(userID)
       .get();
 
-    if (!snapshot.exists()) {
-      console.log("❌ Aucun user Firebase pour", userID);
-      return res.status(200).send("OK");
-    }
+    if (!snap.exists()) return res.status(200).send("OK");
 
-    const uid = Object.keys(snapshot.val())[0];
+    const uid = Object.keys(snap.val())[0];
 
-    const amount = Math.round(Number(currencyAmount));
-    if (amount <= 0) return res.status(200).send("OK");
-
-    // ⛔ Anti doublon
     const txRef = db.ref("transactions/" + transactionID);
-    if ((await txRef.get()).exists()) return res.status(200).send("OK");
+    if ((await txRef.get()).exists())
+      return res.status(200).send("OK");
 
-    // ✅ Enregistre transaction
-    await txRef.set({
-      uid,
-      robloxName: userID,
-      amount,
-      type,
-      date: Date.now()
-    });
+    await txRef.set({ uid, amount, type, date: Date.now() });
 
-    // ✅ Crédit du solde
-    const balanceRef = db.ref("users/" + uid + "/balance");
-    await balanceRef.transaction(v => (v || 0) + amount);
+    await db.ref(`users/${uid}/balance`)
+      .transaction(v => (v || 0) + amount);
 
-    console.log(`✅ Crédit TimeWall OK → ${userID} (${uid}) +${amount}`);
+    console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
 
   } catch (err) {
