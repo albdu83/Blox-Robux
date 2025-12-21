@@ -71,7 +71,7 @@ app.get("/timewall", async (req, res) => {
       return res.status(200).send("OK");
     }
     
-    const amountRaw = revenue || currencyAmount;
+    const amountRaw = currencyAmount;
 
     const computedHash = crypto
       .createHash("sha256")
@@ -88,9 +88,9 @@ app.get("/timewall", async (req, res) => {
       return res.status(200).send("OK");
     }
 
-    const amount = Math.floor(Number(amountRaw));
+    const amount = Math.round(Number(amountRaw));
     if (amount <= 0) {
-        console.log("problème de calcul")
+      console.log("❌ Amount invalide :", amountRaw);
         return res.status(200).send("OK");
     }
 
