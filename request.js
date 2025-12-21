@@ -88,7 +88,7 @@ app.get("/timewall", async (req, res) => {
     }
 
     // ✅ Solde = currencyAmount
-    const amount = Math.round(Number(currencyAmount));
+    const amount = Math.ceil(Number(currencyAmount));
     if (amount <= 0) {
       console.log("❌ Amount invalide :", currencyAmount);
       return res.status(200).send("OK");
