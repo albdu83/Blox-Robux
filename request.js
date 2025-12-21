@@ -66,50 +66,53 @@ app.get("/timewall", async (req, res) => {
   console.log("🔥 /timewall HIT", req.query);
 
   try {
-    if (!userID || !transactionID || !hash) {
-      console.log("problème au début ddu try")
+    if (!userID || !transactionID || !revenue || !hash) {
+      console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
-    
-    const amountRaw = currencyAmount;
 
+    // ✅ HASH = revenue (PAS currencyAmount)
     const computedHash = crypto
       .createHash("sha256")
-      .update(userID + amountRaw + SECRET_KEY)
+      .update(userID + revenue + SECRET_KEY)
       .digest("hex");
 
     if (computedHash !== hash) {
       console.log("❌ Hash invalide", {
         userID,
-        amountRaw,
+        revenue,
         received: hash,
         expected: computedHash
       });
       return res.status(200).send("OK");
     }
 
-    const amount = Math.round(Number(amountRaw));
+    // ✅ Solde = currencyAmount
+    const amount = Math.round(Number(currencyAmount));
     if (amount <= 0) {
-      console.log("❌ Amount invalide :", amountRaw);
-        return res.status(200).send("OK");
+      console.log("❌ Amount invalide :", currencyAmount);
+      return res.status(200).send("OK");
     }
 
-    // 🔎 lookup Firebase UID par RobloxName
+    // 🔎 Récupération UID Firebase via RobloxName
     const snap = await db.ref("users")
       .orderByChild("RobloxName")
       .equalTo(userID)
       .get();
 
     if (!snap.exists()) {
-        console.log("problème avec firebase")
-        return res.status(200).send("OK");
+      console.log("❌ Utilisateur Firebase introuvable");
+      return res.status(200).send("OK");
     }
 
     const uid = Object.keys(snap.val())[0];
 
+    // 🔒 Anti-doublon
     const txRef = db.ref("transactions/" + transactionID);
-    if ((await txRef.get()).exists())
+    if ((await txRef.get()).exists()) {
+      console.log("⚠️ Transaction déjà traitée");
       return res.status(200).send("OK");
+    }
 
     await txRef.set({ uid, amount, type, date: Date.now() });
 
@@ -120,10 +123,11 @@ app.get("/timewall", async (req, res) => {
     return res.status(200).send("OK");
 
   } catch (err) {
-    console.error("TimeWall error:", err);
+    console.error("🔥 TimeWall error:", err);
     return res.status(200).send("OK");
   }
 });
+
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
