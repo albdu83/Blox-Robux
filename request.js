@@ -63,11 +63,14 @@ const db = admin.database();
 
 app.get("/timewall", async (req, res) => {
   const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
+  console.log("🔥 /timewall HIT", req.query);
 
   try {
-    if (!userID || !transactionID || !hash)
+    if (!userID || !transactionID || !hash) {
+      console.log("problème au début ddu try")
       return res.status(200).send("OK");
-
+    }
+    
     const amountRaw = revenue || currencyAmount;
 
     const computedHash = crypto
@@ -86,7 +89,10 @@ app.get("/timewall", async (req, res) => {
     }
 
     const amount = Math.floor(Number(amountRaw));
-    if (amount <= 0) return res.status(200).send("OK");
+    if (amount <= 0) {
+        console.log("problème de calcul")
+        return res.status(200).send("OK");
+    }
 
     // 🔎 lookup Firebase UID par RobloxName
     const snap = await db.ref("users")
@@ -94,7 +100,10 @@ app.get("/timewall", async (req, res) => {
       .equalTo(userID)
       .get();
 
-    if (!snap.exists()) return res.status(200).send("OK");
+    if (!snap.exists()) {
+        console.log("problème avec firebase")
+        return res.status(200).send("OK");
+    }
 
     const uid = Object.keys(snap.val())[0];
 
