@@ -14,6 +14,7 @@ const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const users = {};
 const transactions = {};
 
+// --- Endpoint Roblox avatar ---
 app.get("/api/avatar/:username", async (req, res) => {
     const username = req.params.username;
 
@@ -47,87 +48,30 @@ app.get("/api/avatar/:username", async (req, res) => {
     }
 });
 
-const admin = require("firebase-admin");
-
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(
-      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    ),
-    databaseURL: "https://bloxrobux-e9244-default-rtdb.europe-west1.firebasedatabase.app"
-  });
-}
-
-const db = admin.database();
-
+// --- Endpoint TimeWall ---
 app.get("/timewall", async (req, res) => {
-  const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
-  console.log("🔥 /timewall HIT", req.query);
+    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
 
-  try {
-    if (!userID || !transactionID || !revenue || !hash) {
-      console.log("❌ Paramètres manquants");
-      return res.status(200).send("OK");
+    try {
+        const computedHash = crypto.createHash("sha256")
+            .update(userID + revenue + SECRET_KEY)
+            .digest("hex");
+
+        if (computedHash !== hash) return res.status(400).send("Invalid hash");
+        if (transactions[transactionID]) return res.status(200).send("duplicate");
+
+        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
+        if (!users[userID]) users[userID] = { balance: 0 };
+        users[userID].balance += Number(currencyAmount);
+
+        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
+        res.status(200).send("OK");
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server error");
     }
-
-    // ✅ HASH = revenue (PAS currencyAmount)
-    const computedHash = crypto
-      .createHash("sha256")
-      .update(userID + revenue + SECRET_KEY)
-      .digest("hex");
-
-    if (computedHash !== hash) {
-      console.log("❌ Hash invalide", {
-        userID,
-        revenue,
-        received: hash,
-        expected: computedHash
-      });
-      return res.status(200).send("OK");
-    }
-
-    // ✅ Solde = currencyAmount
-    const amount = Math.ceil(Number(currencyAmount));
-    if (amount <= 0) {
-      console.log("❌ Amount invalide :", currencyAmount);
-      return res.status(200).send("OK");
-    }
-
-    // 🔎 Récupération UID Firebase via RobloxName
-    const snap = await db.ref("users")
-      .orderByChild("RobloxName")
-      .equalTo(userID)
-      .get();
-
-    if (!snap.exists()) {
-      console.log("❌ Utilisateur Firebase introuvable");
-      return res.status(200).send("OK");
-    }
-
-    const uid = Object.keys(snap.val())[0];
-
-    // 🔒 Anti-doublon
-    const txRef = db.ref("transactions/" + transactionID);
-    if ((await txRef.get()).exists()) {
-      console.log("⚠️ Transaction déjà traitée");
-      return res.status(200).send("OK");
-    }
-
-    await txRef.set({ uid, amount, type, date: Date.now() });
-
-    await db.ref(`users/${uid}/balance`)
-      .transaction(v => (v || 0) + amount);
-
-    console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
-    return res.status(200).send("OK");
-
-  } catch (err) {
-    console.error("🔥 TimeWall error:", err);
-    return res.status(200).send("OK");
-  }
 });
-
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
@@ -159,7 +103,7 @@ app.get("/api/places", async (req, res) => {
         }
 
         const placesRes = await fetch(
-            `https://games.roblox.com/v2/users/${targetId }/games?accessFilter=Public`
+            `https://games.roblox.com/v2/users/${targetId}/games?accessFilter=Public`
         );
 
         if (!placesRes.ok) {
@@ -174,8 +118,8 @@ app.get("/api/places", async (req, res) => {
         const formatted = {
             data: data.data.map(game => ({
                 name: game.name,
-                placeId: game.rootPlace?.id || null
-            })).filter(game => game.placeId !== null)
+                ID: game.id || null
+            })).filter(game => game.ID !== null)
         };
 
         res.json(formatted);
