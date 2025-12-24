@@ -49,28 +49,85 @@ app.get("/api/avatar/:username", async (req, res) => {
 });
 
 // --- Endpoint TimeWall ---
+const admin = require("firebase-admin");
+
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    ),
+    databaseURL: "https://bloxrobux-e9244-default-rtdb.europe-west1.firebasedatabase.app"
+  });
+}
+
+const db = admin.database();
+
 app.get("/timewall", async (req, res) => {
-    const { userID, transactionID, revenue, currencyAmount, hash, type } = req.query;
+  const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
+  console.log("🔥 /timewall HIT", req.query);
 
-    try {
-        const computedHash = crypto.createHash("sha256")
-            .update(userID + revenue + SECRET_KEY)
-            .digest("hex");
-
-        if (computedHash !== hash) return res.status(400).send("Invalid hash");
-        if (transactions[transactionID]) return res.status(200).send("duplicate");
-
-        transactions[transactionID] = { userID, revenue, currencyAmount, type, date: Date.now() };
-        if (!users[userID]) users[userID] = { balance: 0 };
-        users[userID].balance += Number(currencyAmount);
-
-        console.log(`✅ User ${userID} new balance: ${users[userID].balance}`);
-        res.status(200).send("OK");
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Server error");
+  try {
+    if (!userID || !transactionID || !revenue || !hash) {
+      console.log("❌ Paramètres manquants");
+      return res.status(200).send("OK");
     }
+
+    // ✅ HASH = revenue (PAS currencyAmount)
+    const computedHash = crypto
+      .createHash("sha256")
+      .update(userID + revenue + SECRET_KEY)
+      .digest("hex");
+
+    if (computedHash !== hash) {
+      console.log("❌ Hash invalide", {
+        userID,
+        revenue,
+        received: hash,
+        expected: computedHash
+      });
+      return res.status(200).send("OK");
+    }
+
+    // ✅ Solde = currencyAmount
+    const amount = Math.ceil(Number(currencyAmount));
+    if (amount <= 0) {
+      console.log("❌ Amount invalide :", currencyAmount);
+      return res.status(200).send("OK");
+    }
+
+    // 🔎 Récupération UID Firebase via RobloxName
+    const snap = await db.ref("users")
+      .orderByChild("RobloxName")
+      .equalTo(userID)
+      .get();
+
+    if (!snap.exists()) {
+      console.log("❌ Utilisateur Firebase introuvable");
+      return res.status(200).send("OK");
+    }
+
+    const uid = Object.keys(snap.val())[0];
+
+    // 🔒 Anti-doublon
+    const txRef = db.ref("transactions/" + transactionID);
+    if ((await txRef.get()).exists()) {
+      console.log("⚠️ Transaction déjà traitée");
+      return res.status(200).send("OK");
+    }
+
+    await txRef.set({ uid, amount, type, date: Date.now() });
+
+    await db.ref(`users/${uid}/balance`)
+      .transaction(v => (v || 0) + amount);
+
+    console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
+    return res.status(200).send("OK");
+
+  } catch (err) {
+    console.error("🔥 TimeWall error:", err);
+    return res.status(200).send("OK");
+  }
 });
 
 // --- Endpoint Admin ---
