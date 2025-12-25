@@ -150,6 +150,11 @@ app.get("/reach", async (req, res) => {
       return res.status(200).send("OK");
     }
 
+    if (debug === "true") {
+      console.log("🧪 Callback debug ignoré");
+      return res.status(200).send("OK");
+    }
+      
     // Ignorer les annulations (ou gérer différemment)
     if (reversal === "true") {
       console.log("↩️ Reversal ignoré :", tx_id);
