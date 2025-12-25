@@ -9,6 +9,7 @@ app.use(express.json());
 
 // --- SECRET_KEY TimeWall ---
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
+const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
 
 // --- Stockage temporaire ---
 const users = {};
@@ -126,6 +127,102 @@ app.get("/timewall", async (req, res) => {
 
   } catch (err) {
     console.error("🔥 TimeWall error:", err);
+    return res.status(200).send("OK");
+  }
+});
+
+app.get("/reach", async (req, res) => {
+  console.log("🔥 /reach HIT", req.query);
+
+  try {
+    const {
+      user_id,
+      reward,
+      tx_id,
+      hash,
+      reversal,
+      debug
+    } = req.query;
+
+    // Toujours répondre 200 à TheoremReach
+    if (!user_id || !reward || !tx_id || !hash) {
+      console.log("❌ Paramètres manquants");
+      return res.status(200).send("OK");
+    }
+
+    // Ignorer les callbacks de test
+    if (debug === "true") {
+      console.log("🧪 Callback debug ignoré");
+      return res.status(200).send("OK");
+    }
+
+    // Ignorer les annulations (ou gérer différemment)
+    if (reversal === "true") {
+      console.log("↩️ Reversal ignoré :", tx_id);
+      return res.status(200).send("OK");
+    }
+
+    // 🔐 Vérification du hash (SHA-1)
+    const urlWithoutHash =
+      req.originalUrl.split("&hash=")[0];
+
+    const computedHash = crypto
+      .createHash("sha1")
+      .update(urlWithoutHash)
+      .digest("hex");
+
+      if (computedHash !== hash) {
+        console.log("❌ Hash invalide", {
+        received: hash,
+        expected: computedHash,
+        urlWithoutHash
+      });
+      return res.status(200).send("OK");
+    }
+
+    const amount = Math.floor(Number(reward));
+    if (amount <= 0) {
+      console.log("❌ Reward invalide :", reward);
+      return res.status(200).send("OK");
+    }
+
+    // 🔎 Trouver l'utilisateur via RobloxName
+    const snap = await db.ref("users")
+      .orderByChild("RobloxName")
+      .equalTo(user_id)
+      .get();
+
+    if (!snap.exists()) {
+      console.log("❌ Utilisateur Firebase introuvable :", user_id);
+      return res.status(200).send("OK");
+    }
+
+    const uid = Object.keys(snap.val())[0];
+
+    // 🔒 Anti-doublon
+    const txRef = db.ref("transactions/" + tx_id);
+    if ((await txRef.get()).exists()) {
+      console.log("⚠️ Transaction déjà traitée :", tx_id);
+      return res.status(200).send("OK");
+    }
+
+    // Sauvegarde transaction
+    await txRef.set({
+      uid,
+      amount,
+      source: "theoremreach",
+      date: Date.now()
+    });
+
+    // 💰 Créditer le solde
+    await db.ref(`users/${uid}/balance`)
+      .transaction(v => (v || 0) + amount);
+
+    console.log(`✅ TheoremReach crédité ${user_id} +${amount}`);
+    return res.status(200).send("OK");
+
+  } catch (err) {
+    console.error("🔥 Reach error:", err);
     return res.status(200).send("OK");
   }
 });
