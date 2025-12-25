@@ -162,10 +162,6 @@ app.get("/reach", async (req, res) => {
       .createHash("sha1")
       .update(urlWithoutHash + THEOREM_SECRET)
       .digest("base64")
-      .replace(/\+/g, '-')   // + → -
-      .replace(/\//g, '_')   // / → _
-      .replace(/=+$/, '');   // enlever les = de padding
-
 
       if (computedHash !== hash) {
         console.log("❌ Hash invalide", {
@@ -173,6 +169,9 @@ app.get("/reach", async (req, res) => {
         expected: computedHash,
         urlWithoutHash
       });
+        console.log("URL sans hash :", urlWithoutHash);
+        console.log("Hash calculé :", computedHash);
+        console.log("Hash reçu :", hash);
       return res.status(200).send("OK");
     }
 
