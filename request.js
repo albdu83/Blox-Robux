@@ -161,7 +161,7 @@ app.get("/reach", async (req, res) => {
     const computedHash = crypto
       .createHash("sha1")
       .update(urlWithoutHash + THEOREM_SECRET)
-      .digest("hex");
+      .digest("base64");
 
       if (computedHash !== hash) {
         console.log("❌ Hash invalide", {
