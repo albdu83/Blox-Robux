@@ -27,8 +27,8 @@
   <nav>
     <ul>
       <li><a href="../index.html">Accueil</a></li>
-      <li><a href="gagner.html">Gagner des R$</a></li>
-      <li><a href="#">Retirer</a></li>
+      <li><a href="gagner.html">Gagner des Robux</a></li>
+      <li><a href="../Page de retraits/retirer.html">Retirer</a></li>
     </ul>
   </nav>
 </header>
@@ -42,6 +42,7 @@
   <ul id="pk">
     <li><img src="../img/Bitlabs Logo.jfif" id="reload-bitlabs" alt="Reload Bitlabs"></li>
     <li><img src="../img/Timewall.png" id="btnGagner" alt="Gagner des Robux"></li>
+    <li><img src="../img/theoremereach_logo.png" alt="theoremereach" id="theoreme" class="theoreme"></li>
   </ul>
 
   <div class="informations" id="info">
@@ -54,13 +55,19 @@
     <div id="timewall-container"></div>
   </div>
 
+<div class="theoremereach" id="theoremereach">
+  <div id="theoremecontainer"></div>
+</div>
+
   <!-- TRANSITION -->
   <div id="transition" class="fade-transition active">
     <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
     <div class="text" id="text-chargement">Chargement...</div>
   </div>
 
-  <!-- SCRIPT TIMEWALL ET FIREBASE -->
+  <!-- SCRIPT reach ET FIREBASE -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://s3.us-east-1.amazonaws.com/cdn.theoremreach/v3/theorem_reach.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -70,7 +77,6 @@
   <script src="../Server.js" defer></script>
   <script src="../Animation.js" defer></script>
   <script src="../Amount.js" defer></script>
-
   <!-- SCRIPT PRINCIPAL -->
 <script defer>
 document.addEventListener("DOMContentLoaded", () => {
@@ -80,6 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const balanceEl = document.getElementById("balance");
     const btnGagner = document.getElementById("btnGagner");
     const reloadBtn = document.getElementById("reload-bitlabs");
+    const reachbtn = document.getElementById("theoreme")
 
     const API_BASE = "https://blox-robux.onrender.com";
 
@@ -117,24 +124,51 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnGagner) {
         btnGagner.addEventListener("click", () => {
             // Masquer BitLabs
+            const theoreme = document.getElementById("theoremecontainer");
             const offerwall = document.getElementById("offerwall1");
-            if (offerwall) offerwall.style.display = "none";
+            if (offerwall, theoreme) {
+              offerwall.style.display = "none";
+              theoreme.style.display = "none";
+            }
 
             // Afficher container TimeWall
             const container = document.getElementById("timewall-container");
-            if (container) container.style.display = "block";
+            if (container) {
+              container.style.display = "block";
+              container.src = container.src;
+            }
         });
     }
 
+    if (reachbtn) {
+        reachbtn.addEventListener("click", () => {
+            // Masquer BitLabs
+            const container = document.getElementById("timewall-container");
+            const offerwall = document.getElementById("offerwall1");
+            if (offerwall, container) {
+              offerwall.style.display = "none";
+              container.style.display = "none";
+            }
+
+            // Afficher container TimeWall
+            const theoreme = document.getElementById("theoremecontainer");
+            if (theoreme) {
+              theoreme.style.display = "block";
+            }
+        });
+    }
 
     // --- Reload BitLabs iframe ---
     if (reloadBtn) {
         reloadBtn.addEventListener("click", () => {
-            const iframe = document.getElementById("offerwall1");
-            if (iframe) {
-                iframe.src = iframe.src;
-                iframe.style.display = "block";
+            const theoreme = document.getElementById("theoremecontainer");
+            const offerwall = document.getElementById("offerwall1");
+            if (offerwall, theoreme) {
+              offerwall.src = offerwall.src
+              offerwall.style.display = "block";
+              theoreme.style.display = "none";
             }
+
             const container = document.getElementById("timewall-container");
             if (container) container.style.display = "none";
         });
@@ -164,8 +198,3 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
-
-
-
-
-
