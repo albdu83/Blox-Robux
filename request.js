@@ -160,7 +160,7 @@ app.get("/reach", async (req, res) => {
 
     const computedHash = crypto
       .createHash("sha1")
-      .update(urlWithoutHash)
+      .update(urlWithoutHash + THEOREM_SECRET)
       .digest("hex");
 
       if (computedHash !== hash) {
