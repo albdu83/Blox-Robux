@@ -136,8 +136,9 @@ app.get("/reach", async (req, res) => {
 
   try {
     const {
-      user_id,
       reward,
+      currency,
+      user_id,
       tx_id,
       hash,
       reversal,
@@ -145,12 +146,12 @@ app.get("/reach", async (req, res) => {
     } = req.query;
 
     // Toujours répondre 200 à TheoremReach
-    if (!user_id || !reward || !tx_id || !hash) {
+    if (!reward || !currency || !user_id || !tx_id || !hash || !reversal || !debug) {
       console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
 
-    if (debug === "true") {
+    if (debug === "false") {
       console.log("🧪 Callback debug ignoré");
       return res.status(200).send("OK");
     }
