@@ -53,6 +53,29 @@ document.addEventListener("DOMContentLoaded", () => {
         container.appendChild(iframe);
       }
 
+ 
+      const container2 = document.getElementById("theoremecontainer");
+      if (container2) {
+        container2.innerHTML = "";
+
+        const transactionId =
+          crypto.randomUUID?.() ||
+          Date.now() + "_" + Math.random().toString(36).slice(2);
+
+        const iframe2 = document.createElement("iframe");
+        iframe2.src =
+          "https://theoremreach.com/respondent_entry/direct" +
+          "?api_key=36131d298e73a7a2bc9bc433de51" +
+          "&user_id=" + encodeURIComponent(RobloxName) +
+          "&transaction_id=" + transactionId;
+
+          iframe2.width = "100%";
+          iframe2.height = "1000";
+          iframe2.frameBorder = "0";
+          iframe2.allow = "accelerometer; gyroscope; magnetometer; camera; microphone";
+
+        container2.appendChild(iframe2);
+      }
       /* ===== BOUTONS ===== */
       const btnInscription = document.getElementById("btn-inscription");
       const btnConnexion = document.getElementById("btn-connexion");
@@ -175,6 +198,7 @@ togglePasswordImage("checkimg3", "confirmPassword");
     if (!parent) return;
 
     const idToCopy = parent.dataset.copy;
+    if (!idToCopy) return;
     const originalHTML = parent.innerHTML;
 
     navigator.clipboard.writeText(idToCopy)
@@ -258,6 +282,7 @@ async function getPublicsPlaces(targetId) {
 
         // Ajouter les options
         data.data.forEach(game => {
+          let gameID = game.ID
             let displayName = game.name;
             if (displayName.length > 15) {
                 displayName = displayName.slice(0, 15) + "...";
@@ -265,24 +290,64 @@ async function getPublicsPlaces(targetId) {
 
             const option = document.createElement("option");
             option.textContent = `${displayName}`;
-            option.value = game.placeId;
+            option.value = gameID;
             select.appendChild(option);
         });
-
-
-        // Event listener (une seule fois)
+        let variable = false
         select.onchange = () => {
-            console.log("Place sélectionnée :", select.value);
+          const Interface = document.querySelector(".Interface")
+          const explain = document.getElementById("explain")
+          const HELP = document.getElementById("HELP")
+          const tutocontainer = document.getElementById("tutocontainer")
+          const paragraphe = document.getElementById("paragraphe")
+          const href = document.getElementById("href")
+          if (!href) return;
+          href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`;
+          if (!paragraphe) return;
+          if (variable === true) {
+            tutocontainer.style.position = "relative"
+            tutocontainer.classList.remove("active10")
+            tutocontainer.addEventListener("transitionend", () => {
+              href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`
+              tutocontainer.classList.add("active10")
+            }, { once: true })
+          };
+          Interface.classList.add("active9")
+          explain.classList.add("active6")
+          HELP.classList.add("active7")
+          if (variable === false) {
+            href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`
+          }
+          variable = true
+          explain.addEventListener("transitionend", () => {
+            tutocontainer.classList.add("active10")
+            HELP.classList.add("activeA")
+            explain.classList.add("activeB")
+          }, { once: true })
         };
-
     } catch (err) {
         console.error("Erreur lors de la récupération des places :", err);
     }
 }
+function updateInterfaceSize() {
+  const Interface = document.querySelector(".Interface")
+
+  if (!Interface) return;
+
+  Interface.classList.remove("tablet", "desktop")
+
+  const width = window.innerWidth
+
+  if (width >= 1200) {
+    Interface.classList.add("desktop")
+  } else if (width >= 768) {
+    Interface.classList.add("tablet")
+  }
+}
+
+window.addEventListener("resize", updateInterfaceSize)
+updateInterfaceSize()
 });
-
-
-
 
 //async function getPrivateServers() {
     //try {
