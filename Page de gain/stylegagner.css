@@ -164,6 +164,7 @@ nav ul li a.active {
 /* ===================== */
 /* INFORMATIONS           */
 /* ===================== */
+
 .informations {
     padding: clamp(15px, 4vw, 30px);
     max-width: 90%;
@@ -177,9 +178,9 @@ nav ul li a.active {
     text-decoration: underline;
 }
 
-/* ===================== */
-/* BITLABS / TIMEWALL     */
-/* ===================== */
+/* ============================ */
+/* BITLABS / TIMEWALL/ Theoreme */
+/* ============================ */
 #pk {
     display: flex;
     justify-content: center;
@@ -205,16 +206,27 @@ nav ul li a.active {
     cursor: pointer;
 }
 
+#theoreme {
+    width: clamp(60px, 15vw, 120px);
+    height: auto;
+    border-radius: 20px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+#theoreme:hover,
 #pk img:hover,
 #btnGagner:hover {
     transform: scale(0.9);
 }
 
+#theoreme:active,
 #pk img:active,
 #btnGagner:active {
     transform: scale(1);
 }
 
+.theoremereach,
 .bitLabs,
 .TimeWall {
     display: flex;
@@ -222,6 +234,7 @@ nav ul li a.active {
     align-items: center;
 }
 
+#theoremecontainer,
 #offerwall1,
 #timewall-container {
     width: 80%;
@@ -230,9 +243,16 @@ nav ul li a.active {
     border: none;
 }
 
+#theoremecontainer {
+    display: none;
+}
+
 #timewall-container {
     display: none;
 }
+
+
+
 
 
 
