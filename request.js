@@ -157,8 +157,8 @@ app.get("/reach", async (req, res) => {
     const params = req.originalUrl.split("&hash=")[0]; // tout avant hash
 
     const computedHash = crypto
-      .createHmac("sha1", THEOREM_SECRET) // clé = THEOREM_SECRET
-      .update(params, "utf8")             // juste les params
+      .createHmac("sha1", THEOREM_SECRET)
+      .update(params, "utf8")
       .digest("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
@@ -168,11 +168,10 @@ app.get("/reach", async (req, res) => {
       console.log("❌ Hash invalide", {
         received: req.query.hash,
         expected: computedHash,
-        urlWithoutHash: params
+        urlWithoutHash: params // ici, utiliser params
       });
       return res.status(200).send("OK");
     }
-  
       
     const amount = Math.floor(Number(reward));
     if (amount <= 0) {
