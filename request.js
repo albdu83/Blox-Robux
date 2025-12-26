@@ -132,88 +132,50 @@ app.get("/timewall", async (req, res) => {
 });
 
 app.get("/reach", async (req, res) => {
-  console.log("🔥 /reach HIT", req.query);
+  console.log("🔥 /reach HIT", req.originalUrl);
 
   try {
-    const { user_id, reward, tx_id, hash, reversal } = req.query;
+    const { hash, reversal, reward, user_id, tx_id } = req.query;
 
-    if (!user_id || !reward || !tx_id || !hash) {
+    if (!hash || !reward || !user_id || !tx_id) {
       console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
 
     if (reversal === "true") {
-      console.log("↩️ Reversal ignoré :", tx_id);
+      console.log("↩️ Reversal ignoré");
       return res.status(200).send("OK");
     }
 
-    // --- Vérification du hash ---
-    const queryWithoutHash = Object.keys(req.query)
-      .filter(k => k !== "hash")
-      .sort()
-      .map(k => `${k}=${req.query[k]}`)
-      .join("&");
+    // 🔑 1️⃣ PRENDRE L’URL BRUTE EXACTE
+    const rawQuery = req.originalUrl.split("&hash=")[0].replace("/reach?", "");
 
-    const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
-    hmac.update(queryWithoutHash, "utf8");
-    let computedHash = hmac.digest("base64")
+    // 🔐 2️⃣ HASH EXACT COMME THEOREMREACH
+    const computedHash = crypto
+      .createHmac("sha1", THEOREM_SECRET)
+      .update(rawQuery, "utf8")
+      .digest("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=+$/, "");
 
-    console.log("Query string triée :", queryWithoutHash);
-    console.log("Hash calculé :", computedHash);
-    console.log("Hash reçu   :", hash);
+    console.log("RAW QUERY :", rawQuery);
+    console.log("HASH CALCULÉ :", computedHash);
+    console.log("HASH REÇU    :", hash);
 
     if (computedHash !== hash) {
-      console.log("❌ Hash invalide", {
-        received: hash,
-        expected: computedHash,
-        queryWithoutHash
-      });
+      console.log("❌ HASH INVALIDE");
       return res.status(200).send("OK");
     }
 
-    // --- Validation de la reward ---
+    console.log("✅ HASH VALIDE");
+
+    // 💰 reward
     const amount = Math.floor(Number(reward));
-    if (amount <= 0) {
-      console.log("❌ Reward invalide :", reward);
-      return res.status(200).send("OK");
-    }
+    if (amount <= 0) return res.status(200).send("OK");
 
-    // --- Recherche utilisateur dans Firebase ---
-    const snap = await db.ref("users")
-      .orderByChild("RobloxName")
-      .equalTo(user_id)
-      .get();
+    // 👉 le reste de ton code Firebase ici
 
-    if (!snap.exists()) {
-      console.log("❌ Utilisateur Firebase introuvable :", user_id);
-      return res.status(200).send("OK");
-    }
-
-    const uid = Object.keys(snap.val())[0];
-
-    // --- Anti-doublon ---
-    const txRef = db.ref("transactions/" + tx_id);
-    if ((await txRef.get()).exists()) {
-      console.log("⚠️ Transaction déjà traitée :", tx_id);
-      return res.status(200).send("OK");
-    }
-
-    // --- Sauvegarde transaction ---
-    await txRef.set({
-      uid,
-      amount,
-      source: "theoremreach",
-      date: Date.now()
-    });
-
-    // --- Créditer le solde ---
-    await db.ref(`users/${uid}/balance`)
-      .transaction(v => (v || 0) + amount);
-
-    console.log(`✅ TheoremReach crédité ${user_id} +${amount}`);
     return res.status(200).send("OK");
 
   } catch (err) {
@@ -221,6 +183,7 @@ app.get("/reach", async (req, res) => {
     return res.status(200).send("OK");
   }
 });
+
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
