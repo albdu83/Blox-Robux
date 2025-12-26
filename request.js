@@ -164,13 +164,11 @@ app.get("/reach", async (req, res) => {
       .replace(/\//g, "_")
       .replace(/=+$/, "");
 
-
-
     if (computedHash !== req.query.hash) {
       console.log("❌ Hash invalide", {
         received: req.query.hash,
         expected: computedHash,
-        urlWithoutHash
+        urlWithoutHash: params
       });
       return res.status(200).send("OK");
     }
