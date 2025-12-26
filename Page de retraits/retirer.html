@@ -12,35 +12,70 @@
     <div class="background" id="background">
     <div class="Interface" id="finalStep">
       <p class="explain" id="explain">
-        Veuillez sélectionner un de vos emplacements publiques pour effectuer votre retrait.
-        Si aucun serveur n'apparait, veuillez cliquer sur le bouton ci-dessous.
+        Veuillez selectionner un de vos emplacements publiques pour effectuer votre transactions.
+        Si aucun serveur n'apparait, veuillez cliquer sur le bouton si dessous.
       </p>
-      <button id="HELP">Besoin d'aide ?</button>
+      <button class="HELP" id="HELP">Besoin d'aide ?</button>
         <div class="public-places">
           <select id="public-places">
-            <option>Séléctionner un jeu</option>
+            <option>séléctionner un jeu</option>
           </select>
       </div>
+      <div class="tutocontainer" id="tutocontainer">
+        <p id="paragraphe">1. Cliquez sur <a href="" id="href" target="_blank" rel="noopener noreferrer">ce lien</a>.</p>
+        <p>2. Une fois sur la page, veuillez paramétrer votre jeu roblox comme ceci.</p>
+        <img src="../img/Tuto1.png" alt="?!" id="Tuto1" style="width: 300px;height: 350px; pointer-events: none;">
+        <p id="robuxadd" style="color: yellow; text-align: center;">🛑 Vous indiquerez <strong>...</strong> Robux dans l'encadré rouge de l'image!</p>
+        <p>3. Une fois cela fait vous enregistrerez les modifications effectuer grâce à ce boutton.</p>
+        <img src="../img/Tuto2.png" alt="enregistrer modifications" style="width: 300px;height: 300px; pointer-events: none;">
+        <p id="paragraphe2">4. Cliquez sur <a href="" id="href2" target="_blank" rel="noopener noreferrer">ce lien</a>.</p>
+        <p>- Vous effectuerez le questionnaire de maturité comme affiché ci-dessous ,en allant sur "commencer", si cela n'a pas été fait.</p>
+        <img src="../img/Tuto3.png" alt="commencez questionnaire" style="width: 300px;height: 350px; pointer-events: none;">
+        <p>- Vous penserez à bien répondre à chaque question (de préfrérence par "non") et vous cliquerez sur "continuer".</p>
+        <img src="../img/Tuto4.png" alt="répondre aux questions" style="width: 300px;height: 350px; pointer-events: none;">
+        <p>- Pour finir, vous enverez vos réponses grâce au bouton d'envoie comme ci-dessous.</p>
+        <img src="../img/Tuto5.png" alt="envoyer réponses" style="width: 300px;height: 350px; pointer-events: none;">
+        <p style="text-align: center; color: darkseagreen;">Cliquez sur "Retirer !" une fois que vous avez terminé toutes les étapes.</p>
+        <button style="background-color: aqua; transition: transform 0.2s ease;" id="buttonretrait">Retirer !</button>
+      </div>
     </div>
-    <div class="Interface2" id="finalStep2"></div>
+    <div class="Interface2" id="finalStep2">
+      <img src="../img/return.png" alt="retour" id="btnretour">
+      <h2 style="text-decoration:underline; color: rgb(179, 179, 9);">⚠ Attention ! : il est possible que votre compte se déconnecte automatiquement ou que des problèmes surviennent lors du chargement de votre compte. Si c'est le cas, reconnectez-vous ou relancez la page dans le cas écéhant.</h2>
+      <h2>Si aucun jeu ne s’affiche et que vous êtes bien connecté, voici les étapes à suivre pour résoudre le problème :</h2>
+      <h3>Rendez-vous sur <a href="https://create.roblox.com/">https://create.roblox.com/</a></h3>
+      <h4>1 - Si aucune expérience ne s'affiche comme "Publique", vous devez impérativement en mettre au moins UNE en statue publique :</h4>
+      <h5>- Connectez-vous avec votre compte Roblox sur <a href="https://create.roblox.com/">https://create.roblox.com/</a></h5>
+      <h5>- Cliquez sur les 3 petits points à côté du nom de votre expérience</h5>
+      <h5>- Cliquez sur "Rendre Publique"</h5>
+      <h4 style="text-decoration:underline; color: rgb(179, 179, 9);">Toutefois, vous devez être éligible à <a href="https://create.roblox.com/settings/eligibility/public-publish" target="_blank" rel="noopener noreferrer">l'accès publique</a> et avoir une <a href="https://create.roblox.com/docs/fr-fr/production/promotion/content-maturity" target="_blank" rel="noopener noreferrer">étiquette de maturité</a> sur votre jeu pour pouvoir le mettre en publique !</h4>
+      <h4>2 - Si aucune expérience ne s'affiche (cas rare), vous devez impérativement en créer une !</h4>
+      <h5>- Connectez-vous avec votre compte Roblox sur https://create.roblox.com/ (si cela n'est pas déjà fait)</h5>
+      <h5>- Allez dans l'onglet Création</h5>
+      <h5>- Cliquez sur Créer une expérience</h5>
+      <h5>- Téléchargez Roblox Studio et connectez-vous à votre compte Roblox (si ce n’est pas déjà fait)</h5>
+      <h5>- Cliquez sur Nouvelle expérience dans la barre de gauche</h5>
+      <h5>- Une fois dans l’éditeur de votre jeu, allez dans l’onglet Fichier en haut à gauche</h5>
+      <h5>- Renseignez les informations de base, puis cliquez sur le bouton Créer tout en bas de la fenêtre</h5>
+      <h5>- Suivre les étapes de la partie 1 pour mettre l'expérience en "Publique"</h5>
+    </div>
   </div>
   <header>
   <div class="header-left">
     <a href="../index.html">
-      <img src="../img/logo.png" alt="Logo Blox Robux" />
+      <img src="../img/logo.png" alt="Logo Blox Robux">
     </a>
-
     <div class="solde-box">
       <span>💰 Solde :</span>
       <span id="balance">0,00 R$</span>
     </div>
 
-    <div class="text">BloxRobux</div>
+    <div class="header-title">BloxRobux</div>
   </div>
 
   <ul>
     <li><a href="../index.html">Accueil</a></li>
-      <li><a href="../Page de gain/gagner.html">Gagner des R$</a></li>
+      <li><a href="../Page de gain/gagner.html">Gagner des Robux</a></li>
       <li><a href="retirer.html" class="active">Retirer</a></li>
   </ul>
   </header>
@@ -74,4 +109,3 @@
   <script src="../Amount.js" defer></script>
 </body>
 </html>
-
