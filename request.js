@@ -170,9 +170,6 @@ app.get("/reach", async (req, res) => {
 
     const urlWithoutHash = fullUrl.split("&hash=")[0];
 
-
-    const urlWithoutHash = req.originalUrl.split("&hash=")[0];
-
     const computedHash = crypto
       .createHmac("sha1", THEOREM_SECRET) // 🔥 HMAC SHA1
       .update(urlWithoutHash, "utf8")
