@@ -143,7 +143,7 @@ app.get("/reach", async (req, res) => {
     } = req.query;
 
     // Toujours répondre 200 à TheoremReach
-    if (!user_id || !reward || !tx_id || !hash) {
+    if (!user_id || !reward || !tx_id) {
       console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
