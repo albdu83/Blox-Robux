@@ -148,31 +148,26 @@ app.get("/reach", async (req, res) => {
     }
 
     // --- Calcul du hash correct ---
-// Trier les paramètres alphabetiquement, sauf hash
-const urlWithoutHash = req.originalUrl.split("&hash=")[0].split("?")[1]; // juste la query
+    const queryString = req.originalUrl.split("&hash=")[0].split("?")[1]; // exactement la query sans hash
+    const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
+    hmac.update(queryString, "utf8");
 
-const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
-hmac.update(urlWithoutHash, "utf8"); // bien passer une string
+    const computedHash = hmac.digest("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
 
-const computedHash = hmac.digest("base64")
-  .replace(/\+/g, "-")
-  .replace(/\//g, "_")
-  .replace(/=+$/, ""); // enlever uniquement les =, pas d'espaces
-
-console.log("Hash calculé :", computedHash);
-console.log("Hash reçu   :", req.query.hash);
-
-if (computedHash !== req.query.hash) {
-  console.log("❌ Hash invalide", {
-    received: req.query.hash,
-    expected: computedHash,
-    urlWithoutHash: urlWithoutHash
-  });
-  return res.status(200).send("OK");
-}
-    console.log("Params pour hash:", url);
-    console.log("Hash reçu :", hash);
     console.log("Hash calculé :", computedHash);
+    console.log("Hash reçu   :", hash);
+
+    if (computedHash !== hash) {
+      console.log("❌ Hash invalide", {
+        received: hash,
+        expected: computedHash,
+        queryString
+      });
+      return res.status(200).send("OK");
+    }
 
     const amount = Math.floor(Number(reward));
     if (amount <= 0) {
@@ -180,7 +175,6 @@ if (computedHash !== req.query.hash) {
       return res.status(200).send("OK");
     }
 
-    // 🔎 Trouver l'utilisateur via RobloxName
     const snap = await db.ref("users")
       .orderByChild("RobloxName")
       .equalTo(user_id)
@@ -193,14 +187,12 @@ if (computedHash !== req.query.hash) {
 
     const uid = Object.keys(snap.val())[0];
 
-    // 🔒 Anti-doublon
     const txRef = db.ref("transactions/" + tx_id);
     if ((await txRef.get()).exists()) {
       console.log("⚠️ Transaction déjà traitée :", tx_id);
       return res.status(200).send("OK");
     }
 
-    // Sauvegarde transaction
     await txRef.set({
       uid,
       amount,
@@ -208,7 +200,6 @@ if (computedHash !== req.query.hash) {
       date: Date.now()
     });
 
-    // 💰 Créditer le solde
     await db.ref(`users/${uid}/balance`)
       .transaction(v => (v || 0) + amount);
 
