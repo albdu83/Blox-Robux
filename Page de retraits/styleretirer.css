@@ -56,63 +56,57 @@ body {
 
 /* ----- HEADER ----- */
 header {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
+  justify-content: space-between;
   background-color: #153369;
-  position: relative; /* nécessaire pour centrer le texte */
+  padding: 15px 30px;
 }
-
-/* Logo + solde */
+/* gauche */
 .header-left {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px; /* petit espace entre logo et solde */
+  justify-content: space-between;
+  gap: 10px;
 }
 
-/* Logo */
+/* logo */
 .header-left img {
   height: 50px;
-  display: block;
-  margin: 0;
-  padding: 0;
 }
 
-/* Solde */
-.header-left .solde-box {
-  margin-left: 2.5vw;
+/* solde */
+.solde-box {
   background-color: #0e1f44;
   padding: 8px 14px;
   border-radius: 10px;
   color: #ffea00;
   font-weight: 600;
   display: flex;
-  gap: 5px;
   align-items: center;
+  gap: 5px;
   box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
 }
 
-/* Texte centré au milieu de l'écran */
-.header-left .text {
-  position:absolute;
+/* titre DANS le flex */
+.header-title {
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 25px;
-  color: #2b6ac9;
+  font-size: clamp(18px, 4vw, 25px);
   font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #2b6ac9;
+  white-space: nowrap;
 }
 
-/* Menu à droite */
+/* menu */
 header ul {
   list-style: none;
   display: flex;
   gap: 20px;
 }
+
 
 header ul li a {
   text-decoration: none;
@@ -136,10 +130,10 @@ main {
   background: #222436;
   padding: 30px;
   border-radius: 15px;
-  width: 90%;
+  width: 100%;
   max-width: 600px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
+
 
 .retrait-container h1 {
   color: #ffea00;
@@ -162,12 +156,13 @@ main {
 }
 
 input {
+  width: 100%;
+  max-width: 400px;
   padding: 10px;
-  border: none;
   border-radius: 8px;
-  width: 400px;
   font-size: 15px;
 }
+
 
 button {
   padding: 10px 40px;
@@ -229,42 +224,123 @@ button:hover {
 }
 
 .Interface {
-    margin-bottom: 200px;
-    opacity: 0;
-    transition: opacity 0.5s ease, margin-bottom 0.5s ease;
-    width: 35%;
-    height: 30%;
-    background-color: #222436;
-    border-radius: 20px;
-    border: 5px solid black;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
+  margin-bottom: 10vh;
+  opacity: 0;
+
+  width: 95%;
+  min-height: 180px;
+  gap: 16px;
+
+  max-width: 420px;
+  min-width: 280px;
+  max-height: 100%;
+
+  background-color: #222436;
+  border-radius: 20px;
+  border: 5px solid black;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  transition:
+    opacity 0.5s ease,
+    margin-bottom 0.5s ease,
+    width 0.4s ease,
+    min-height 0.4s ease,
+    gap 0.4s ease;
+}
+
+.Interface.tablet {
+  width: 80%;
+  min-height: 250px;
+  gap: 20px;
+}
+
+.Interface.desktop {
+  width: 60%;
+  min-height: 300px;
+  gap: 20px;
 }
 
 .Interface2 {
-      margin-top: 200px;
+    margin-top: 10vh;
     opacity: 0;
     transition: opacity 0.5s ease, margin-top 0.5s ease;
-    width: 35%;
-    height: 30%;
+    width: 90%;
+    max-width: 1000px;
+    height: 60vh;          /* fixe une hauteur pour activer le scroll */
     background-color: #222436;
-    border-radius: 20px;
-    border: 5px solid black;
-    display: none;
+    border-radius: 2rem;
+    border: 0.3rem solid black;
+    display: flex;         /* doit être flex pour align-items */
     flex-direction: column;
-    gap: 12px;
+    gap: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    overflow-y: auto;      /* scroll vertical activé */
+    overflow-x: hidden;
+    padding: 1rem;         /* espace intérieur */
+    display: none;
 }
 
+/* Chrome, Edge, Safari */
+.tutocontainer::-webkit-scrollbar,
+.Interface2::-webkit-scrollbar {
+    width: 15px;               /* largeur de la scrollbar */
+}
+
+.tutocontainer::-webkit-scrollbar-track,
+.Interface2::-webkit-scrollbar-track {
+    background: #1a1c2b;       /* couleur du "rail" */
+    border-radius: 1rem;
+}
+
+.tutocontainer::-webkit-scrollbar-thumb,
+.Interface2::-webkit-scrollbar-thumb {
+    background-color: #555;    /* couleur de la barre de défilement */
+    border-radius: 1rem;
+    border: 3px solid #1a1c2b; /* espace autour de la thumb */
+}
+.tutocontainer::-webkit-scrollbar-thumb:hover,
+.Interface2::-webkit-scrollbar-thumb:hover {
+    background-color: #888;    /* couleur au survol */
+}
+
+/* Firefox */
+.Interface2 {
+    scrollbar-width: thin;           /* thin, auto, none */
+    scrollbar-color: #555 #1a1c2b;   /* thumb track */
+}
+
+
+/* Images centrées et hover */
+.Interface2 img {
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.Interface2 img:hover {
+    height: 25px;
+    width: 25px;
+}
+
+
 .explain {
-  font-size: 1.25rem;
+  opacity: 1;
+  font-size: clamp(14px, 3.5vw, 20px);
   text-align: center;
   font-family: "BBH Hegarty", sans-serif;
   font-weight: 100;
   font-style: normal;
   color: #9b9b9b;
+  display: inline-block;
+  transition: opacity 0.25s ease;
 }
 
 .Interface.active {
@@ -274,7 +350,12 @@ button:hover {
 
 .Interface.active2 {
     opacity: 0;
-    margin-bottom: 200px;
+    margin-bottom: 10vh;
+}
+
+.Interface.active9 {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .Interface2.active3 {
@@ -282,11 +363,108 @@ button:hover {
     opacity: 1;
 }
 
+.Interface.active4 {
+    opacity: 1;
+    margin-bottom: 0;
+}
+
+.Interface2.active5 {
+    margin-top: 10vh;
+    opacity: 0;
+}
+
+.explain.active6 {
+  opacity: 0;
+}
+
+.explain.activeB {
+  position: absolute;
+}
+
+#paragraphe {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+#buttonretrait:hover {
+  transform: scale(0.9);
+}
+
+#buttonretrait:active {
+  transform: scale(1);
+}
+
+.tutocontainer {
+    padding: 0;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.5s ease, height 0.5s ease, padding 0.5s ease;
+    width: 90%;
+    max-width: 375px;
+    height: 0vh;
+    background-color: #0c1025;
+    border-radius: 2rem;
+    border: 0.3rem solid rgb(0, 0, 0);
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    flex-direction:column;
+    scrollbar-width: thin;           /* thin, auto, none */
+    scrollbar-color: #555 #1a1c2b;   /* thumb track */
+    align-items: center;        /* centre horizontalement OK */
+    justify-content: flex-start; /* 🔥 IMPORTANT : en haut */
+    gap: 10px;
+}
+
+.tutocontainer.active10 {
+  position: relative;
+  opacity: 1;
+  padding: 1rem;
+  height: 50vh;  
+}
+
+.HELP {
+  margin-top: 0;
+  opacity: 1;
+  padding: 10px 40px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: small;
+  cursor: pointer;
+  background-color: #ffea00;
+  color: #1b1b22;
+  transition: background 0.3s, opacity 0.25s ease, padding 0.5s ease, font-size 0.5s ease;
+  display: block;
+}
+
+.HELP:hover {
+  background: #b3a528;
+}
+
+.HELP.active7 {
+  opacity: 0;
+}
+
+.HELP.activeA {
+  padding: 0;
+  font-size: 0;
+  position: absolute;
+}
+
 .public-places {
-  margin-top: 2.5%;
+  transition: transform 1s ease-in-out;
+  transform: translateY(0.4vh);
   margin-left: 1%;
   box-sizing: border-box;
   display: block;
+}
+
+.public-places.active8 {
+  transform: translateY(-60vh);
 }
 
 #copyimg {
@@ -342,3 +520,84 @@ button:hover {
   font-size: 14px;
 }
 
+@media (max-width: 768px) {
+  header {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  header ul {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  #withdrawBtn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .retrait-container {
+    padding: 20px;
+  }
+
+  .template {
+    font-size: 1rem;
+    padding: 18px;
+  }
+
+  .transaction span {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-title {
+    position: static;
+    transform: none;
+    flex: 1;
+    text-align: center;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+    .Interface2 {
+        margin-top: 5vh;
+        min-height: 25vh;
+        gap: 0.8rem;
+    }
+
+    .Interface2 img {
+        height: 8vw;
+        width: 8vw;
+    }
+
+    .Interface2 img:hover {
+        height: 7vw;
+        width: 7vw;
+    }
+}
+
+@media (max-width: 480px) {
+    .Interface2 {
+        width: 95%;
+        min-height: 30vh;
+        gap: 0.5rem;
+    }
+
+    .Interface2 img {
+        height: 12vw;
+        width: 12vw;
+    }
+
+    .Interface2 img:hover {
+        height: 11vw;
+        width: 11vw;
+    }
+}
