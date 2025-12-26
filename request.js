@@ -148,24 +148,30 @@ app.get("/reach", async (req, res) => {
     }
 
     // --- Calcul du hash correct ---
-    const url = req.originalUrl.split("&hash=")[0];
+// Trier les paramètres alphabetiquement, sauf hash
+const urlParamsSorted = Object.keys(req.query)
+  .filter(k => k !== "hash")    // exclure hash
+  .sort()                        // trier alphabétiquement
+  .map(k => `${k}=${req.query[k]}`)
+  .join("&");
 
-    const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
-    hmac.update(url, "utf8");
+const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
+hmac.update(urlParamsSorted, "utf8");
 
-    const computedHash = hmac.digest("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, ""); // juste supprimer les =
+const computedHash = hmac.digest("base64")
+  .replace(/\+/g, "-")
+  .replace(/\//g, "_")
+  .replace(/=+$/, "");
 
-    console.log("Hash calculé :", computedHash);
-    console.log("Hash reçu :", req.query.hash);
+console.log("Hash calculé :", computedHash);
+console.log("Hash reçu :", req.query.hash);
+
 
     if (computedHash !== hash) {
       console.log("❌ Hash invalide", {
         received: hash,
         expected: computedHash,
-        urlWithoutHash: url
+        urlWithoutHash: hmac
       });
       return res.status(200).send("OK");
     }
