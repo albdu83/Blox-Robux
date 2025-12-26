@@ -156,10 +156,8 @@ app.get("/reach", async (req, res) => {
 
     const crypto = require("crypto");
 
-    const fullUrl =
-      req.protocol + "://" + req.get("host") + req.originalUrl;
-
-    const urlWithoutHash = 'http://blox-robux.onrender.com/reach?user_id=Alban&app_id=24471&reward=100&status=1&currency=1.67&screenout=2&profiler=2&tx_id=TEST123&ip=127.0.0.1&offer_id=campaign_this_is_a_test_campaign_id&debug=true';
+    const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
+    const urlWithoutHash = fullUrl.split("&hash=")[0];
 
     const computedHash = crypto
       .createHmac("sha1", THEOREM_SECRET) // 🔥 HMAC SHA1
