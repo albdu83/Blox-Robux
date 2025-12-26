@@ -250,6 +250,7 @@ async function getRobloxUserId(username) {
         throw new Error("Utilisateur Roblox introuvable");
     }
 }
+
 async function getPublicsPlaces(targetId) {
     if (!targetId) return;
 
@@ -301,14 +302,18 @@ async function getPublicsPlaces(targetId) {
           const tutocontainer = document.getElementById("tutocontainer")
           const paragraphe = document.getElementById("paragraphe")
           const href = document.getElementById("href")
+          const href2 = document.getElementById("href2")
           if (!href) return;
+          if (!href2) return;
           href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`;
+          href2.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/experience-questionnaire`;
           if (!paragraphe) return;
           if (variable === true) {
             tutocontainer.style.position = "relative"
             tutocontainer.classList.remove("active10")
             tutocontainer.addEventListener("transitionend", () => {
               href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`
+              href2.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/experience-questionnaire`;
               tutocontainer.classList.add("active10")
             }, { once: true })
           };
@@ -317,6 +322,7 @@ async function getPublicsPlaces(targetId) {
           HELP.classList.add("active7")
           if (variable === false) {
             href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`
+            href2.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/experience-questionnaire`;
           }
           variable = true
           explain.addEventListener("transitionend", () => {
@@ -349,44 +355,33 @@ window.addEventListener("resize", updateInterfaceSize)
 updateInterfaceSize()
 });
 
-//async function getPrivateServers() {
-    //try {
-        //const res = await fetch(`${API_BASE_URL}/api/privateservers`);
-        //if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+async function getPrivateServers() {
+    const btn = document.getElementById("bouttonretrait");
+    const select = document.getElementById("public-places"); // <select> des serveurs
 
-        //const data = await res.json();
+    if (!btn || !select) return;
 
-        //const container = document.getElementById("private-servers");
-        //if (!container) return;
+    btn.addEventListener("click", async () => { // rendre le callback async
+        const selectedId = select.value; // récupérer la valeur sélectionnée dans le <select>
+        if (!selectedId) {
+            console.warn("Aucun serveur sélectionné");
+            return;
+        }
 
-        //container.innerHTML = "";
+        try {
+            const joinRes = await fetch(`${API_BASE_URL}/api/join-server`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ placeId: selectedId })
+            });
 
-        //if (!data.data || data.data.length === 0) {
-            //container.textContent = "Aucun serveur privé disponible.";
-            //return;
-        //}
+            if (!joinRes.ok) throw new Error(`Erreur HTTP ${joinRes.status}`);
+            const joinData = await joinRes.json();
+            console.log("Serveur rejoint :", joinData);
+            alert("CA FONCTIONNNNNNNNNNNNEEEEEEEEEEE OEEEEEEEEEEEEE");
 
-        // Utiliser un Set pour éviter les doublons sur le nom du serveur
-        //const seenNames = new Set();
-
-        //const div2 = document.createElement("option");
-            //div2.textContent = "selectionner un serveur"
-            //container.appendChild(div2);
-
-        //data.data.forEach(server => {
-            //if (seenNames.has(server.name)) return; // ignorer doublons
-            //seenNames.add(server.name);
-            //let serverName = server.name || "Nom inconnu";
-
-            // Tronquer à 10 caractères si nécessaire
-            //if (serverName.length > 10) {
-                //serverName = serverName.slice(0, 10) + "...";
-            //}
-        //});
-
-    //} catch (err) {
-        //console.error("Erreur récupération serveurs privés :", err);
-        //const container = document.getElementById("private-servers");
-        //if (container) container.textContent = "Impossible de récupérer les serveurs privés ou cookie ROBLOSECURITY invalide.";
-    //}
-//}
+        } catch (err) {
+            console.error("Erreur en rejoignant le serveur :", err);
+        }
+    });
+}
