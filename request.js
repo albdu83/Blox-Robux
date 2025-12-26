@@ -145,18 +145,37 @@ app.get("/reach", async (req, res) => {
       return res.status(200).send("OK");
     }
 
-    // ✅ STRING EXACTE HASHÉE PAR THEOREMREACH
-    const rawQuery = req.originalUrl
-      .split("&hash=")[0]
-      .replace("/reach?", "");
+function verifyTheoremReachHash(query, secret) {
+  // 1. Retirer hash
+  const params = { ...query };
+  const receivedHash = params.hash;
+  delete params.hash;
 
-    const computedHash = crypto
-      .createHmac("sha1", THEOREM_SECRET)
-      .update(rawQuery, "utf8")
-      .digest("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+  // 2. Trier les clés alphabétiquement
+  const sortedKeys = Object.keys(params).sort();
+
+  // 3. Recréer la query string TRIÉE
+  const queryString = sortedKeys
+    .map(k => `${k}=${params[k]}`)
+    .join("&");
+
+  // 4. HMAC SHA1 + Base64
+  const computedHash = require("crypto")
+    .createHmac("sha1", secret)
+    .update(queryString, "utf8")
+    .digest("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  return {
+    valid: computedHash === receivedHash,
+    computedHash,
+    receivedHash,
+    queryString
+  };
+}
+
 
     console.log("RAW QUERY :", rawQuery);
     console.log("HASH CALCULÉ :", computedHash);
