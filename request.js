@@ -11,6 +11,26 @@ app.use(express.json());
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
 
+function verifyTheoremReachHash(originalUrl, secret) {
+  const urlPart = originalUrl.split("/reach?")[1];
+  const [queryString, receivedHash] = urlPart.split("&hash=");
+
+  const computedHash = crypto
+    .createHmac("sha1", secret)
+    .update(queryString, "utf8")
+    .digest("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  return {
+    valid: computedHash === receivedHash,
+    queryString,
+    computedHash,
+    receivedHash
+  };
+}
+
 // --- Stockage temporaire ---
 const users = {};
 const transactions = {};
@@ -131,69 +151,37 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
-app.get("/reach", async (req, res) => {
+app.get("/reach", (req, res) => {
   console.log("🔥 /reach HIT", req.originalUrl);
 
-  try {
-    const { hash, reward, user_id, tx_id, reversal } = req.query;
+  const { reward, user_id, tx_id, hash, reversal } = req.query;
 
-    if (!hash || !reward || !user_id || !tx_id) {
-      return res.status(200).send("OK");
-    }
-
-    if (reversal === "true") {
-      return res.status(200).send("OK");
-    }
-
-function verifyTheoremReachHash(query, secret) {
-  // 1. Retirer hash
-  const params = { ...query };
-  const receivedHash = params.hash;
-  delete params.hash;
-
-  // 2. Trier les clés alphabétiquement
-  const sortedKeys = Object.keys(params).sort();
-
-  // 3. Recréer la query string TRIÉE
-  const queryString = sortedKeys
-    .map(k => `${k}=${params[k]}`)
-    .join("&");
-
-  // 4. HMAC SHA1 + Base64
-  const computedHash = require("crypto")
-    .createHmac("sha1", secret)
-    .update(queryString, "utf8")
-    .digest("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-
-  return {
-    valid: computedHash === receivedHash,
-    computedHash,
-    receivedHash,
-    queryString
-  };
-}
-
-
-    console.log("RAW QUERY :", rawQuery);
-    console.log("HASH CALCULÉ :", computedHash);
-    console.log("HASH REÇU    :", hash);
-
-    if (computedHash !== hash) {
-      console.log("❌ HASH INVALIDE");
-      return res.status(200).send("OK");
-    }
-
-    console.log("✅ HASH VALIDE");
-    return res.status(200).send("OK");
-
-  } catch (err) {
-    console.error(err);
+  if (!reward || !user_id || !tx_id || !hash) {
     return res.status(200).send("OK");
   }
+
+  if (reversal === "true") {
+    return res.status(200).send("OK");
+  }
+
+  const result = verifyTheoremReachHash(
+    req.originalUrl,
+    THEOREM_SECRET
+  );
+
+  console.log("RAW QUERY :", result.queryString);
+  console.log("HASH CALCULÉ :", result.computedHash);
+  console.log("HASH REÇU    :", result.receivedHash);
+
+  if (!result.valid) {
+    console.log("❌ HASH INVALIDE");
+    return res.status(200).send("OK");
+  }
+
+  console.log("✅ HASH VALIDE");
+  return res.status(200).send("OK");
 });
+
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
