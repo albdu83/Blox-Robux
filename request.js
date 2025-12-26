@@ -172,7 +172,10 @@ app.get("/reach", async (req, res) => {
       });
       return res.status(200).send("OK");
     }
-      
+    console.log("Params pour hash:", params);
+    console.log("Hash reçu :", hash);
+    console.log("Hash calculé :", computedHash);
+
     const amount = Math.floor(Number(reward));
     if (amount <= 0) {
       console.log("❌ Reward invalide :", reward);
