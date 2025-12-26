@@ -74,21 +74,29 @@ app.get("/timewall", async (req, res) => {
       return res.status(200).send("OK");
     }
 
-    // ✅ HASH = revenue (PAS currencyAmount)
-    const computedHash = crypto
-      .createHash("sha256")
-      .update(userID + revenue + SECRET_KEY)
-      .digest("hex");
+// Récupère exactement la query string envoyée, sans le hash
+const urlWithoutHash = req.originalUrl.split("&hash=")[0].split("?")[1]; // juste la query
 
-    if (computedHash !== hash) {
-      console.log("❌ Hash invalide", {
-        userID,
-        revenue,
-        received: hash,
-        expected: computedHash
-      });
-      return res.status(200).send("OK");
-    }
+const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
+hmac.update(urlWithoutHash, "utf8"); // bien passer une string
+
+const computedHash = hmac.digest("base64")
+  .replace(/\+/g, "-")
+  .replace(/\//g, "_")
+  .replace(/=+$/, ""); // enlever uniquement les =, pas d'espaces
+
+console.log("Hash calculé :", computedHash);
+console.log("Hash reçu   :", req.query.hash);
+
+if (computedHash !== req.query.hash) {
+  console.log("❌ Hash invalide", {
+    received: req.query.hash,
+    expected: computedHash,
+    urlWithoutHash: urlWithoutHash
+  });
+  return res.status(200).send("OK");
+}
+
 
     // ✅ Solde = currencyAmount
     const amount = Math.ceil(Number(currencyAmount));
