@@ -156,6 +156,12 @@ app.get("/reach", async (req, res) => {
 
     const crypto = require("crypto");
 
+    const fullUrl =
+      req.protocol + "://" + req.get("host") + req.originalUrl;
+
+    const urlWithoutHash = fullUrl.split("&hash=")[0];
+
+
     const urlWithoutHash = req.originalUrl.split("&hash=")[0];
 
     const computedHash = crypto
