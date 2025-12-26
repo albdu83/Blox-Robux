@@ -135,22 +135,21 @@ app.get("/reach", async (req, res) => {
   console.log("🔥 /reach HIT", req.originalUrl);
 
   try {
-    const { hash, reversal, reward, user_id, tx_id } = req.query;
+    const { hash, reward, user_id, tx_id, reversal } = req.query;
 
     if (!hash || !reward || !user_id || !tx_id) {
-      console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
 
     if (reversal === "true") {
-      console.log("↩️ Reversal ignoré");
       return res.status(200).send("OK");
     }
 
-    // 🔑 1️⃣ PRENDRE L’URL BRUTE EXACTE
-    const rawQuery = req.originalUrl.split("&hash=")[0].replace("/reach?", "");
+    // ✅ STRING EXACTE HASHÉE PAR THEOREMREACH
+    const rawQuery = req.originalUrl
+      .split("&hash=")[0]
+      .replace("/reach?", "");
 
-    // 🔐 2️⃣ HASH EXACT COMME THEOREMREACH
     const computedHash = crypto
       .createHmac("sha1", THEOREM_SECRET)
       .update(rawQuery, "utf8")
@@ -169,21 +168,13 @@ app.get("/reach", async (req, res) => {
     }
 
     console.log("✅ HASH VALIDE");
-
-    // 💰 reward
-    const amount = Math.floor(Number(reward));
-    if (amount <= 0) return res.status(200).send("OK");
-
-    // 👉 le reste de ton code Firebase ici
-
     return res.status(200).send("OK");
 
   } catch (err) {
-    console.error("🔥 Reach error:", err);
+    console.error(err);
     return res.status(200).send("OK");
   }
 });
-
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
