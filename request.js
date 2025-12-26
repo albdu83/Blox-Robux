@@ -170,17 +170,6 @@ if (computedHash !== req.query.hash) {
   });
   return res.status(200).send("OK");
 }
-
-
-    if (computedHash !== hash) {
-      console.log("❌ Hash invalide", {
-        received: hash,
-        expected: computedHash,
-        urlWithoutHash: hmac
-      });
-      return res.status(200).send("OK");
-    }
-
     console.log("Params pour hash:", url);
     console.log("Hash reçu :", hash);
     console.log("Hash calculé :", computedHash);
