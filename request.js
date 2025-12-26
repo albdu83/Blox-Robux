@@ -147,26 +147,21 @@ app.get("/reach", async (req, res) => {
       return res.status(200).send("OK");
     }
 
-    // --- Calcul du hash correct selon TheoremReach ---
-    const params = { ...req.query };
-    delete params.hash; // on supprime hash pour recalculer
-
-    // Tri alphabétique des clés
-    const sortedKeys = Object.keys(params).sort();
-    const queryStringSorted = sortedKeys
-      .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
+    // --- Vérification du hash ---
+    const queryWithoutHash = Object.keys(req.query)
+      .filter(k => k !== "hash")
+      .sort()
+      .map(k => `${k}=${req.query[k]}`)
       .join("&");
 
-    // HMAC SHA-1
     const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
-    hmac.update(queryStringSorted, "utf8");
-
-    const computedHash = hmac.digest("base64")
+    hmac.update(queryWithoutHash, "utf8");
+    let computedHash = hmac.digest("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
-      .replace(/=+$/, ""); // enlever uniquement les '='
+      .replace(/=+$/, "");
 
-    console.log("Query string triée :", queryStringSorted);
+    console.log("Query string triée :", queryWithoutHash);
     console.log("Hash calculé :", computedHash);
     console.log("Hash reçu   :", hash);
 
@@ -174,19 +169,19 @@ app.get("/reach", async (req, res) => {
       console.log("❌ Hash invalide", {
         received: hash,
         expected: computedHash,
-        queryStringSorted
+        queryWithoutHash
       });
       return res.status(200).send("OK");
     }
 
-    // ✅ Traitement du reward
+    // --- Validation de la reward ---
     const amount = Math.floor(Number(reward));
     if (amount <= 0) {
       console.log("❌ Reward invalide :", reward);
       return res.status(200).send("OK");
     }
 
-    // 🔎 Récupération utilisateur Firebase
+    // --- Recherche utilisateur dans Firebase ---
     const snap = await db.ref("users")
       .orderByChild("RobloxName")
       .equalTo(user_id)
@@ -199,14 +194,14 @@ app.get("/reach", async (req, res) => {
 
     const uid = Object.keys(snap.val())[0];
 
-    // 🔒 Anti-doublon
+    // --- Anti-doublon ---
     const txRef = db.ref("transactions/" + tx_id);
     if ((await txRef.get()).exists()) {
       console.log("⚠️ Transaction déjà traitée :", tx_id);
       return res.status(200).send("OK");
     }
 
-    // 💾 Sauvegarde transaction et crédit solde
+    // --- Sauvegarde transaction ---
     await txRef.set({
       uid,
       amount,
@@ -214,6 +209,7 @@ app.get("/reach", async (req, res) => {
       date: Date.now()
     });
 
+    // --- Créditer le solde ---
     await db.ref(`users/${uid}/balance`)
       .transaction(v => (v || 0) + amount);
 
@@ -225,7 +221,6 @@ app.get("/reach", async (req, res) => {
     return res.status(200).send("OK");
   }
 });
-
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
