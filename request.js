@@ -154,18 +154,17 @@ app.get("/reach", async (req, res) => {
       return res.status(200).send("OK");
     }
 
-    const crypto = require("crypto");
-
-    const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
-    const urlWithoutHash = fullUrl.split("&hash=")[0];
+    const params = req.originalUrl.split("&hash=")[0]; // tout avant hash
+    const toHash = params + THEOREM_SECRET;
 
     const computedHash = crypto
-      .createHmac("sha1", THEOREM_SECRET) // 🔥 HMAC SHA1
-      .update(urlWithoutHash, "utf8")
+      .createHmac("sha1", THEOREM_SECRET)
+      .update(toHash, "utf8")
       .digest("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=+$/, "");
+
 
     if (computedHash !== req.query.hash) {
       console.log("❌ Hash invalide", {
