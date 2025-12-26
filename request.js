@@ -166,7 +166,7 @@ console.log("Hash reçu   :", hash);
       console.log("❌ Hash invalide", {
         received: hash,
         expected: computedHash,
-        queryString
+        urlWithoutHash
       });
       return res.status(200).send("OK");
     }
