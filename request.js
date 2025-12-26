@@ -139,7 +139,6 @@ app.get("/reach", async (req, res) => {
       user_id,
       reward,
       tx_id,
-      hash,
       reversal
     } = req.query;
 
@@ -151,27 +150,6 @@ app.get("/reach", async (req, res) => {
     // Ignorer les annulations (ou gérer différemment)
     if (reversal === "true") {
       console.log("↩️ Reversal ignoré :", tx_id);
-      return res.status(200).send("OK");
-    }
-
-    // 🔐 Vérification du hash (SHA-1)
-    const urlWithoutHash =
-      req.originalUrl.split("&hash=")[0];
-
-    const computedHash = crypto
-      .createHash("sha1")
-      .update(urlWithoutHash + THEOREM_SECRET)
-      .digest("base64")
-
-      if (computedHash !== hash) {
-        console.log("❌ Hash invalide", {
-        received: hash,
-        expected: computedHash,
-        urlWithoutHash
-      });
-        console.log("URL sans hash :", urlWithoutHash);
-        console.log("Hash calculé :", computedHash);
-        console.log("Hash reçu :", hash);
       return res.status(200).send("OK");
     }
 
