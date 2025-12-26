@@ -64,78 +64,69 @@ if (!admin.apps.length) {
 
 const db = admin.database();
 
-app.get("/reach", async (req, res) => {
-  console.log("🔥 /reach HIT", req.query);
+app.get("/timewall", async (req, res) => {
+  const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
+  console.log("🔥 /timewall HIT", req.query);
 
   try {
-    const { user_id, reward, tx_id, hash, reversal } = req.query;
-
-    if (!user_id || !reward || !tx_id || !hash) {
+    if (!userID || !transactionID || !revenue || !hash) {
       console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
 
-    if (reversal === "true") {
-      console.log("↩️ Reversal ignoré :", tx_id);
-      return res.status(200).send("OK");
-    }
-
-    // ✅ URL ABSOLUE SANS HASH
-    const fullUrl =
-      req.protocol + "://" + req.get("host") + req.originalUrl;
-
-    const urlWithoutHash = fullUrl.split("&hash=")[0];
-
+    // ✅ HASH = revenue (PAS currencyAmount)
     const computedHash = crypto
-      .createHmac("sha1", THEOREM_SECRET)
-      .update(urlWithoutHash, "utf8")
-      .digest("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+      .createHash("sha256")
+      .update(userID + revenue + SECRET_KEY)
+      .digest("hex");
 
     if (computedHash !== hash) {
       console.log("❌ Hash invalide", {
+        userID,
+        revenue,
         received: hash,
-        expected: computedHash,
-        urlWithoutHash
+        expected: computedHash
       });
       return res.status(200).send("OK");
     }
 
-    const amount = Math.floor(Number(reward));
-    if (amount <= 0) return res.status(200).send("OK");
+    // ✅ Solde = currencyAmount
+    const amount = Math.ceil(Number(currencyAmount));
+    if (amount <= 0) {
+      console.log("❌ Amount invalide :", currencyAmount);
+      return res.status(200).send("OK");
+    }
 
+    // 🔎 Récupération UID Firebase via RobloxName
     const snap = await db.ref("users")
       .orderByChild("RobloxName")
-      .equalTo(user_id)
+      .equalTo(userID)
       .get();
 
-    if (!snap.exists()) return res.status(200).send("OK");
+    if (!snap.exists()) {
+      console.log("❌ Utilisateur Firebase introuvable");
+      return res.status(200).send("OK");
+    }
 
     const uid = Object.keys(snap.val())[0];
 
-    const txRef = db.ref("transactions/" + tx_id);
+    // 🔒 Anti-doublon
+    const txRef = db.ref("transactions/" + transactionID);
     if ((await txRef.get()).exists()) {
       console.log("⚠️ Transaction déjà traitée");
       return res.status(200).send("OK");
     }
 
-    await txRef.set({
-      uid,
-      amount,
-      source: "theoremreach",
-      date: Date.now()
-    });
+    await txRef.set({ uid, amount, type, date: Date.now() });
 
     await db.ref(`users/${uid}/balance`)
       .transaction(v => (v || 0) + amount);
 
-    console.log(`✅ TheoremReach crédité ${user_id} +${amount}`);
+    console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
 
   } catch (err) {
-    console.error("🔥 Reach error:", err);
+    console.error("🔥 TimeWall error:", err);
     return res.status(200).send("OK");
   }
 });
