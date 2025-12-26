@@ -148,19 +148,18 @@ app.get("/reach", async (req, res) => {
     }
 
     // --- Calcul du hash correct ---
-    const url = Object.keys(req.query)
-      .filter(k => k !== "hash")
-      .sort()
-      .map(k => `${k}=${req.query[k]}`)
-      .join("&");
+    const url = req.originalUrl.split("&hash=")[0];
 
-    const computedHash = crypto
-      .createHmac("sha1", THEOREM_SECRET)
-      .update(url, "utf8")
-      .digest("base64")
+    const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
+    hmac.update(url, "utf8");
+
+    const computedHash = hmac.digest("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
-      .replace(/=+$/, "");
+      .replace(/=+$/, ""); // juste supprimer les =
+
+    console.log("Hash calculé :", computedHash);
+    console.log("Hash reçu :", req.query.hash);
 
     if (computedHash !== hash) {
       console.log("❌ Hash invalide", {
