@@ -139,11 +139,12 @@ app.get("/reach", async (req, res) => {
       user_id,
       reward,
       tx_id,
+      hash,
       reversal
     } = req.query;
 
     // Toujours répondre 200 à TheoremReach
-    if (!user_id || !reward || !tx_id) {
+    if (!user_id || !reward || !tx_id || !hash) {
       console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
@@ -153,6 +154,28 @@ app.get("/reach", async (req, res) => {
       return res.status(200).send("OK");
     }
 
+    const crypto = require("crypto");
+
+    const urlWithoutHash = req.originalUrl.split("&hash=")[0];
+
+    const computedHash = crypto
+      .createHmac("sha1", THEOREM_SECRET) // 🔥 HMAC SHA1
+      .update(urlWithoutHash, "utf8")
+      .digest("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    if (computedHash !== req.query.hash) {
+      console.log("❌ Hash invalide", {
+        received: req.query.hash,
+        expected: computedHash,
+        urlWithoutHash
+      });
+      return res.status(200).send("OK");
+    }
+  
+      
     const amount = Math.floor(Number(reward));
     if (amount <= 0) {
       console.log("❌ Reward invalide :", reward);
