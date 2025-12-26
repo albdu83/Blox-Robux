@@ -135,44 +135,43 @@ app.get("/reach", async (req, res) => {
   console.log("🔥 /reach HIT", req.query);
 
   try {
-    const {
-      user_id,
-      reward,
-      tx_id,
-      hash,
-      reversal
-    } = req.query;
+    const { user_id, reward, tx_id, hash, reversal } = req.query;
 
-    // Toujours répondre 200 à TheoremReach
     if (!user_id || !reward || !tx_id || !hash) {
       console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
-    // Ignorer les annulations (ou gérer différemment)
+
     if (reversal === "true") {
       console.log("↩️ Reversal ignoré :", tx_id);
       return res.status(200).send("OK");
     }
 
-    const params = req.originalUrl.split("&hash=")[0]; // tout avant hash
+    // --- Calcul du hash correct ---
+    const url = Object.keys(req.query)
+      .filter(k => k !== "hash")
+      .sort()
+      .map(k => `${k}=${req.query[k]}`)
+      .join("&");
 
     const computedHash = crypto
       .createHmac("sha1", THEOREM_SECRET)
-      .update(params, "utf8")
+      .update(url, "utf8")
       .digest("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=+$/, "");
 
-    if (computedHash !== req.query.hash) {
+    if (computedHash !== hash) {
       console.log("❌ Hash invalide", {
-        received: req.query.hash,
+        received: hash,
         expected: computedHash,
-        urlWithoutHash: params // ici, utiliser params
+        urlWithoutHash: url
       });
       return res.status(200).send("OK");
     }
-    console.log("Params pour hash:", params);
+
+    console.log("Params pour hash:", url);
     console.log("Hash reçu :", hash);
     console.log("Hash calculé :", computedHash);
 
