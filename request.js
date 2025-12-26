@@ -147,36 +147,46 @@ app.get("/reach", async (req, res) => {
       return res.status(200).send("OK");
     }
 
-    // --- Calcul du hash correct ---
-const urlWithoutHash = req.originalUrl.split("&hash=")[0].replace("/reach?", "");
+    // --- Calcul du hash correct selon TheoremReach ---
+    const params = { ...req.query };
+    delete params.hash; // on supprime hash pour recalculer
 
-const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
-hmac.update(urlWithoutHash, "utf8");
+    // Tri alphabétique des clés
+    const sortedKeys = Object.keys(params).sort();
+    const queryStringSorted = sortedKeys
+      .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
+      .join("&");
 
-const computedHash = hmac.digest("base64")
-  .replace(/\+/g, "-")
-  .replace(/\//g, "_")
-  .replace(/=+$/, "");
+    // HMAC SHA-1
+    const hmac = crypto.createHmac("sha1", THEOREM_SECRET);
+    hmac.update(queryStringSorted, "utf8");
 
-console.log("Query string brute :", urlWithoutHash);
-console.log("Hash calculé :", computedHash);
-console.log("Hash reçu   :", hash);
+    const computedHash = hmac.digest("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, ""); // enlever uniquement les '='
+
+    console.log("Query string triée :", queryStringSorted);
+    console.log("Hash calculé :", computedHash);
+    console.log("Hash reçu   :", hash);
 
     if (computedHash !== hash) {
       console.log("❌ Hash invalide", {
         received: hash,
         expected: computedHash,
-        urlWithoutHash
+        queryStringSorted
       });
       return res.status(200).send("OK");
     }
 
+    // ✅ Traitement du reward
     const amount = Math.floor(Number(reward));
     if (amount <= 0) {
       console.log("❌ Reward invalide :", reward);
       return res.status(200).send("OK");
     }
 
+    // 🔎 Récupération utilisateur Firebase
     const snap = await db.ref("users")
       .orderByChild("RobloxName")
       .equalTo(user_id)
@@ -189,12 +199,14 @@ console.log("Hash reçu   :", hash);
 
     const uid = Object.keys(snap.val())[0];
 
+    // 🔒 Anti-doublon
     const txRef = db.ref("transactions/" + tx_id);
     if ((await txRef.get()).exists()) {
       console.log("⚠️ Transaction déjà traitée :", tx_id);
       return res.status(200).send("OK");
     }
 
+    // 💾 Sauvegarde transaction et crédit solde
     await txRef.set({
       uid,
       amount,
@@ -213,6 +225,7 @@ console.log("Hash reçu   :", hash);
     return res.status(200).send("OK");
   }
 });
+
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
