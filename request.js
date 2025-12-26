@@ -204,6 +204,48 @@ app.get("/api/privateservers", async (req, res) => {
   }
 });
 
+app.post("/api/join-server", async (req, res) => {
+  try {
+    const { placeId } = req.body; // récupérer la placeId envoyée par le front
+    if (!placeId) return res.status(400).json({ error: "placeId manquante" });
+
+    const url = `https://games.roblox.com/v1/games/vip-servers/${process.env.UNIVERSE_ID}`;
+
+    // Première requête pour obtenir le token CSRF
+    let tokenRes = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`
+      }
+    });
+
+    const csrfToken = tokenRes.headers.get("x-csrf-token");
+
+    // Création/rejoindre le serveur privé
+    const joinRes = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`,
+        "X-CSRF-TOKEN": csrfToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ placeId: placeId })
+    });
+
+    if (!joinRes.ok) {
+      const errText = await joinRes.text();
+      return res.status(joinRes.status).json({ error: errText });
+    }
+
+    const data = await joinRes.json();
+    res.json(data);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Impossible de rejoindre/créer le serveur privé" });
+  }
+});
+
 app.get("/api/places", async (req, res) => {
     const { targetId  } = req.query;
 
