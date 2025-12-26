@@ -209,7 +209,7 @@ app.post("/api/join-server", async (req, res) => {
     const { placeId } = req.body; // récupérer la placeId envoyée par le front
     if (!placeId) return res.status(400).json({ error: "placeId manquante" });
 
-    const url = `https://games.roblox.com/v1/games/vip-servers/${process.env.UNIVERSE_ID}`;
+    const url = `https://games.roblox.com/v1/games/vip-servers/${placeId}`;
 
     // Première requête pour obtenir le token CSRF
     let tokenRes = await fetch(url, {
