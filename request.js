@@ -155,15 +155,15 @@ app.get("/reach", async (req, res) => {
     }
 
     const params = req.originalUrl.split("&hash=")[0]; // tout avant hash
-    const toHash = params + THEOREM_SECRET;
 
     const computedHash = crypto
-      .createHmac("sha1", THEOREM_SECRET)
-      .update(toHash, "utf8")
+      .createHmac("sha1", THEOREM_SECRET) // clé = THEOREM_SECRET
+      .update(params, "utf8")             // juste les params
       .digest("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=+$/, "");
+
 
 
     if (computedHash !== req.query.hash) {
