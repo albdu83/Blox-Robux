@@ -232,8 +232,8 @@ const ROBLO_COOKIE = process.env.ROBLO_COOKIE;
 
 // --- Vérifier la balance ---
 async function getUserBalance(username) {
-  const snap = await db.ref("users").orderByChild("username").equalTo(username).get();
-  if (!snap.exists()) return 0;
+  const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
+  if (!snap.exists()) return null;
   const uid = Object.keys(snap.val())[0];
   return { uid, balance: snap.val()[uid].balance || 0 };
 }
