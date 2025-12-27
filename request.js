@@ -204,7 +204,8 @@ app.post("/api/join-server", async (req, res) => {
     const detailsText = await detailsRes.text();
     const detailsData = JSON.parse(detailsText);
 
-    if (!detailsData?.data || detailsData.data.length === 0) {
+    // Vérifie si le tableau est vide
+    if (!Array.isArray(detailsData) || detailsData.length === 0) {
       return res.status(404).json({ error: "Place introuvable", details: detailsText });
     }
 
