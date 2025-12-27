@@ -250,7 +250,7 @@ async function getRobloxUserId(username) {
         throw new Error("Utilisateur Roblox introuvable");
     }
 }
-
+const rootIdMap = {};
 async function getPublicsPlaces(targetId) {
     if (!targetId) return;
 
@@ -284,6 +284,7 @@ async function getPublicsPlaces(targetId) {
         // Ajouter les options
         data.data.forEach(game => {
           let gameID = game.ID
+          rootIdMap[game.ID] = game.RootID;
             let displayName = game.name;
             if (displayName.length > 15) {
                 displayName = displayName.slice(0, 15) + "...";
@@ -353,35 +354,37 @@ function updateInterfaceSize() {
 
 window.addEventListener("resize", updateInterfaceSize)
 updateInterfaceSize()
-});
+
+const btn = document.getElementById("buttonretrait");
+const select = document.getElementById("public-places");
+
+if (!btn || !select) return;
 
 async function getPrivateServers() {
-    const btn = document.getElementById("bouttonretrait");
-    const select = document.getElementById("public-places"); // <select> des serveurs
+    const selectedGameID = select.value; // récupère l'ID du jeu sélectionné
+    if (!selectedGameID) return console.warn("Aucun serveur sélectionné");
 
-    if (!btn || !select) return;
+    const rootID = rootIdMap[selectedGameID]; // récupère le RootID correspondant
+    if (!rootID) return console.warn("Impossible de trouver le RootID");
 
-    btn.addEventListener("click", async () => { // rendre le callback async
-        const selectedId = select.value; // récupérer la valeur sélectionnée dans le <select>
-        if (!selectedId) {
-            console.warn("Aucun serveur sélectionné");
-            return;
-        }
+    console.log("ID sélectionné :", selectedGameID);
+    console.log("RootID correspondant :", rootID);
 
-        try {
-            const joinRes = await fetch(`${API_BASE_URL}/api/join-server`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ placeId: selectedId })
-            });
+    try {
+        const joinRes = await fetch(`${API_BASE_URL}/api/join-server`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ placeId: rootID }) // on envoie uniquement le RootID
+        });
 
-            if (!joinRes.ok) throw new Error(`Erreur HTTP ${joinRes.status}`);
-            const joinData = await joinRes.json();
-            console.log("Serveur rejoint :", joinData);
-            alert("CA FONCTIONNNNNNNNNNNNEEEEEEEEEEE OEEEEEEEEEEEEE");
+        console.log("Status fetch :", joinRes.status);
+        const joinData = await joinRes.json();
+        console.log("Serveur rejoint :", joinData);
 
-        } catch (err) {
-            console.error("Erreur en rejoignant le serveur :", err);
-        }
-    });
+    } catch (err) {
+        console.error("Erreur en rejoignant le serveur :", err);
+    }
 }
+
+btn.addEventListener("click", getPrivateServers);
+});
