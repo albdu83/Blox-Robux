@@ -191,19 +191,6 @@ app.post("/checkAdminCode", (req, res) => {
     res.json({ valid: code === ADMIN_CODE });
 });
 
-app.get("/api/privateservers", async (req, res) => {
-  try {
-    const serversRes = await fetch("https://games.roblox.com/v1/private-servers/my-private-servers?privateServersTab=0&itemsPerPage=25", {
-      headers: { "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}` }
-    });
-    const data = await serversRes.json();
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Impossible de récupérer les serveurs privés" });
-  }
-});
-
 app.post("/api/join-server", async (req, res) => {
   try {
     const { placeId } = req.body;
@@ -269,6 +256,9 @@ app.post("/api/join-server", async (req, res) => {
   }
 });
 
+
+
+
 app.get("/api/places", async (req, res) => {
     const { targetId  } = req.query;
 
@@ -293,8 +283,9 @@ app.get("/api/places", async (req, res) => {
         const formatted = {
             data: data.data.map(game => ({
                 name: game.name,
-                ID: game.id || null
-            })).filter(game => game.ID !== null)
+                ID: game.id || null,
+                RootID: game.rootPlace?.id || null
+            })).filter(game => game.RootID !== null).filter(game => game.ID !== null)
         };
 
         res.json(formatted);
