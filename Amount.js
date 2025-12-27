@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const finalStep = document.getElementById("finalStep")
     const finalStep2 = document.getElementById("finalStep2")
     const helpbutton = document.getElementById("HELP")
+    const btnretour = document.getElementById("btnretour")
     if (!connectedUser) {
         if (balanceEl) balanceEl.textContent = "0.00 R$";
         showError("Vous devez être connecté pour retirer des Robux !");
@@ -53,6 +54,20 @@ document.addEventListener("DOMContentLoaded", () => {
         finalStep2.style.display = "flex"
         setTimeout(() => {
             finalStep2.classList.add("active3")
+        }, 0);
+    }
+
+    function ShowTemplate3() {
+        finalStep2.style.display = "none"
+        finalStep.style.display = "flex"
+        setTimeout(() => {
+            finalStep.classList.add("active4")
+        }, 0);
+    }
+
+    function HideTemplate2() {
+        setTimeout(() => {
+            finalStep2.classList.add("active5")
         }, 0);
     }
 
@@ -125,41 +140,69 @@ document.addEventListener("DOMContentLoaded", () => {
         const amount = Math.round(value * 100) / 100;
 
         if (amount <= 0) return showError("Montant invalide !");
+        if (amount < 25) return showError("le montant doit être supérieur à 25!");
+        if (amount > 375) return showError("le montant doit être inférieur à 375!");
         if (amount > state.balance) return showError("Solde insuffisant !");
+        showTemplate()
+        const taxe = Math.round(amount * 1.3)
+        const taxelabel = document.getElementById("robuxadd")
+        taxelabel.innerHTML = `🛑 Vous indiquerez ${taxe} Robux dans l'encadré rouge de l'image!`
+        //const tx = {
+            //id: Date.now(),
+            //type: "withdraw",
+            //amount: -amount,
+            //date: new Date().toISOString()
+        //};
 
-        const tx = {
-            id: Date.now(),
-            type: "withdraw",
-            amount: -amount,
-            date: new Date().toISOString()
-        };
+        //state.balance -= amount;
+        //state.transactions.push(tx);
 
-        state.balance -= amount;
-        state.transactions.push(tx);
+        //userRef.update({
+            //balance: state.balance,
+            //transactions: state.transactions
+        //}).catch(err => console.error(err));
 
-        userRef.update({
-            balance: state.balance,
-            transactions: state.transactions
-        }).catch(err => console.error(err));
-
-        render(); // mise à jour immédiate
+        //render(); // mise à jour immédiate
     }
 
     if (withdrawBtn) {
         withdrawBtn.addEventListener("click", () => {
-            //if (!amountEl) return showError("Champ montant introuvable !");
-            //const value = parseFloat(amountEl.value);
-            //if (isNaN(value)) return showError("Montant invalide !");
-            //addTransaction(value);
-            amountEl.value = "";
-            showTemplate()
+            if (!amountEl) return showError("Champ montant introuvable !");
+            const value = parseFloat(amountEl.value);
+            if (isNaN(value)) return showError("Montant invalide !");
+            addTransaction(value);
+            finalStep.classList.forEach(cls => {
+                if (cls.startsWith("active")) finalStep.classList.remove(cls);
+            });
+            finalStep2.classList.forEach(cls => {
+                if (cls.startsWith("active")) finalStep2.classList.remove(cls);
+            });
         });
     }
 
     if (helpbutton) {
         helpbutton.addEventListener("click", () => {
+            finalStep.classList.forEach(cls => {
+                if (cls.startsWith("active")) finalStep.classList.remove(cls);
+            });
+            finalStep2.classList.forEach(cls => {
+                if (cls.startsWith("active")) finalStep2.classList.remove(cls);
+            });
             HideTemplate()
             ShowTemplate2()
+        });
+    }
+
+    if (btnretour) {
+        btnretour.addEventListener("click", () => {
+            finalStep.classList.forEach(cls => {
+                if (cls.startsWith("active")) finalStep.classList.remove(cls);
+            });
+            finalStep2.classList.forEach(cls => {
+                if (cls.startsWith("active")) finalStep2.classList.remove(cls);
+            });
+            HideTemplate2()
+            ShowTemplate3()
         });
     }
 });
