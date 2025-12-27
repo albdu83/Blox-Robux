@@ -303,6 +303,22 @@ app.post("/api/payServer", async (req, res) => {
   }
 });
 
+app.post("/api/getBalance", async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: "Paramètre manquant : name" });
+
+    const user = await getUserBalance(name);
+    if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
+
+    res.json({ robux: user.balance });
+  } catch (err) {
+    console.error("Erreur /api/getBalance :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
