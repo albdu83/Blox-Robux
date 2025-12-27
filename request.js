@@ -210,7 +210,11 @@ app.post("/api/join-server", async (req, res) => {
     if (!placeId) return res.status(400).json({ error: "placeId manquante" });
 
     // 1️⃣ Récupérer les détails de la place pour obtenir l'universeId
-    const detailsRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`);
+    const detailsRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`, {
+    headers: {
+        "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`
+      }
+    });
     if (!detailsRes.ok) throw new Error(`Erreur récupération place: ${detailsRes.status}`);
     const detailsData = await detailsRes.json();
 
