@@ -213,6 +213,9 @@ app.post("/api/join-server", async (req, res) => {
       return res.status(404).json({ error: "Place introuvable", details: detailsText });
     }
 
+    const canCreate = await canCreateVIP(universeId);
+    if (!canCreate) return res.status(403).json({ error: "Ce compte ne peut pas créer de VIP server pour cet univers" });
+    
     // ✅ Créer ou rejoindre un VIP server
     const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
       method: "POST",
