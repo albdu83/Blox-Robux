@@ -245,30 +245,32 @@ async function deductBalance(uid, amount, gameId) {
   await txRef.set({ uid, gameId, amount, date: Date.now() });
 }
 
-// --- Endpoint pour payer et créer VIP server ---
 app.post("/api/payServer", async (req, res) => {
   const { name, gameId, amount } = req.body;
-  if (!name || !gameId || !amount) return res.status(400).json({ error: "Paramètres manquants" });
+  if (!name || !gameId || !amount) 
+    return res.status(400).json({ error: "Paramètres manquants" });
 
   try {
     // 1️⃣ Vérifier solde
     const user = await getUserBalance(name);
     if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
-    if (user.balance < amount) return res.status(400).json({ error: `Solde insuffisant (${user.balance} R$)` });
+    if (user.balance < amount) 
+      return res.status(400).json({ error: `Solde insuffisant (${user.balance} R$)` });
 
-    // 3️⃣ Récupérer universeId depuis placeId
-    const universeRes = await fetch(
-      `https://games.roblox.com/v1/games?placeIds=${gameId}`
-    );
+    // 2️⃣ Récupérer universeId depuis placeId
+    const universeRes = await fetch(`https://games.roblox.com/v1/games?placeIds=${gameId}`);
     const universeData = await universeRes.json();
 
-    if (!universeData.data?.length) {
+    if (!universeData.data?.length) 
       return res.status(404).json({ error: "Universe introuvable" });
-    }
 
     const universeId = universeData.data[0].id;
 
-    // 4️⃣ Récupérer CSRF token
+    // ⚠️ Important : le cookie doit appartenir au propriétaire du jeu
+    if (!ROBLO_COOKIE) 
+      return res.status(500).json({ error: "ROBLO_COOKIE non défini" });
+
+    // 3️⃣ Récupérer CSRF token
     let csrfToken;
     try {
       const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
@@ -281,7 +283,7 @@ app.post("/api/payServer", async (req, res) => {
     }
     if (!csrfToken) return res.status(500).json({ error: "CSRF token introuvable" });
 
-    // 5️⃣ Créer le VIP server
+    // 4️⃣ Créer le VIP server
     const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
@@ -293,16 +295,20 @@ app.post("/api/payServer", async (req, res) => {
     });
 
     const vipData = await vipRes.json();
+    console.log("Roblox VIP response:", vipData, vipRes.status);
 
     if (!vipRes.ok) {
+      // ⚠️ Ne touche pas la balance si création échoue
       return res.status(vipRes.status).json({
         error: "Erreur création VIP server",
         details: vipData
       });
     }
 
-    // 6️⃣ Déduire la balance UNIQUEMENT si succès
+    // 5️⃣ Déduire la balance UNIQUEMENT si succès
     await deductBalance(user.uid, amount, gameId);
+
+    // ✅ Retour succès
     res.json({ status: 200, message: "Serveur VIP payé et créé !", server: vipData });
 
   } catch (err) {
