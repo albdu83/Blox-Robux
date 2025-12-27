@@ -211,54 +211,54 @@ app.post("/api/join-server", async (req, res) => {
 
     // 1️⃣ Récupérer les détails de la place pour obtenir l'universeId
     const detailsRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`, {
-      headers: {
-        "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-      }
+      headers: { "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}` }
     });
 
-    if (!detailsRes.ok) throw new Error(`Erreur récupération place: ${detailsRes.status}`);
-    const detailsData = await detailsRes.json();
+    const detailsText = await detailsRes.text();
+    if (!detailsRes.ok) {
+      console.error("Erreur récupération place:", detailsRes.status, detailsText);
+      return res.status(detailsRes.status).json({ error: "Erreur récupération place", details: detailsText });
+    }
 
+    const detailsData = JSON.parse(detailsText);
     if (!detailsData?.data || detailsData.data.length === 0) {
-      return res.status(404).json({ error: "Place introuvable" });
+      console.error("Place introuvable:", detailsText);
+      return res.status(404).json({ error: "Place introuvable", details: detailsText });
     }
 
     const universeId = detailsData.data[0].universeId;
     if (!universeId) return res.status(500).json({ error: "Impossible de récupérer l'universeId" });
 
     // 2️⃣ Créer ou rejoindre un VIP server
-    // Récupérer le token CSRF
     const csrfRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
-      headers: {
-        "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-      }
+      headers: { "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}` }
     });
 
     const csrfToken = csrfRes.headers.get("x-csrf-token");
-    if (!csrfToken) return res.status(500).json({ error: "Impossible de récupérer le token CSRF" });
+    if (!csrfToken) {
+      const text = await csrfRes.text();
+      console.error("Impossible de récupérer le token CSRF:", text);
+      return res.status(500).json({ error: "Impossible de récupérer le token CSRF", details: text });
+    }
 
-    // Créer le serveur VIP
     const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
         "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`,
         "X-CSRF-TOKEN": csrfToken,
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        name: "Serveur VIP",
-        maxPlayers: 10
-      })
+      body: JSON.stringify({ name: "Serveur VIP", maxPlayers: 10 })
     });
 
-    const joinData = await joinRes.json();
+    const joinText = await joinRes.text();
+    let joinData;
+    try { joinData = JSON.parse(joinText); } catch { joinData = joinText; }
 
     if (!joinRes.ok) {
-      return res.status(joinRes.status).json({ error: joinData });
+      console.error("Erreur création VIP server:", joinRes.status, joinData);
+      return res.status(joinRes.status).json({ error: "Erreur création VIP server", details: joinData });
     }
 
     res.json(joinData);
