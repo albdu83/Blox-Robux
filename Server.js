@@ -283,8 +283,8 @@ async function getPublicsPlaces(targetId) {
 
         // Ajouter les options
         data.data.forEach(game => {
-          let gameID = game.ID
           rootIdMap[game.ID] = game.RootID;
+          let gameID = game.ID
             let displayName = game.name;
             if (displayName.length > 15) {
                 displayName = displayName.slice(0, 15) + "...";
@@ -361,30 +361,28 @@ const select = document.getElementById("public-places");
 if (!btn || !select) return;
 
 async function getPrivateServers() {
-    const selectedGameID = select.value; // récupère l'ID du jeu sélectionné
-    if (!selectedGameID) return console.warn("Aucun serveur sélectionné");
+  const selectedGameID = select.value; // ID principal du jeu
+  if (!selectedGameID) return console.warn("Aucun serveur sélectionné");
 
-    const rootID = rootIdMap[selectedGameID]; // récupère le RootID correspondant
-    if (!rootID) return console.warn("Impossible de trouver le RootID");
+  const rootID = rootIdMap[selectedGameID]; // juste pour info / utilisation URL
+  if (!rootID) console.warn("Impossible de trouver le RootID");
 
-    console.log("ID sélectionné :", selectedGameID);
-    console.log("RootID correspondant :", rootID);
+  console.log("ID sélectionné :", selectedGameID);
+  console.log("RootID correspondant :", rootID);
 
-    try {
-        const joinRes = await fetch(`${API_BASE_URL}/api/join-server`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ placeId: rootID }) // on envoie uniquement le RootID
-        });
+  try {
+    const joinRes = await fetch(`${API_BASE_URL}/api/join-server`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ placeId: rootID }) // <-- ici on envoie ID principal, pas rootID
+    });
 
-        console.log("Status fetch :", joinRes.status);
-        const joinData = await joinRes.json();
-        console.log("Serveur rejoint :", joinData);
+    const joinData = await joinRes.json();
+    console.log("Serveur rejoint :", joinData);
 
-    } catch (err) {
-        console.error("Erreur en rejoignant le serveur :", err);
-    }
+  } catch (err) {
+    console.error("Erreur en rejoignant le serveur :", err);
+  }
 }
-
 btn.addEventListener("click", getPrivateServers);
 });
