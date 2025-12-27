@@ -206,42 +206,56 @@ app.get("/api/privateservers", async (req, res) => {
 
 app.post("/api/join-server", async (req, res) => {
   try {
-    const { placeId } = req.body; // récupérer la placeId envoyée par le front
+    const { placeId } = req.body;
     if (!placeId) return res.status(400).json({ error: "placeId manquante" });
 
-    const url = `https://games.roblox.com/v1/games/vip-servers/${placeId}`;
+    // 1️⃣ Récupérer le universeId correspondant à la place
+    const detailsRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`);
+    if (!detailsRes.ok) throw new Error(`Erreur récupération place: ${detailsRes.status}`);
+    const detailsData = await detailsRes.json();
 
-    // Première requête pour obtenir le token CSRF
-    let tokenRes = await fetch(url, {
+    if (!detailsData || !detailsData.data || detailsData.data.length === 0) {
+      return res.status(404).json({ error: "Place introuvable" });
+    }
+
+    const universeId = detailsData.data[0].universeId;
+    if (!universeId) return res.status(500).json({ error: "Impossible de récupérer l'universeId" });
+
+    // 2️⃣ Obtenir le token CSRF
+    const csrfRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
         "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`
       }
     });
 
-    const csrfToken = tokenRes.headers.get("x-csrf-token");
+    const csrfToken = csrfRes.headers.get("x-csrf-token");
+    if (!csrfToken) return res.status(500).json({ error: "Impossible de récupérer le token CSRF" });
 
-    // Création/rejoindre le serveur privé
-    const joinRes = await fetch(url, {
+    // 3️⃣ Créer le VIP server
+    const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
         "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`,
         "X-CSRF-TOKEN": csrfToken,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ placeId: placeId })
+      body: JSON.stringify({
+        name: "Serveur VIP",
+        maxPlayers: 10
+      })
     });
 
+    const joinData = await joinRes.json();
+
     if (!joinRes.ok) {
-      const errText = await joinRes.text();
-      return res.status(joinRes.status).json({ error: errText });
+      return res.status(joinRes.status).json({ error: joinData });
     }
 
-    const data = await joinRes.json();
-    res.json(data);
+    res.json(joinData);
 
   } catch (err) {
-    console.error(err);
+    console.error("Erreur /join-server:", err);
     res.status(500).json({ error: "Impossible de rejoindre/créer le serveur privé" });
   }
 });
