@@ -213,9 +213,6 @@ app.post("/api/join-server", async (req, res) => {
       return res.status(404).json({ error: "Place introuvable", details: detailsText });
     }
 
-    const canCreate = await canCreateVIP(universeId);
-    if (!canCreate) return res.status(403).json({ error: "Ce compte ne peut pas créer de VIP server pour cet univers" });
-    
     // ✅ Créer ou rejoindre un VIP server
     const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
       method: "POST",
@@ -233,7 +230,7 @@ app.post("/api/join-server", async (req, res) => {
         details: text
       });
     }
-    console.log("placeId:", placeId, "universeId:", universeId);
+
     const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
@@ -247,8 +244,6 @@ app.post("/api/join-server", async (req, res) => {
     const joinText = await joinRes.text();
     let joinData;
     try { joinData = JSON.parse(joinText); } catch { joinData = joinText; }
-    console.log("Status:", joinRes.status);
-    console.log("Response text:", joinText);
 
     if (!joinRes.ok) {
       return res.status(joinRes.status).json({ error: "Erreur création VIP server", details: joinData });
@@ -297,6 +292,20 @@ app.get("/api/places", async (req, res) => {
         console.error("Erreur récupération places :", err);
         res.status(500).json({ error: "Impossible de récupérer les emplacements" });
     }
+});
+
+app.get("/api/can-create-vip", async (req, res) => {
+  try {
+    const { universeId } = req.query;
+    if (!universeId) return res.status(400).json({ error: "universeId manquant" });
+
+    const canCreate = await canCreateVIP(universeId, process.env.ROBLO_COOKIE);
+    res.json({ canCreate });
+
+  } catch (err) {
+    console.error("Erreur /can-create-vip:", err);
+    res.status(500).json({ error: "Impossible de vérifier VIP", details: err.message });
+  }
 });
 
 // --- Lancement serveur ---
