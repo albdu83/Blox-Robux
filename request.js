@@ -214,15 +214,15 @@ app.post("/api/join-server", async (req, res) => {
     }
 
     // ✅ Créer ou rejoindre un VIP server
-    const csrfRes = await fetch("https://games.roblox.com/v1/csrf-token", {
+    const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
       method: "POST",
       headers: {
         "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`
       }
     });
-    const csrfToken = csrfRes.headers.get("x-csrf-token");
-    console.log("CSRF Token:", csrfToken);
 
+    const csrfToken = csrfRes.headers.get("x-csrf-token");
+    console.log("token récupérer", csrfToken)
     if (!csrfToken) {
       const text = await csrfRes.text();
       return res.status(500).json({
