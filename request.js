@@ -295,7 +295,9 @@ app.post("/api/payServer", async (req, res) => {
     });
 
     const vipData = await vipRes.json();
-    if (!vipRes.ok) return res.status(vipRes.status).json({ error: "Erreur création VIP server", details: vipData });
+    console.log("Roblox VIP response:", vipData, vipRes.status);
+    if (!vipRes.ok)
+        return res.status(vipRes.status).json({ error: "Erreur création VIP server", details: vipData });
 
     // ✅ Retour succès
     res.json({ status: 200, message: "Serveur VIP payé et créé !", server: vipData });
