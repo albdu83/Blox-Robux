@@ -204,13 +204,14 @@ app.post("/api/join-server", async (req, res) => {
     const detailsText = await detailsRes.text();
     const detailsData = JSON.parse(detailsText);
 
-    // Vérifie si le tableau est vide
-    if (!Array.isArray(detailsData) || detailsData.length === 0) {
+    let universeId;
+    if (Array.isArray(detailsData) && detailsData.length > 0) {
+      universeId = detailsData[0].universeId;
+    } else if (detailsData?.data && detailsData.data.length > 0) {
+      universeId = detailsData.data[0].universeId;
+    } else {
       return res.status(404).json({ error: "Place introuvable", details: detailsText });
     }
-
-    const universeId = detailsData.data[0].universeId;
-    if (!universeId) return res.status(500).json({ error: "Impossible de récupérer l'universeId" });
 
     // ✅ Créer ou rejoindre un VIP server
     const csrfRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
