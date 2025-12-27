@@ -264,8 +264,12 @@ app.post("/api/payServer", async (req, res) => {
       headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
     });
     const placeData = await placeRes.json();
-    if (!Array.isArray(placeData) || placeData.length === 0) return res.status(404).json({ error: "Place introuvable" });
+    if (!Array.isArray(placeData) || placeData.length === 0 || !placeData[0].universeId) {
+      console.log("Place introuvable ou universeId manquant", placeData);
+      return res.status(404).json({ error: "Place introuvable ou universeId manquant" });
+    }
     const universeId = placeData[0].universeId;
+
 
     // 4️⃣ Récupérer CSRF token
     let csrfToken;
@@ -303,6 +307,28 @@ app.post("/api/payServer", async (req, res) => {
   }
 });
 
+app.post("/api/getBalance", async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: "Paramètre manquant : name" });
+
+    const user = await getUserBalance(name);
+    if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
+
+    res.json({ robux: user.balance });
+  } catch (err) {
+    console.error("Erreur /api/getBalance :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+
+// --- Lancement serveur ---
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`✅ Serveur en ligne sur le port ${PORT}`);
+});
 app.post("/api/getBalance", async (req, res) => {
   try {
     const { name } = req.body;
