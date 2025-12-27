@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const { username, RobloxName } = snapshot.val();
+      localStorage.setItem("robloxName", RobloxName);
 
       /* ===== PROFIL HEADER ===== */
       const lienprofil = document.getElementById("lien-profil");
@@ -362,10 +363,15 @@ if (!btn || !select) return;
 
 btn.addEventListener("click", async () => {
   const selectedGameID = select.value;
+  const rootID = rootIdMap[selectedGameID]
+  console.log("selectedGameID:", selectedGameID, "rootID:", rootID);
+  if (!rootID) return alert("Place introuvable !");
+
   if (!selectedGameID) return alert("Sélectionne un jeu");
 
   const pseudo = localStorage.getItem("robloxName");
-  const amount = parseInt(localStorage.getItem("amount"), 10);
+  const amountEl = document.getElementById("amount");
+  const amount = parseFloat(amountEl.value);
 
   if (!pseudo || !amount) {
     return alert("Utilisateur ou montant invalide");
@@ -390,7 +396,7 @@ btn.addEventListener("click", async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: pseudo,
-      gameId: selectedGameID,
+      gameId: rootID,
       amount
     })
   });
