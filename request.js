@@ -209,19 +209,19 @@ app.post("/api/join-server", async (req, res) => {
     const { placeId } = req.body;
     if (!placeId) return res.status(400).json({ error: "placeId manquante" });
 
-    // 1️⃣ Récupérer le universeId correspondant à la place
+    // 1️⃣ Récupérer les détails de la place pour obtenir l'universeId
     const detailsRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`);
     if (!detailsRes.ok) throw new Error(`Erreur récupération place: ${detailsRes.status}`);
     const detailsData = await detailsRes.json();
 
-    if (!detailsData || !detailsData.data || detailsData.data.length === 0) {
+    if (!detailsData?.data || detailsData.data.length === 0) {
       return res.status(404).json({ error: "Place introuvable" });
     }
 
     const universeId = detailsData.data[0].universeId;
     if (!universeId) return res.status(500).json({ error: "Impossible de récupérer l'universeId" });
 
-    // 2️⃣ Obtenir le token CSRF
+    // 2️⃣ Créer ou rejoindre un VIP server
     const csrfRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
@@ -232,7 +232,6 @@ app.post("/api/join-server", async (req, res) => {
     const csrfToken = csrfRes.headers.get("x-csrf-token");
     if (!csrfToken) return res.status(500).json({ error: "Impossible de récupérer le token CSRF" });
 
-    // 3️⃣ Créer le VIP server
     const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
