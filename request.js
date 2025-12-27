@@ -231,7 +231,7 @@ app.get("/api/places", async (req, res) => {
 const ROBLO_COOKIE = process.env.ROBLO_COOKIE;
 
 // --- Vérifier la balance ---
-async function getUserBalance(username) {
+async function getUserBalance(RobloxName) {
   const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
   if (!snap.exists()) return null;
   const uid = Object.keys(snap.val())[0];
