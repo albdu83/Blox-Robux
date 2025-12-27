@@ -264,11 +264,12 @@ app.post("/api/payServer", async (req, res) => {
       headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
     });
     const placeData = await placeRes.json();
-    if (!Array.isArray(placeData) || placeData.length === 0 || !placeData[0].universeId) {
+    if (!placeData?.data || !Array.isArray(placeData.data) || placeData.data.length === 0 || !placeData.data[0].universeId) {
       console.log("Place introuvable ou universeId manquant", placeData);
       return res.status(404).json({ error: "Place introuvable ou universeId manquant" });
     }
-    const universeId = placeData[0].universeId;
+    const universeId = placeData.data[0].universeId;
+
 
 
     // 4️⃣ Récupérer CSRF token
