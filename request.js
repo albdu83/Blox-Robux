@@ -229,7 +229,7 @@ app.post("/api/join-server", async (req, res) => {
         details: text
       });
     }
-
+    console.log("csrfToken récupérer")
     const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
@@ -241,13 +241,14 @@ app.post("/api/join-server", async (req, res) => {
     });
 
     const joinText = await joinRes.text();
+    console.log("jointext ok")
     let joinData;
     try { joinData = JSON.parse(joinText); } catch { joinData = joinText; }
-
+    console.log("joindata ok")
     if (!joinRes.ok) {
       return res.status(joinRes.status).json({ error: "Erreur création VIP server", details: joinData });
     }
-
+    console.log("joinRes ok")
     res.json(joinData);
 
   } catch (err) {
