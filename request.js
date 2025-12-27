@@ -294,20 +294,6 @@ app.get("/api/places", async (req, res) => {
     }
 });
 
-app.get("/api/can-create-vip", async (req, res) => {
-  try {
-    const { universeId } = req.query;
-    if (!universeId) return res.status(400).json({ error: "universeId manquant" });
-
-    const canCreate = await canCreateVIP(universeId, process.env.ROBLO_COOKIE);
-    res.json({ canCreate });
-
-  } catch (err) {
-    console.error("Erreur /can-create-vip:", err);
-    res.status(500).json({ error: "Impossible de vérifier VIP", details: err.message });
-  }
-});
-
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
