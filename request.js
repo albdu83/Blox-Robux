@@ -258,7 +258,7 @@ app.post("/api/payServer", async (req, res) => {
       return res.status(400).json({ error: `Solde insuffisant (${user.balance} R$)` });
 
     // 2️⃣ Récupérer universeId depuis placeId
-    const universeRes = await fetch(`https://games.roblox.com/v1/games?placeIds=${gameId}`);
+    const universeRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${gameId}`);
     const universeData = await universeRes.json();
 
     if (!universeData.data?.length) 
