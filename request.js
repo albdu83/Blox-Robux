@@ -214,14 +214,15 @@ app.post("/api/join-server", async (req, res) => {
     }
 
     // ✅ Créer ou rejoindre un VIP server
-    const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
+    const csrfRes = await fetch("https://games.roblox.com/v1/csrf-token", {
       method: "POST",
       headers: {
         "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`
       }
     });
-
     const csrfToken = csrfRes.headers.get("x-csrf-token");
+    console.log("CSRF Token:", csrfToken);
+
     if (!csrfToken) {
       const text = await csrfRes.text();
       return res.status(500).json({
@@ -229,7 +230,7 @@ app.post("/api/join-server", async (req, res) => {
         details: text
       });
     }
-    console.log("csrfToken récupérer")
+
     const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
@@ -241,14 +242,13 @@ app.post("/api/join-server", async (req, res) => {
     });
 
     const joinText = await joinRes.text();
-    console.log("jointext ok")
     let joinData;
     try { joinData = JSON.parse(joinText); } catch { joinData = joinText; }
-    console.log("joindata ok")
+
     if (!joinRes.ok) {
       return res.status(joinRes.status).json({ error: "Erreur création VIP server", details: joinData });
     }
-    console.log("joinRes ok")
+
     res.json(joinData);
 
   } catch (err) {
