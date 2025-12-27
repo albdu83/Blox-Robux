@@ -230,7 +230,7 @@ app.post("/api/join-server", async (req, res) => {
         details: text
       });
     }
-
+    console.log("placeId:", placeId, "universeId:", universeId);
     const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
