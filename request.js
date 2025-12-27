@@ -191,72 +191,6 @@ app.post("/checkAdminCode", (req, res) => {
     res.json({ valid: code === ADMIN_CODE });
 });
 
-app.post("/api/join-server", async (req, res) => {
-  try {
-    const { placeId } = req.body;
-    if (!placeId) return res.status(400).json({ error: "placeId manquante" });
-
-    // ✅ Récupération des détails de la place pour obtenir universeId
-    const detailsRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`, {
-      headers: { "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}` }
-    });
-
-    const detailsText = await detailsRes.text();
-    const detailsData = JSON.parse(detailsText);
-
-    let universeId;
-    if (Array.isArray(detailsData) && detailsData.length > 0) {
-      universeId = detailsData[0].universeId;
-    } else if (detailsData?.data && detailsData.data.length > 0) {
-      universeId = detailsData.data[0].universeId;
-    } else {
-      return res.status(404).json({ error: "Place introuvable", details: detailsText });
-    }
-
-    // ✅ Créer ou rejoindre un VIP server
-    const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
-      method: "POST",
-      headers: {
-        "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`
-      }
-    });
-
-    const csrfToken = csrfRes.headers.get("x-csrf-token");
-    console.log("token récupérer", csrfToken)
-    if (!csrfToken) {
-      const text = await csrfRes.text();
-      return res.status(500).json({
-        error: "Impossible de récupérer le token CSRF",
-        details: text
-      });
-    }
-
-    const joinRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
-      method: "POST",
-      headers: {
-        "Cookie": `.ROBLOSECURITY=${process.env.ROBLO_COOKIE}`,
-        "X-CSRF-TOKEN": csrfToken,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ name: "Serveur VIP", maxPlayers: 10 })
-    });
-
-    const joinText = await joinRes.text();
-    let joinData;
-    try { joinData = JSON.parse(joinText); } catch { joinData = joinText; }
-
-    if (!joinRes.ok) {
-      return res.status(joinRes.status).json({ error: "Erreur création VIP server", details: joinData });
-    }
-
-    res.json(joinData);
-
-  } catch (err) {
-    console.error("Erreur /join-server:", err);
-    res.status(500).json({ error: "Impossible de rejoindre/créer le serveur privé" });
-  }
-});
-
 app.get("/api/places", async (req, res) => {
     const { targetId  } = req.query;
 
@@ -292,6 +226,81 @@ app.get("/api/places", async (req, res) => {
         console.error("Erreur récupération places :", err);
         res.status(500).json({ error: "Impossible de récupérer les emplacements" });
     }
+});
+
+const ROBLO_COOKIE = process.env.ROBLO_COOKIE;
+
+// --- Vérifier la balance ---
+async function getUserBalance(username) {
+  const snap = await db.ref("users").orderByChild("username").equalTo(username).get();
+  if (!snap.exists()) return 0;
+  const uid = Object.keys(snap.val())[0];
+  return { uid, balance: snap.val()[uid].balance || 0 };
+}
+
+// --- Déduire la balance et créer transaction ---
+async function deductBalance(uid, amount, gameId) {
+  await db.ref(`users/${uid}/balance`).transaction(current => (current || 0) - amount);
+  const txRef = db.ref("transactions").push();
+  await txRef.set({ uid, gameId, amount, date: Date.now() });
+}
+
+// --- Endpoint pour payer et créer VIP server ---
+app.post("/api/payServer", async (req, res) => {
+  const { name, gameId, amount } = req.body;
+  if (!name || !gameId || !amount) return res.status(400).json({ error: "Paramètres manquants" });
+
+  try {
+    // 1️⃣ Vérifier solde
+    const user = await getUserBalance(name);
+    if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
+    if (user.balance < amount) return res.status(400).json({ error: `Solde insuffisant (${user.balance} R$)` });
+
+    // 2️⃣ Déduire la balance
+    await deductBalance(user.uid, amount, gameId);
+
+    // 3️⃣ Récupérer universeId depuis placeId
+    const placeRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${gameId}`, {
+      headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
+    });
+    const placeData = await placeRes.json();
+    if (!Array.isArray(placeData) || placeData.length === 0) return res.status(404).json({ error: "Place introuvable" });
+    const universeId = placeData[0].universeId;
+
+    // 4️⃣ Récupérer CSRF token
+    let csrfToken;
+    try {
+      const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
+        method: "POST",
+        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
+      });
+      csrfToken = csrfRes.headers.get("x-csrf-token");
+    } catch (err) {
+      return res.status(500).json({ error: "Impossible de récupérer le CSRF token" });
+    }
+    if (!csrfToken) return res.status(500).json({ error: "CSRF token introuvable" });
+
+    // 5️⃣ Créer le VIP server
+    const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
+      method: "POST",
+      headers: {
+        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}`,
+        "X-CSRF-TOKEN": csrfToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name: `VIP ${name}`, maxPlayers: 10 })
+    });
+
+    const vipData = await vipRes.json();
+    if (!vipRes.ok) return res.status(vipRes.status).json({ error: "Erreur création VIP server", details: vipData });
+
+    // ✅ Retour succès
+    res.json({ status: 200, message: "Serveur VIP payé et créé !", server: vipData });
+
+  } catch (err) {
+    console.error("Erreur payServer:", err);
+    res.status(500).json({ error: "Impossible d'effectuer le paiement ou créer le serveur" });
+  }
 });
 
 // --- Lancement serveur ---
