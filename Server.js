@@ -360,29 +360,47 @@ const select = document.getElementById("public-places");
 
 if (!btn || !select) return;
 
-async function getPrivateServers() {
-  const selectedGameID = select.value; // ID principal du jeu
-  if (!selectedGameID) return console.warn("Aucun serveur sélectionné");
+btn.addEventListener("click", async () => {
+  const selectedGameID = select.value;
+  if (!selectedGameID) return alert("Sélectionne un jeu");
 
-  const rootID = rootIdMap[selectedGameID]; // juste pour info / utilisation URL
-  if (!rootID) console.warn("Impossible de trouver le RootID");
+  const pseudo = localStorage.getItem("robloxName");
+  const amount = parseInt(localStorage.getItem("amount"), 10);
 
-  console.log("ID sélectionné :", selectedGameID);
-  console.log("RootID correspondant :", rootID);
-
-  try {
-    const joinRes = await fetch(`${API_BASE_URL}/api/join-server`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ placeId: rootID }) // <-- ici on envoie ID principal, pas rootID
-    });
-
-    const joinData = await joinRes.json();
-    console.log("Serveur rejoint :", joinData);
-
-  } catch (err) {
-    console.error("Erreur en rejoignant le serveur :", err);
+  if (!pseudo || !amount) {
+    return alert("Utilisateur ou montant invalide");
   }
-}
-btn.addEventListener("click", getPrivateServers);
+
+  // 1️⃣ Vérifier le solde
+  const balanceRes = await fetch(`${API_BASE_URL}/api/getBalance`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: pseudo })
+  });
+
+  const balanceData = await balanceRes.json();
+
+  if (balanceData.robux < amount) {
+    return alert(`Solde insuffisant (${balanceData.robux} R$)`);
+  }
+
+  // 2️⃣ Payer le serveur privé
+  const payRes = await fetch(`${API_BASE_URL}/api/payServer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: pseudo,
+      gameId: selectedGameID,
+      amount
+    })
+  });
+
+  const payData = await payRes.json();
+
+  if (payData.status === 200) {
+    alert("✅ Serveur privé payé avec succès !");
+  } else {
+    alert(payData.error || "❌ Erreur lors du paiement");
+  }
+});
 });
