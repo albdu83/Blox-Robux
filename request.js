@@ -244,6 +244,8 @@ app.post("/api/join-server", async (req, res) => {
     const joinText = await joinRes.text();
     let joinData;
     try { joinData = JSON.parse(joinText); } catch { joinData = joinText; }
+    console.log("Status:", joinRes.status);
+    console.log("Response text:", joinText);
 
     if (!joinRes.ok) {
       return res.status(joinRes.status).json({ error: "Erreur création VIP server", details: joinData });
