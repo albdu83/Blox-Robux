@@ -277,7 +277,7 @@ app.post("/api/payServer", async (req, res) => {
     try {
       const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
         method: "POST",
-        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}` }
+        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
       });
       csrfToken = csrfRes.headers.get("x-csrf-token");
     } catch (err) {
