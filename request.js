@@ -283,7 +283,7 @@ app.post("/api/payServer", async (req, res) => {
       return res.status(500).json({ error: "Impossible de récupérer le CSRF token" });
     }
     if (!csrfToken) return res.status(500).json({ error: "CSRF token introuvable" });
-
+    console.log("CSRF token récupéré :", csrfToken);
     // 4️⃣ Créer le VIP server
     const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
