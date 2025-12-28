@@ -265,9 +265,8 @@ app.post("/api/payServer", async (req, res) => {
         console.log("Place introuvable ou universeId manquant", placeData); 
         return res.status(404).json({ error: "Place introuvable ou universeId manquant" }); 
       } 
-    console.log("Place data brute :", placeData);
     const universeId = placeData[0].universeId;
-    console.log("✅ UniverseId récupéré :", universeId);
+
     // ⚠️ Important : le cookie doit appartenir au propriétaire du jeu
     if (!ROBLO_COOKIE) 
       return res.status(500).json({ error: "ROBLO_COOKIE non défini" });
@@ -284,7 +283,7 @@ app.post("/api/payServer", async (req, res) => {
       return res.status(500).json({ error: "Impossible de récupérer le CSRF token" });
     }
     if (!csrfToken) return res.status(500).json({ error: "CSRF token introuvable" });
-    console.log("CSRF token récupéré :", csrfToken);
+
     // 4️⃣ Créer le VIP server
     const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
@@ -293,7 +292,7 @@ app.post("/api/payServer", async (req, res) => {
         "X-CSRF-TOKEN": csrfToken,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ name: `VIP ${name}`, maxPlayers: 10 })
+      body: JSON.stringify({ name: `VIP Serv ${name}`, maxPlayers: 10 })
     });
 
     const vipData = await vipRes.json();
