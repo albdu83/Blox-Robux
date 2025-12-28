@@ -289,7 +289,7 @@ app.post("/api/payServer", async (req, res) => {
     const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
-        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}`,
+        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}`,
         "X-CSRF-TOKEN": csrfToken,
         "Content-Type": "application/json"
       },
