@@ -260,7 +260,7 @@ app.post("/api/payServer", async (req, res) => {
 
     // 2️⃣ Récupérer universeId depuis placeId
     const placeRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${gameId}`,
-       { headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` } }); 
+       { headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}` } }); 
        const placeData = await placeRes.json(); 
        if (!Array.isArray(placeData) || placeData.length === 0 || !placeData[0].universeId) { 
         console.log("Place introuvable ou universeId manquant", placeData); 
@@ -277,7 +277,7 @@ app.post("/api/payServer", async (req, res) => {
     try {
       const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
         method: "POST",
-        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
+        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}` }
       });
       csrfToken = csrfRes.headers.get("x-csrf-token");
     } catch (err) {
@@ -289,7 +289,7 @@ app.post("/api/payServer", async (req, res) => {
     const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
-        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}`,
+        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}`,
         "X-CSRF-TOKEN": csrfToken,
         "Content-Type": "application/json"
       },
