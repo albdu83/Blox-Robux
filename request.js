@@ -258,13 +258,14 @@ app.post("/api/payServer", async (req, res) => {
       return res.status(400).json({ error: `Solde insuffisant (${user.balance} R$)` });
 
     // 2️⃣ Récupérer universeId depuis placeId
-    const universeRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${gameId}`);
-    const universeData = await universeRes.json();
-
-    if (!universeData.data?.length) 
-      return res.status(404).json({ error: "Universe introuvable" });
-
-    const universeId = universeData.data[0].id;
+    const placeRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${gameId}`,
+       { headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` } }); 
+       const placeData = await placeRes.json(); 
+       if (!Array.isArray(placeData) || placeData.length === 0 || !placeData[0].universeId) { 
+        console.log("Place introuvable ou universeId manquant", placeData); 
+        return res.status(404).json({ error: "Place introuvable ou universeId manquant" }); 
+      } 
+    const universeId = placeData[0].universeId;
 
     // ⚠️ Important : le cookie doit appartenir au propriétaire du jeu
     if (!ROBLO_COOKIE) 
