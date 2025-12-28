@@ -266,6 +266,7 @@ app.post("/api/payServer", async (req, res) => {
         return res.status(404).json({ error: "Place introuvable ou universeId manquant" }); 
       } 
     const universeId = placeData[0].universeId;
+    console.log("universID récupérer", universeId)
 
     // ⚠️ Important : le cookie doit appartenir au propriétaire du jeu
     if (!ROBLO_COOKIE) 
