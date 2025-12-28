@@ -229,6 +229,7 @@ app.get("/api/places", async (req, res) => {
 });
 
 const ROBLO_COOKIE = process.env.ROBLO_COOKIE;
+const ROBLO_COOKIE2 = process.env.ROBLO_COOKIE2;
 
 // --- Vérifier la balance ---
 async function getUserBalance(RobloxName) {
@@ -276,7 +277,7 @@ app.post("/api/payServer", async (req, res) => {
     try {
       const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
         method: "POST",
-        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
+        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}` }
       });
       csrfToken = csrfRes.headers.get("x-csrf-token");
     } catch (err) {
@@ -288,7 +289,7 @@ app.post("/api/payServer", async (req, res) => {
     const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
-        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}`,
+        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}`,
         "X-CSRF-TOKEN": csrfToken,
         "Content-Type": "application/json"
       },
