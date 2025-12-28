@@ -229,7 +229,6 @@ app.get("/api/places", async (req, res) => {
 });
 
 const ROBLO_COOKIE = process.env.ROBLO_COOKIE;
-const ROBLO_COOKIE2 = process.env.ROBLO_COOKIE2;
 
 // --- Vérifier la balance ---
 async function getUserBalance(RobloxName) {
@@ -259,17 +258,15 @@ app.post("/api/payServer", async (req, res) => {
       return res.status(400).json({ error: `Solde insuffisant (${user.balance} R$)` });
 
     // 2️⃣ Récupérer universeId depuis placeId
-    const placeRes = await fetch(
-      `https://games.roblox.com/v1/games?placeIds=${gameId}`
-    );
-      const placeData = await placeRes.json();
+    const placeRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${gameId}`,
+       { headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` } }); 
+       const placeData = await placeRes.json(); 
+       if (!Array.isArray(placeData) || placeData.length === 0 || !placeData[0].universeId) { 
+        console.log("Place introuvable ou universeId manquant", placeData); 
+        return res.status(404).json({ error: "Place introuvable ou universeId manquant" }); 
+      } 
+    const universeId = placeData[0].universeId;
 
-    if (!placeData?.data?.length || !placeData.data[0].universeId) {
-      console.log("UniverseId introuvable", placeData);
-      return res.status(404).json({ error: "UniverseId introuvable" });
-    }
-
-    const universeId = placeData.data[0].universeId;
     // ⚠️ Important : le cookie doit appartenir au propriétaire du jeu
     if (!ROBLO_COOKIE) 
       return res.status(500).json({ error: "ROBLO_COOKIE non défini" });
@@ -279,7 +276,7 @@ app.post("/api/payServer", async (req, res) => {
     try {
       const csrfRes = await fetch("https://auth.roblox.com/v2/logout", {
         method: "POST",
-        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}` }
+        headers: { "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}` }
       });
       csrfToken = csrfRes.headers.get("x-csrf-token");
     } catch (err) {
@@ -291,7 +288,7 @@ app.post("/api/payServer", async (req, res) => {
     const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
       method: "POST",
       headers: {
-        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE2}`,
+        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}`,
         "X-CSRF-TOKEN": csrfToken,
         "Content-Type": "application/json"
       },
