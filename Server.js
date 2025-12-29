@@ -410,6 +410,3 @@ btn.addEventListener("click", async () => {
   }
 });
 });
-
-});
-
