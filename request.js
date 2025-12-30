@@ -2,14 +2,13 @@ const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
-
+const ALLOWED_ORIGIN = "chrome-extension://bepinomhmhjfkfijfnkigboednbgggol";
 const app = express();
 app.use(cors({
   origin: ALLOWED_ORIGIN
 }));
 app.use(express.json());
 
-const ALLOWED_ORIGIN = "chrome-extension://bepinomhmhjfkfijfnkigboednbgggol";
 let ROBLO_COOKIE = null;
 
 // Limite le body à 2MB et parse le JSON
