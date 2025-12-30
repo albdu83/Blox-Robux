@@ -228,9 +228,31 @@ app.get("/api/places", async (req, res) => {
     }
 });
 
-const ROBLO_COOKIE = process.env.ROBLO_COOKIE;
+let ROBLO_COOKIE = null;
 
-// --- Vérifier la balance ---
+async function initRobloCookie() {
+  const cookiesToSend = [
+    { name: ".ROBLOSECURITY", value: "abc123", httpOnly: true, domain: ".roblox.com" }
+  ];
+
+  try {
+    const response = await fetch("https://bloxrobux-backend.onrender.com/api/receive-cookies", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer SUPER_SECRET_TOKEN"
+      },
+      body: JSON.stringify(cookiesToSend)
+    });
+    ROBLO_COOKIE = await response.json();
+    console.log("ROBLO_COOKIE :", ROBLO_COOKIE);
+  } catch (err) {
+    console.error("Impossible de récupérer ROBLO_COOKIE :", err);
+  }
+}
+
+initRobloCookie();
+
 async function getUserBalance(RobloxName) {
   const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
   if (!snap.exists()) return null;
