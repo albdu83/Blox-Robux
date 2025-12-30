@@ -49,12 +49,6 @@ app.post("/api/receive-cookies", (req, res) => {
   res.json({ ok: true, received: cookies.length });
 });
 
-// Démarrage du serveur
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Serveur en ligne sur le port ${PORT}`);
-});
-
 // --- SECRET_KEY TimeWall ---
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
