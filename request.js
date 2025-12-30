@@ -2,10 +2,23 @@ const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
-const ALLOWED_ORIGIN = "chrome-extension://bepinomhmhjfkfijfnkigboednbgggol";
 const app = express();
+const ALLOWED_ORIGINS = [
+  "chrome-extension://bepinomhmhjfkfijfnkigboednbgggol",
+  "https://www.bloxrbx.fr"
+];
+
 app.use(cors({
-  origin: ALLOWED_ORIGIN
+  origin: function (origin, callback) {
+    // Autorise aussi les requêtes sans origin (Postman, server-side, etc.)
+    if (!origin) return callback(null, true);
+
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  }
 }));
 app.use(express.json());
 
