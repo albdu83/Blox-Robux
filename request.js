@@ -154,6 +154,7 @@ app.get("/timewall", async (req, res) => {
 
 app.post('/api/roblox-user', async (req, res) => {
     const { username } = req.body;
+    console.log("username reçu :", username);
     const response = await fetch("https://users.roblox.com/v1/usernames/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
