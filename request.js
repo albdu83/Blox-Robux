@@ -152,6 +152,17 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
+app.post('/api/roblox-user', async (req, res) => {
+    const { username } = req.body;
+    const response = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
+    });
+    const data = await response.json();
+    res.json(data);
+});
+
 app.get("/reach", (req, res) => {
   console.log("🔥 /reach HIT", req.originalUrl);
 
@@ -349,3 +360,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`✅ Serveur en ligne sur le port ${PORT}`);
 });
+
