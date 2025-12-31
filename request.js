@@ -152,17 +152,26 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
-app.post('/api/roblox-user', async (req, res) => {
-    const { username } = req.body;
-    console.log("username reçu :", username);
-    const response = await fetch("https://users.roblox.com/v1/usernames/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
-    });
+app.post('/api/check-username', async (req, res) => {
+  const { username } = req.body;
+  if (!username) return res.status(400).json({ error: "Username manquant" });
+
+  try {
+    const response = await fetch(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
     const data = await response.json();
-    res.json(data);
+
+    if (data.Id) {
+      return res.json({ exists: true, id: data.Id, username: data.Username });
+    } else {
+      return res.json({ exists: false });
+    }
+
+  } catch (err) {
+    console.error("Erreur vérification pseudo Roblox :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
 });
+
 
 app.get("/reach", (req, res) => {
   console.log("🔥 /reach HIT", req.originalUrl);
@@ -361,4 +370,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`✅ Serveur en ligne sur le port ${PORT}`);
 });
-
