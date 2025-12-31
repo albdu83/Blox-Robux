@@ -124,89 +124,131 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDwZ7eVgxjrkh6U1kycVyPdjNKJ6b-_xZc",
-        authDomain: "bloxrobux-e9244.firebaseapp.com",
-        databaseURL: "https://bloxrobux-e9244-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "bloxrobux-e9244",
-        storageBucket: "bloxrobux-e9244.firebasestorage.app",
-        messagingSenderId: "178163807426",
-        appId: "1:178163807426:web:649b90d1867023d190b75b",
-        measurementId: "G-YWK7EDQ55E"
-    };
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDwZ7eVgxjrkh6U1kycVyPdjNKJ6b-_xZc",
+  authDomain: "bloxrobux-e9244.firebaseapp.com",
+  databaseURL: "https://bloxrobux-e9244-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bloxrobux-e9244",
+  storageBucket: "bloxrobux-e9244.firebasestorage.app",
+  messagingSenderId: "178163807426",
+  appId: "1:178163807426:web:649b90d1867023d190b75b",
+  measurementId: "G-YWK7EDQ55E"
+};
 
-    // Initialisation Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+// Initialisation Firebase
+firebase.initializeApp(firebaseConfig);
 
-    window.auth = auth;
-    window.db = db;
+const auth = firebase.auth();
+const db = firebase.database();
+let connectedUser = null;
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    alert("Vous devez être connecté pour accéder à cette page !");
+    window.location.href = "../Page de profil/Profil.html";
+    return;
+  }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const list = document.getElementById("list");
-        const searchInput = document.getElementById("search");
-        const nbuInput = document.getElementById("NBU");
-        let allUsers = [];
+  connectedUser = user.uid;
 
-        // 🔎 Fonction pour afficher en appliquant search + limite NBU
-        function renderUsers() {
-            const search = searchInput.value.toLowerCase();
-            const limit = nbuInput.value === "none" ? allUsers.length : Number(nbuInput.value) || allUsers.length;
-            list.innerHTML = "";
-            let count = 0;
-            for (const user of allUsers) {
-                if (!user.username.toLowerCase().includes(search)) continue;
-                if (count >= limit) break;
-                count++;
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${user.username}</td>
-                    <td>${user.balance || 0} R$</td>
-                    <td>${user.role || "Utilisateur"}</td>
-                    <td class="actions">
-                        <button class="btn profil">Profil</button>
-                        <button class="btn credit">Créditer</button>
-                        <button class="btn ban">Bannir</button>
-                        <button class="btn promote">Promouvoir</button>
-                    </td>
-                `;
-                list.appendChild(tr);
-            }
-        }
+  try {
+    const snapshot = await db.ref("users/" + connectedUser).get();
+    if (!snapshot.exists()) {
+      alert("Utilisateur introuvable !");
+      await auth.signOut();
+      window.location.href = "../Page de profil/Profil.html";
+      return;
+    }
 
-        searchInput.addEventListener("input", renderUsers);
-        if (nbuInput) nbuInput.addEventListener("input", renderUsers);
+    const data = snapshot.val();
 
-        // 🔐 Connexion anonyme et lecture DB uniquement après succès
-        auth.signInAnonymously()
-            .then(() => {
-                console.log("Connecté anonymement ✅");
-                return db.ref("users").get();
-            })
-            .then(snapshot => {
-                if (!snapshot.exists()) {
-                    list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
-                    return;
-                }
-                const users = snapshot.val();
-                allUsers = Object.keys(users).map(username => ({
-                    username,
-                    balance: users[username].balance || 0,
-                    role: users[username].role || "Utilisateur"
-                }));
-                renderUsers();
-            })
-            .catch(err => {
-                console.error("Erreur connexion ou DB :", err);
-                list.innerHTML = "<tr><td colspan='4'>Erreur lors du chargement des utilisateurs.</td></tr>";
-            });
-    });
-    </script>
+    if (data.role !== "admin") {
+      alert("Accès refusé : rôle admin requis !");
+      await auth.signOut();
+      window.location.href = "../Page de profil/Profil.html";
+      return;
+    }
 
-    <script src="../Server.js" defer></script>
-    <script src="../Animation.js" defer></script>
+    // L'utilisateur est admin ✅, on peut charger la liste des utilisateurs
+    loadUsers();
+
+  } catch (err) {
+    console.error("Erreur récupération utilisateur :", err);
+    alert("Erreur lors du chargement de votre compte");
+  }
+});
+
+// ------------------------
+// CHARGER LES UTILISATEURS
+// ------------------------
+const list = document.getElementById("list");
+const searchInput = document.getElementById("search");
+const nbuInput = document.getElementById("NBU");
+let allUsers = [];
+
+async function loadUsers() {
+  try {
+    const snapshot = await db.ref("users").get();
+    if (!snapshot.exists()) {
+      list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
+      return;
+    }
+
+    const users = snapshot.val();
+    allUsers = Object.keys(users).map(uid => ({
+      username: users[uid].username || uid,
+      balance: users[uid].balance || 0,
+      role: users[uid].role || "Utilisateur"
+    }));
+
+    renderUsers();
+
+    // Événements recherche et limite
+    if (searchInput) searchInput.addEventListener("input", renderUsers);
+    if (nbuInput) nbuInput.addEventListener("input", renderUsers);
+
+  } catch (err) {
+    console.error("Erreur chargement utilisateurs :", err);
+    list.innerHTML = "<tr><td colspan='4'>Erreur lors du chargement des utilisateurs.</td></tr>";
+  }
+}
+
+// ------------------------
+// AFFICHER LES UTILISATEURS
+// ------------------------
+function renderUsers() {
+  const search = searchInput?.value.toLowerCase() || "";
+  const limit = nbuInput?.value === "none" ? allUsers.length : Number(nbuInput?.value) || allUsers.length;
+
+  list.innerHTML = "";
+  let count = 0;
+
+  for (const user of allUsers) {
+    if (!user.username.toLowerCase().includes(search)) continue;
+    if (count >= limit) break;
+    count++;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${user.username}</td>
+      <td>${user.balance} R$</td>
+      <td>${user.role}</td>
+      <td class="actions">
+        <button class="btn profil">Profil</button>
+        <button class="btn credit">Créditer</button>
+        <button class="btn ban">Bannir</button>
+        <button class="btn promote">Promouvoir</button>
+      </td>
+    `;
+    list.appendChild(tr);
+  }
+
+  if (count === 0) {
+    list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
+  }
+}
+</script>
+<script src="../Server.js" defer></script>
+<script src="../Animation.js" defer></script>
 </body>
 </html>
-
