@@ -152,24 +152,52 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
-app.get("/getEmailByUsername", async (req, res) => {
+async function migrateUsers() {
+  const snap = await db.ref("users").once("value");
+  if (!snap.exists()) return;
+
+  const users = snap.val();
+
+  for (const uid in users) {
+    const user = users[uid];
+
+    if (!user.firstUsername && user.username) {
+      const email = `${user.username}@bloxrobux.local`;
+
+      await db.ref("users/" + uid).update({
+        firstUsername: user.username,
+        email
+      });
+      console.log(`✅ Migré UID ${uid} → firstUsername: ${user.username}, email: ${email}`);
+    }
+  }
+}
+migrateUsers()
+
+app.get("/getEmail", async (req, res) => {
   const username = req.query.username;
   if (!username) return res.status(400).json({ error: "Username manquant" });
 
   try {
+    // On récupère l'utilisateur par son username actuel
     const snapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
     if (!snapshot.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
 
     const uid = Object.keys(snapshot.val())[0];
-    const userData = snapshot.val()[uid];
-    
-    let email = userData.email;
-    if (!email) {
-      email = `${username}@bloxrobux.local`;
+    const user = snapshot.val()[uid];
+
+    // On utilise firstUsername pour construire l'email
+    let email = user.email;
+    if (!email && user.firstUsername) {
+      email = `${user.firstUsername}@bloxrobux.local`;
+      // Optionnel : on met à jour la DB pour que ce soit permanent
       await db.ref("users/" + uid).update({ email });
     }
 
+    if (!email) return res.status(404).json({ error: "Email non défini pour cet utilisateur" });
+
     res.json({ email });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
@@ -221,7 +249,7 @@ app.get("/reach", (req, res) => {
 
 
 // --- Endpoint Admin ---
-const ADMIN_CODE = process.env.ADMIN_CODE || "8SJhLs9SW2ckPfj";
+const ADMIN_CODE = process.env.ADMIN_CODE;
 
 app.post("/checkAdminCode", (req, res) => {
     const { code } = req.body;
