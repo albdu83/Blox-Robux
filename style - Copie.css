@@ -128,6 +128,109 @@ body {
     height: 50px;
 }
 
+.logo2 img {
+    height: 50px;
+    cursor: pointer;
+    margin-left: auto;
+    transition: height 0.5s ease;
+}
+
+#logo2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.navigation {
+  opacity: 0;
+  overflow-x: hidden;
+  visibility: hidden;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(8, 12, 32, 0.6);
+  z-index: 9998;
+  transition: opacity 1s ease, visibility 1s ease;
+  pointer-events: none;
+}
+
+.nav-panel {
+  margin-left: 1%;
+  width: 260px;
+  height: 100vh;
+  background-color: #161638;
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation > div {
+  background-color: #161638;
+  border: 2px solid #757463;
+  border-radius: 12px;
+  padding: clamp(20px, 6vw, 40px);
+  width: 90%;
+  max-width: 75px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* 👇 AJOUTE ÇA */
+  height: 100vh;        /* prend 80% de la hauteur de l'écran */
+  max-height: 100vh;    /* limite pour éviter le débordement */
+  
+  text-align: center;
+  box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
+  transition: max-width 1s ease;
+}
+
+.navigation > div.active {
+  max-width: 220px;
+}
+
+.navigation.active {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.nave {
+  list-style: none;   /* enlève les puces */
+  padding: 0;         /* enlève le padding par défaut */
+  margin: 0;
+
+  display: flex;
+  flex-direction: column; /* 👈 vertical */
+  gap: 16px;
+}
+
+#barres {
+  transition: transform 0.75s ease-in-out; /* transition pour l'animation */
+}
+
+#barres.rotated {
+  transform: rotate(180deg); /* rotation quand la classe est ajoutée */
+}
+
+.nave li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: bolder;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  transition: color 0.5s ease;
+}
+
+.nave li a:hover {
+  color: #ffea00;
+}
+
 /* TITRE CENTRÉ */
 .title {
     text-align: center;
