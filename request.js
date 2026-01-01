@@ -152,7 +152,7 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
-app.get("/getEmail", async (req, res) => {
+app.get("/getEmailByUsername", async (req, res) => {
   const username = req.query.username;
   if (!username) return res.status(400).json({ error: "Username manquant" });
 
@@ -161,9 +161,13 @@ app.get("/getEmail", async (req, res) => {
     if (!snapshot.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
 
     const uid = Object.keys(snapshot.val())[0];
-    const { email } = snapshot.val()[uid];
-
-    if (!email) return res.status(404).json({ error: "Email non défini pour cet utilisateur" });
+    const userData = snapshot.val()[uid];
+    
+    let email = userData.email;
+    if (!email) {
+      email = `${username}@bloxrobux.local`;
+      await db.ref("users/" + uid).update({ email });
+    }
 
     res.json({ email });
   } catch (err) {
