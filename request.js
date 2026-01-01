@@ -152,6 +152,26 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
+app.get("/getEmail", async (req, res) => {
+  const username = req.query.username;
+  if (!username) return res.status(400).json({ error: "Username manquant" });
+
+  try {
+    const snapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
+    if (!snapshot.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
+
+    const uid = Object.keys(snapshot.val())[0];
+    const { email } = snapshot.val()[uid];
+
+    if (!email) return res.status(404).json({ error: "Email non défini pour cet utilisateur" });
+
+    res.json({ email });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 app.post('/api/roblox-user/:username', async (req, res) => {
     const username = req.params.username
     console.log("mon pseudo", username)
@@ -361,4 +381,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`✅ Serveur en ligne sur le port ${PORT}`);
 });
-
