@@ -227,27 +227,65 @@ document.addEventListener("DOMContentLoaded", () => {
         el.style.color = success ? "#00ff6a" : "#ff5555";
         setTimeout(() => el.textContent = "", 3000);
     }
-
-
         /* ----- PROMOCODE ----- */
-        document.getElementById("applyPromo").addEventListener("click", () => {
-            const code = document.getElementById("promoInput").value.trim().toLowerCase();
-            const promos = { "welcome100": 100, "bonus50": 50, "mega500": 500 };
-
+        document.getElementById("applyPromo").addEventListener("click", async () => {
+            const inputEl = document.getElementById("promoInput");
+            const codeInput = inputEl.value.trim().toUpperCase();
             const msg = document.getElementById("promoMessage");
-
-            if (promos[code]) {
-                let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { balance: 0 };
-                data.balance += promos[code];
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                msg.style.color = "#00ff6a";
-                msg.textContent = `✔️ +${promos[code]} R$ ajouté !`;
-            } else {
-                msg.style.color = "#ff5555";
-                msg.textContent = "❌ Code invalide.";
+            const user = firebase.auth().currentUser;
+            if (!codeInput || /[.#$\[\]]/.test(codeInput)) {
+                inputEl.value = ""
+                return showMsg(msg, "❌ Code promo invalide.");
             }
+            if (!user) return showMsg(msg, "❌ Vous devez être connecté");
 
-            setTimeout(() => msg.textContent = "", 3000);
+            try {
+                const snapshot = await db.ref(`promocodes/${codeInput}`).get();
+                if (!snapshot.exists() || codeInput === "") {
+                    inputEl.value = "";
+                    return showMsg(msg, "❌ Code invalide."); 
+                }
+
+                const promo = snapshot.val();
+                const now = new Date();
+
+                // Vérifier expiration
+                if (promo.expiration && new Date(promo.expiration) < now) {
+                    inputEl.value = ""
+                    return showMsg(msg, "❌ Ce code a expiré.");
+                }
+
+                // Vérifier si utilisateur a déjà utilisé
+                if (promo.usedBy && promo.usedBy[user.uid]) {
+                    inputEl.value = ""
+                    return showMsg(msg, "❌ Vous avez déjà utilisé ce code.");
+                }
+
+                // Vérifier si le code a encore des utilisations
+                if (promo.usesLeft !== undefined && promo.usesLeft <= 0) {
+                    inputEl.value = ""
+                    return showMsg(msg, "❌ Ce code n'est plus disponible.");
+                }
+
+                // Ajouter le Robux à l'utilisateur
+                const userRef = db.ref(`users/${user.uid}`);
+                const userSnap = await userRef.get();
+                const balance = userSnap.val()?.balance || 0;
+                await userRef.update({ balance: balance + promo.amount });
+
+                // Mettre à jour le code promo (usedBy + decrement usesLeft)
+                const updates = {};
+                updates[`promocodes/${codeInput}/usedBy/${user.uid}`] = true;
+                if (promo.usesLeft !== undefined) updates[`promocodes/${codeInput}/usesLeft`] = promo.usesLeft - 1;
+
+                await db.ref().update(updates);
+                inputEl.value = ""
+                showMsg(msg, `✔️ +${promo.amount} R$ ajouté !`, true);
+            } catch (err) {
+                console.error(err);
+                inputEl.value = ""
+                showMsg(msg, "❌ Une erreur est survenue.");
+            }
         });
 
         /* ----- ADMIN ----- */
