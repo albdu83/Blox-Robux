@@ -203,6 +203,16 @@ main {
   margin-bottom: 10px;
 }
 
+.form-group input{
+  width: 22.5%;
+  padding: 10px;
+  background: #141421;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
+
 /* FORMS */
 .multiplier-box input,
 .rain-form input {
