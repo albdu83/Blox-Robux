@@ -126,7 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const uid = cred.user.uid;
 
         await db.ref("users/" + uid).set({
-          username,
+          email: email,
+          username: username,
+          firstUsername: username,
           RobloxName,
           balance: 0
         });
@@ -144,26 +146,50 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =======================
      CONNEXION
   ======================= */
-  const formConnexion = document.getElementById("form-connexion");
-  if (formConnexion) {
-    formConnexion.addEventListener("submit", async (e) => {
-      e.preventDefault();
+const formConnexion = document.getElementById("form-connexion");
 
-      const username = document.getElementById("loginUsername").value.trim();
-      const password = document.getElementById("loginPassword").value;
-      const email = `${username}@bloxrobux.local`;
+if (formConnexion) {
+if (formConnexion) {
+  formConnexion.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        alert("Connexion réussie ✅");
-        window.location.href = "../Page de gain/gagner.html";
+    const inputUsername = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
-      } catch (err) {
-        console.error(err);
-        alert("Username ou mot de passe incorrect ❌");
+    if (!inputUsername || !password) {
+      alert("Veuillez remplir tous les champs ❌");
+      return;
+    }
+
+    try {
+      // 1️⃣ Récupérer l'email via le backend
+      const res = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(inputUsername)}`);
+      if (!res.ok) {
+        const errData = await res.json();
+        alert(errData.error || "Utilisateur introuvable ❌");
+        return;
       }
-    });
-  }
+      const data = await res.json();
+      const email = data.email;
+
+      if (!email) {
+        alert("Email introuvable pour cet utilisateur ❌");
+        return;
+      }
+
+      // 2️⃣ Se connecter avec Firebase Auth côté front
+      await auth.signInWithEmailAndPassword(email, password);
+
+      alert("Connexion réussie ✅");
+      window.location.href = "../Page de gain/gagner.html";
+
+    } catch (err) {
+      console.error("Erreur connexion :", err);
+      alert("Username ou mot de passe incorrect ❌");
+    }
+  });
+}
+}
 
   /* =======================
      TOGGLE PASSWORD
