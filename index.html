@@ -13,45 +13,52 @@
     <a href="./index.html" class="logo">
         <img src="img/logo.png" alt="Logo De Blox Robux">
     </a>
-
     <div class="title">Blox R$</div>
-
-    <ul class="nav">
-        <li><a id="btn-connexion" href="page de connexion/index.html">Connexion</a></li>
-        <li><a id="btn-inscription" href="page de connexion/index2.html">Inscription</a></li>
-        <li>
-            <a id="lien-profil" href="Page de profil/Profil.html">
-                <span>Aucun compte</span>
-                <img id="avatar-roblox" src="img/default-avatar.png">
-            </a>
-        </li>
-    </ul>
+    <div class="logo2">
+        <img src="img/Barres.png" alt="Barres" id="barres">
+    </div>
 </header>
-
-
-    <div class="separator"></div>
-    <div class="welcome">
-        <div class="présentation" id="acceuil">
-            <img src="img/step1.png" alt="Image Inscription">
+<div class="navigation" id="navigation">
+  <div class="nav-panel" id="nav-panel">
+    <div class="logo2" id="logo2">
+        <img src="img/Barres.png" alt="Barres" id="barres2">
+    </div>
+    <ul class="nave">
+        <li>
+        <a id="lien-profil" href="#">
+          <span>Aucun compte</span>
+          <img id="avatar-roblox" src="img/default-avatar.png">
+        </a>
+      </li>
+      <li><a id="btn-connexion" href="page de connexion/index.html">Connexion</a></li>
+      <li><a id="btn-inscription" href="page de connexion/index2.html">Inscription</a></li>
+      <li><a id="btn-profil" href="Page de profil/Profil.html"></a></li>
+    </ul>
+  </div>
+</div>
+<div class="separator"></div>
+<div class="welcome">
+    <div class="présentation" id="acceuil">
+        <img src="img/step1.png" alt="Image Inscription">
+        <div>
+            <p>1. Inscrivez-vous sur notre site à l'aide de votre nom d'utilisateur Roblox.</p>
+        </div>
+        <img src="img/pièces.png" alt="Image Pièces">
+        <div>
+            <p>2. Complétez des offres rapides et simples sur les sites partenaires.</p>
+        </div>
+        <div id="warn">
             <div>
-                <p>1. Inscrivez-vous sur notre site à l'aide de votre nom d'utilisateur Roblox.</p>
+                <span id="z">Êtes-vous sûr de vouloir vous déconnecter de votre compte BloxRobux ?</span>
+                <span id="a">Se déconnecter</span>
+                <span id="b">Annuler</span>
             </div>
-            <img src="img/pièces.png" alt="Image Pièces">
-            <div>
-                <p>2. Complétez des offres rapides et simples sur les sites partenaires.</p>
-            </div>
-            <div id="warn">
-                <div>
-                    <span id="z">Êtes-vous sûr de vouloir vous déconnecter de votre compte BloxRobux ?</span>
-                    <span id="a">Se déconnecter</span>
-                    <span id="b">Annuler</span>
-                </div>
-            </div>
-            <div id="transition" class="fade-transition active">
-                <img src="img/Robux.png" id="image" alt="Logo Blox Robux" />
-                <div class="text" id="text-chargement">Chargement...</div>
-            </div>
-            <script>
+        </div>
+        <div id="transition" class="fade-transition active">
+            <img src="img/Robux.png" id="image" alt="Logo Blox Robux" />
+            <div class="text" id="text-chargement">Chargement...</div>
+        </div>
+<script>
 document.getElementById('a').addEventListener('click', async () => {
   const frame = document.getElementById('warn');
   frame.style.display = "none";
@@ -96,7 +103,3 @@ document.getElementById('b').addEventListener('click', () => {
 </body>
 
 </html>
-
-
-
-
