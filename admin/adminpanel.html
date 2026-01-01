@@ -67,7 +67,13 @@
         <!-- ===== PROMOCODES ===== -->
         <section class="card">
             <h2>Promocodes</h2>
-            <button class="btn create-promo">Créer un promocode</button>
+            <button class="btn create-promo" id="createPromo">Créer un promocode</button>
+            <div class="form-group">
+              <input type="text" id="promoName" placeholder="Nom du code (ex: START50)">
+              <input type="number" id="promoAmount" placeholder="Montant Robux">
+              <input type="number" id="promoUses" placeholder="Nombre d'utilisations">
+              <input type="date" id="promoExpiration" placeholder="Date d'expiration">
+            </div>
             <table class="table">
                 <thead>
                     <tr>
@@ -247,6 +253,77 @@ function renderUsers() {
     list.innerHTML = "<tr><td colspan='4'>Aucun utilisateur trouvé.</td></tr>";
   }
 }
+
+// ------------------------
+// CODES PROMOS CREATIONS
+// ------------------------
+
+document.getElementById("createPromo").addEventListener("click", async () => {
+    const name = document.getElementById("promoName").value.trim().toUpperCase();
+    const amount = parseInt(document.getElementById("promoAmount").value);
+    const uses = parseInt(document.getElementById("promoUses").value);
+    const expiration = document.getElementById("promoExpiration").value; // yyyy-mm-dd
+
+    if (!name || !amount || isNaN(uses) || !expiration) return alert("Remplissez tous les champs");
+
+    try {
+        await db.ref(`promocodes/${name}`).set({
+            amount: amount,
+            usesLeft: uses,
+            expiration: new Date(expiration).toISOString(),
+            usedBy: {}
+        });
+        alert("✔️ Code promo créé !");
+    } catch (err) {
+        console.error(err);
+        alert("❌ Erreur lors de la création du code");
+    }
+});
+const promoTableBody = document.querySelector("section.card:nth-of-type(2) tbody"); // tbody de la section Promocodes
+
+async function loadPromocodes() {
+    try {
+        const snapshot = await db.ref("promocodes").get();
+        promoTableBody.innerHTML = ""; // vider le tableau
+
+        if (!snapshot.exists()) {
+            promoTableBody.innerHTML = "<tr><td colspan='5'>Aucun code promo trouvé.</td></tr>";
+            return;
+        }
+
+        const promos = snapshot.val();
+        const now = new Date();
+
+        Object.keys(promos).forEach(code => {
+            const promo = promos[code];
+            const expirationDate = promo.expiration ? new Date(promo.expiration) : null;
+            const usesLeft = promo.usesLeft !== undefined ? promo.usesLeft : "∞";
+
+            // Statut
+            let status = "Actif";
+            if ((expirationDate && expirationDate < now) || (promo.usesLeft !== undefined && promo.usesLeft <= 0)) {
+                status = "Inactif";
+            }
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${code}</td>
+                <td>${promo.amount}</td>
+                <td>${usesLeft}</td>
+                <td>${expirationDate ? expirationDate.toLocaleDateString() : "∞"}</td>
+                <td><span class="status ${status.toLowerCase()}">${status}</span></td>
+            `;
+            promoTableBody.appendChild(tr);
+        });
+
+    } catch (err) {
+        console.error("Erreur chargement promos :", err);
+        promoTableBody.innerHTML = "<tr><td colspan='5'>Erreur lors du chargement des codes promo.</td></tr>";
+    }
+}
+
+// Charger les codes au démarrage
+loadPromocodes();
 </script>
 <script src="../Server.js" defer></script>
 <script src="../Animation.js" defer></script>
