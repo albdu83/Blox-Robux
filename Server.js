@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =======================
      AUTH STATE (SOURCE UNIQUE)
   ======================= */
+const btnprofil = document.getElementById("btn-profil")
+if (btnprofil) btnprofil.style.display = "none";
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
       console.log("Aucun utilisateur connecté");
@@ -81,14 +83,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const btnInscription = document.getElementById("btn-inscription");
       const btnConnexion = document.getElementById("btn-connexion");
       const warn = document.getElementById("warn");
-
       if (warn) warn.style.display = "none";
 
       if (btnInscription && btnConnexion) {
         btnInscription.textContent = "Déconnexion";
         btnInscription.removeAttribute("href");
         btnInscription.style.cursor = "pointer";
-
+        btnprofil.style.display = "flex"
+        btnprofil.textContent = "Profil"
+        lienprofil.href = "Page de profil/Profil.html"
         btnConnexion.textContent = "Commencer";
         btnConnexion.href = "./Page de gain/gagner.html";
 
@@ -190,9 +193,43 @@ if (formConnexion) {
   });
 }
 }
+  /* =======================
+        MENU DEPLOYING
+  ======================= */
+
+const barres = document.getElementById("barres")
+const navigation = document.getElementById("navigation")
+const navpanel = document.getElementById("nav-panel")
+const barres2 = document.getElementById("barres2")
+
+if (barres) {
+  barres.addEventListener("click", () => {
+  navigation.classList.toggle("active");
+  navpanel.classList.toggle("active");
+  barres.classList.toggle("rotated");
+});
+}
+
+if (barres2) {
+  barres2.addEventListener("click", () => {
+    navigation.classList.remove("active");
+    navpanel.classList.remove("active");
+    barres.classList.remove("rotated");
+  });
+}
+
+if (navigation) {
+navigation.addEventListener("click", (e) => {
+  if (e.target === navigation) {
+    navigation.classList.remove("active");
+    navpanel.classList.remove("active");
+    barres.classList.remove("rotated");
+  }
+});
+}
 
   /* =======================
-     TOGGLE PASSWORD
+        TOGGLE PASSWORD
   ======================= */
 function togglePasswordImage(imgId, inputId) {
   const img = document.getElementById(imgId);
