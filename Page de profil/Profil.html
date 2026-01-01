@@ -32,17 +32,27 @@
             </div>
         </div>
     </div>
-
+    <div id="warn">
+        <div>
+            <span id="z">Veuillez vous reconnectez pour finaliser la procédure !</span>
+            <h3>Ancien nom d'utilisateur</h3>
+            <input type="text" id="a" placeholder="Ancien nom d'utilisateur" required>
+            <h3>Ancien mot de passe</h3>
+            <input type="password" id="b" placeholder="••••••••" required>
+            <input type="submit" value="Confirmer" id="Confirm">
+            <p id="profileMessage2" class="msg"></p>
+        </div>
+    </div>
     <!-- ---------- PROFIL ---------- -->
     <main>
 
         <!-- SECTION 1 : MODIFIER PROFIL -->
         <section class="card">
             <h2>👤 Informations du profil</h2>
-            <h5 style="text-align: center;">(Si vous souhaitez ne pas modifier certaines informations, veuillez réécrire les informations actuels!)</h5>
+            <h5 style="text-align: center;">(Si vous ne souhaitez pas modifier certaines informations, veuillez réécrire les informations actuels pour la modification du profil!)</h5>
             <div class="form-group">
-                <label>Pseudo Roblox</label>
-                <input type="text" id="Roblox" placeholder="Votre pseudo Roblox">
+                <label>Nouveau pseudo Roblox</label>
+                <input type="text" id="Roblox" placeholder="Votre nouveau pseudo Roblox">
             </div>
 
             <div class="form-group">
@@ -52,12 +62,12 @@
 
             <div class="form-group">
                 <label>Confirmez le mot de passe</label>
-                <input type="password" id="email" placeholder="••••••••">
+                <input type="password" id="email" placeholder="••••••••" autocomplete="••••••••">
             </div>
 
             <div class="form-group">
                 <label>Nouveau nom d'utilisateur</label>
-                <input type="text" id="username" placeholder="Votre nouveau nom d'utilisateur">
+                <input type="text" id="username" placeholder="Votre nouveau nom d'utilisateur" autocomplete="ex:1234">
             </div>
 
             <button id="saveProfile">Enregistrer les informations</button>
@@ -103,69 +113,121 @@
     <script src="../Animation.js" defer></script>
 
 <script defer>
-    document.addEventListener("DOMContentLoaded", () => {
-        const db = window.db;
-        if (!db) return console.error("Firebase Database non initialisée !");
-        const STORAGE_KEY = "bloxrobux_balance";
-        const balanceEl = document.getElementById("balance");
-
-        function loadBalance() {
-            const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { balance: 0 };
-            balanceEl.textContent = data.balance.toFixed(2).replace('.', ',') + " R$";
-        }
-
-        /* ----- BOUTON PROFIL ----- */
-document.getElementById("saveProfile").addEventListener("click", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+    const auth = firebase.auth();
+    const db = window.db;
+    const saveBtn = document.getElementById("saveProfile");
+    const warn = document.getElementById("warn");
+    const confirmBtn = document.getElementById("Confirm");
     const msg = document.getElementById("profileMessage");
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const confirmPassword = document.getElementById("email").value.trim();
-    const RobloxPseudo = document.getElementById("Roblox").value.trim();
+    const msg2 = document.getElementById("profileMessage2");
 
-    if (!username || !password || !confirmPassword || !RobloxPseudo) {
-        msg.textContent = "❌ Informations vides !";
-        msg.style.color = "rgb(255, 0, 0)";
-        setTimeout(() => msg.textContent = "", 3000);
-        return;
-    }
+    let pendingData = null;
 
-    async function getRobloxUser(pseudo) {
+    /* =========================
+       ENREGISTRER PROFIL
+    ========================== */
+    saveBtn.addEventListener("click", async () => {
+        msg.textContent = "";
+
+        const user = auth.currentUser;
+        if (!user) return showMsg(msg, "❌ Utilisateur non connecté");
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const confirmPassword = document.getElementById("email").value.trim();
+        const robloxName = document.getElementById("Roblox").value.trim();
+
+        if (!username || !password || !confirmPassword || !robloxName) 
+            return showMsg(msg, "❌ Informations manquantes");
+        if (password !== confirmPassword) 
+            return showMsg(msg, "❌ Les mots de passe ne correspondent pas");
+        if (password.length < 6) 
+            return showMsg(msg, "❌ Mot de passe trop court");
+
+        /* Vérif pseudo Roblox via backend */
         try {
-            const response = await fetch("https://blox-robux.onrender.com/api/roblox-user", {
+            const res = await fetch(`${API_BASE_URL}/api/roblox-user/${robloxName}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ usernames: [pseudo], excludeBannedUsers: true })
+                body: JSON.stringify({ usernames: [robloxName], excludeBannedUsers: true })
             });
-            const data = await response.json();
-            console.log("Pseudo envoyé :", pseudo);
-            console.log("Réponse backend Roblox :", data);
-            return data;
-        } catch (err) {
-            console.error("Erreur fetch Roblox :", err);
-            return null;
+            const data = await res.json();
+            if (!data?.data?.length) return showMsg(msg, "❌ Pseudo Roblox inexistant");
+        } catch {
+            return showMsg(msg, "❌ Erreur serveur Roblox");
         }
-    }
 
-    const RobloxData = await getRobloxUser(RobloxPseudo);
-
-    if (!RobloxData || !RobloxData.data || RobloxData.data.length === 0) {
-        msg.textContent = "❌ Pseudo Roblox invalide";
-        msg.style.color = "rgb(255, 0, 0)";
-        setTimeout(() => msg.textContent = "", 3000);
-        return;
-    }
-
-        // Ici, pseudo valide
-        msg.textContent = "✔️ Profil mis à jour !";
-        msg.style.color = "#00ff6a";
-        setTimeout(() => msg.textContent = "", 3000);
-
-        // Tu peux maintenant récupérer l'ID Roblox
-       const robloxUserId = RobloxData.data[0].id;
-       console.log("ID Roblox :", robloxUserId);
-
-        // Ensuite tu peux mettre à jour Firebase ou localStorage
+        /* On stocke l’action */
+        pendingData = { username, password, robloxName };
+        warn.style.display = "flex";
     });
+
+    /* =========================
+       CONFIRMATION (RÉAUTH)
+    ========================== */
+    confirmBtn.addEventListener("click", async () => {
+        msg2.textContent = "";
+        if (!pendingData) return;
+
+        const user = auth.currentUser;
+        const oldUsername = document.getElementById("a").value.trim();
+        const oldPassword = document.getElementById("b").value.trim();
+        if (!oldUsername || !oldPassword) return showMsg(msg2, "❌ Informations manquantes");
+
+        /* --- Récupération de l'email via backend --- */
+        let email;
+        try {
+            const emailRes = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(oldUsername)}`);
+            if (!emailRes.ok) return showMsg(msg2, "❌ Ancien nom d'utilisateur incorrect");
+            const json = await emailRes.json();
+            email = json.email;
+        } catch {
+            return showMsg(msg2, "❌ Impossible de récupérer l'email");
+        }
+
+        /* --- Réauthentification --- */
+        try {
+            const credential = firebase.auth.EmailAuthProvider.credential(email, oldPassword);
+            await user.reauthenticateWithCredential(credential);
+        } catch {
+            return showMsg(msg2, "❌ Mot de passe incorrect");
+        }
+
+        /* --- Mise à jour du profil via Firebase --- */
+        try {
+            const uid = user.uid;
+
+            /* On met à jour DB et Firebase Auth */
+            const updates = {
+                username: pendingData.username,
+                RobloxName: pendingData.robloxName
+            };
+            await db.ref(`users/${uid}`).update(updates);
+            await user.updatePassword(pendingData.password);
+
+            warn.style.display = "none";
+            showMsg(msg, "✅ Profil mis à jour", true);
+
+            // reset champs
+            ["username","password","email","Roblox","a","b"].forEach(id => document.getElementById(id).value = "");
+            pendingData = null;
+
+        } catch (err) {
+            console.error(err);
+            showMsg(msg2, "❌ Erreur lors de la mise à jour");
+        }
+    });
+
+    /* =========================
+       Fonctions utilitaires
+    ========================== */
+    function showMsg(el, text, success=false) {
+        el.textContent = text;
+        el.style.color = success ? "#00ff6a" : "#ff5555";
+        setTimeout(() => el.textContent = "", 3000);
+    }
+
 
         /* ----- PROMOCODE ----- */
         document.getElementById("applyPromo").addEventListener("click", () => {
