@@ -152,28 +152,6 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
-async function migrateUsers() {
-  const snap = await db.ref("users").once("value");
-  if (!snap.exists()) return;
-
-  const users = snap.val();
-
-  for (const uid in users) {
-    const user = users[uid];
-
-    if (!user.firstUsername && user.username) {
-      const email = `${user.username}@bloxrobux.local`;
-
-      await db.ref("users/" + uid).update({
-        firstUsername: user.username,
-        email
-      });
-      console.log(`✅ Migré UID ${uid} → firstUsername: ${user.username}, email: ${email}`);
-    }
-  }
-}
-migrateUsers()
-
 app.get("/getEmail", async (req, res) => {
   const username = req.query.username;
   if (!username) return res.status(400).json({ error: "Username manquant" });
