@@ -37,6 +37,7 @@ if (btnprofil) btnprofil.style.display = "none";
       /* ===== PROFIL HEADER ===== */
       const lienprofil = document.getElementById("lien-profil");
       if (lienprofil) {
+        lienprofil.href = "Page de profil/Profil.html"
         const span = lienprofil.querySelector("span");
         if (span) span.textContent = `${username} / ${RobloxName}`;
       }
@@ -91,17 +92,15 @@ if (btnprofil) btnprofil.style.display = "none";
         btnInscription.style.cursor = "pointer";
         btnprofil.style.display = "flex"
         btnprofil.textContent = "Profil"
-        lienprofil.href = "Page de profil/Profil.html"
         btnConnexion.textContent = "Commencer";
         btnConnexion.href = "./Page de gain/gagner.html";
 
         btnInscription.onclick = () => {
           if (warn) warn.style.display = "flex";
         };
-      } else {
+      } else if (lienprofil) {
         lienprofil.href = "../Page de profil/Profil.html"
       }
-
     } catch (err) {
       console.error("Erreur chargement profil :", err);
     }
