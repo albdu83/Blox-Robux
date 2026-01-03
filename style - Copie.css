@@ -175,8 +175,8 @@ body {
 
 #Block img {
   margin-right: auto;
-  height: clamp(40px, 8vw, 120px);
-  width: clamp(40px, 8vw, 120px); /* 🔒 carré */
+  height: clamp(25px, 8vw, 120px);
+  width: clamp(25px, 8vw, 120px); /* 🔒 carré */
   border-radius: 50%;
   background-color: #292929;
   border: 3px solid black;
