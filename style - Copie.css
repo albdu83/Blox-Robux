@@ -159,7 +159,7 @@ body {
   color: rgb(27, 59, 201);
   text-align: center;
   font-weight: bolder;
-  font-size: clamp(16px, 2vw + 0.5vh, 24px);
+  font-size: clamp(12px, 2vw + 0.5vh, 24px);
 }
 
 #BlockBottom ul {
