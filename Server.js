@@ -98,6 +98,8 @@ if (btnprofil) btnprofil.style.display = "none";
         btnInscription.onclick = () => {
           if (warn) warn.style.display = "flex";
         };
+      } else {
+        lienprofil.href = "../Page de profil/Profil.html"
       }
 
     } catch (err) {
@@ -402,7 +404,7 @@ async function getPublicsPlaces(targetId) {
 }
 function updateInterfaceSize() {
   const Interface = document.querySelector(".Interface")
-
+  const logoimg = document.getElementById("logoimg")
   if (!Interface) return;
 
   Interface.classList.remove("tablet", "desktop")
@@ -413,6 +415,8 @@ function updateInterfaceSize() {
     Interface.classList.add("desktop")
   } else if (width >= 768) {
     Interface.classList.add("tablet")
+  } else if (logoimg) {
+    logoimg.style.display = "none"
   }
 }
 
