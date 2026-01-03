@@ -123,6 +123,64 @@ body {
     gap: 20px;
 }
 
+#Block {
+  display: flex;
+  align-items: center; /* centre l’image verticalement */
+  height: 15rem;
+  background-color: #0e1f41;
+  padding: 20px;
+}
+
+#BlockBottom {
+  text-align: left; /* ou center si tu veux */
+}
+
+#BlockBottom ul li {
+  color: rgb(27, 59, 201);
+  cursor: pointer;
+}
+
+.infos {
+  display: flex;
+  gap: 40px;          /* espace entre colonnes */
+}
+
+.col {
+  flex: 1;            /* colonnes équilibrées */
+}
+
+.col h2 {
+  margin-bottom: 10px;
+}
+
+
+#BlockBottom h2 {
+  margin: 0 0 10px 0;
+  color: rgb(27, 59, 201);
+  text-align: center;
+  font-weight: bolder;
+  font-size: 2.5vh;
+}
+
+#BlockBottom ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+#BlockBottom ul li a {
+  text-decoration: none !important;
+  color: rgb(27, 59, 201);
+  font-size: clamp(14px, 1.2vw, 18px);
+}
+
+#Block img {
+  margin-right: auto; /* image à droite */
+  height: 15vh;
+  border-radius: 50%;
+  background-color: #292929;
+  border: 3px solid black;
+}
+
 /* Logo */
 .logo img {
     height: 50px;
@@ -337,5 +395,3 @@ body {
   color: white;
   font-size: clamp(12px, 3vw, 14px);
 }
-
-
