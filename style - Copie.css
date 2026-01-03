@@ -142,7 +142,7 @@ body {
 
 .infos {
   display: flex;
-  gap: 2vw;          /* espace entre colonnes */
+  gap: clamp(10px, 1.5vw, 18px);
 }
 
 .col {
