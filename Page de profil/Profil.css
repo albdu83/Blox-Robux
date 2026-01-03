@@ -17,12 +17,13 @@ body {
 .fade-transition {
   position: fixed;
   inset: 0;
-  display: flex; 
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
   justify-content: center;
   align-items: center;
-  transform: translateY(0%);
+
   background: linear-gradient(#33279E, #7363ff);
-  pointer-events: all;
   transition: transform 0.5s ease-in-out;
   z-index: 9999;
 }
@@ -77,18 +78,16 @@ body {
   border: 3px solid #161616;
 }
 
-.fade-transition img {
-  height: 50px;
-  display: block;
-  margin: 0;
-  padding: 5px;
+#image {
+  width: clamp(30px, 7vw, 45px);
+  height: auto;
 }
 
 .fade-transition .text {
+  font-size: clamp(18px, 5vw, 32px);
+  font-weight: bold;
+  color: #fff;
   text-align: center;
-  font-weight: bolder;
-  font-size: xx-large;
-  color: #ffffff;
 }
 
 .fade-transition.active {
