@@ -128,7 +128,7 @@ body {
   align-items: center; /* centre l’image verticalement */
   height: 15rem;
   background-color: #0e1f41;
-  padding: 20px;
+  padding: 1vw;
 }
 
 #BlockBottom {
