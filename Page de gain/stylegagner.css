@@ -68,7 +68,7 @@ header {
     justify-content: space-between;
     padding: clamp(10px, 3vw, 20px);
     background-color: #153369;
-    flex-wrap: wrap; /* pour mobile */
+    flex-wrap: nowrap; /* pour mobile */
 }
 
 /* LEFT : logo + solde */
@@ -421,3 +421,4 @@ nav ul li a.active {
 .nave li a:hover {
     color: #ffea00;
 }
+
