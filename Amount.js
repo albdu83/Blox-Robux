@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const balanceEl = document.getElementById("balance");
+    const balanceEl2 = document.getElementById("balance2");
     const amountEl = document.getElementById("amount");
     const withdrawBtn = document.getElementById("withdrawBtn");
     const transactionsEl = document.getElementById("transactions");
@@ -18,7 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const helpbutton = document.getElementById("HELP")
     const btnretour = document.getElementById("btnretour")
     if (!connectedUser) {
-        if (balanceEl) balanceEl.textContent = "0.00 R$";
+        if (balanceEl) {
+            balanceEl.textContent = "0.00 R$";
+            balanceEl2.textContent = "0.00 R$";
+        }
         showError("Vous devez être connecté pour retirer des Robux !");
         if (withdrawBtn) withdrawBtn.disabled = true;
         return;
@@ -123,7 +127,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function render() {
-        if (balanceEl) balanceEl.textContent = formatMoney(state.balance);
+        if (balanceEl) {
+            balanceEl.textContent = formatMoney(state.balance);
+            balanceEl2.textContent = formatMoney(state.balance);
+        }
         renderTransactions();
     }
 
