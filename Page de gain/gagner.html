@@ -8,13 +8,14 @@
   <link rel="icon" type="image/png" href="../favicon.ico">
 </head>
 <body>
-<header>
+<div class="page-content">
+  <header>
   <!-- LEFT : logo + solde -->
   <div class="header-left">
     <a href="../index.html">
       <img src="../img/logo.png" alt="Logo Blox Robux" />
     </a>
-    <div class="solde-box">
+    <div class="solde-box" id="solde-box">
       <span>💰 Solde :</span>
       <span id="balance">0,00 R$</span>
     </div>
@@ -25,14 +26,34 @@
 
   <!-- NAVIGATION -->
   <nav>
-    <ul>
+    <ul id="btns">
       <li><a href="../index.html">Accueil</a></li>
       <li><a href="gagner.html">Gagner des R$</a></li>
       <li><a href="#">Retirer</a></li>
     </ul>
   </nav>
+  <div class="logo2">
+    <img src="../img/Barres.png" alt="Barres" id="barres">
+  </div>
 </header>
-
+<div class="navigation" id="navigation">
+  <div class="nav-panel" id="nav-panel">
+    <div class="logo2" id="logo2">
+        <img src="../img/Back.png" alt="Barres" id="barres2">
+    </div>
+    <ul class="nave">
+      <li>
+        <div class="solde-box">
+          <span>💰 Solde :</span>
+          <span id="balance2">0,00 R$</span>
+        </div>
+      </li>
+      <li><a id="btn-accueil" href="../index.html">Accueil</a></li>
+      <li><a id="btn-win" href="gagner.html">Gagner des R$</a></li>
+      <li><a id="btn-retrait" href="#">Retirer</a></li>
+    </ul>
+  </div>
+</div>
   <!-- INFORMATIONS -->
   <div class="informations" id="info">
     <p>💳 Complétez des offres sur nos <strong>sites partenaires</strong> pour être récompensés ! Obtenez de l'aide sur <a href="https://discord.gg/QQMRtfBXpq">notre serveur Discord</a>.</p>
@@ -64,7 +85,9 @@
     <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
     <div class="text" id="text-chargement">Chargement...</div>
   </div>
-
+    <div class="separator"></div>
+  <div class="separator" style="visibility: hidden;"></div>
+</div>
   <!-- SCRIPT reach ET FIREBASE -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://s3.us-east-1.amazonaws.com/cdn.theoremreach/v3/theorem_reach.min.js"></script>
@@ -84,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!db) return console.error("Firebase Database non initialisée !");
 
     const balanceEl = document.getElementById("balance");
+    const balanceEl2 = document.getElementById("balance2");
     const btnGagner = document.getElementById("btnGagner");
     const reloadBtn = document.getElementById("reload-bitlabs");
     const reachbtn = document.getElementById("theoreme")
@@ -104,12 +128,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const userID = getUserID();
 
     // --- Mise à jour du solde ---
-    function updateBalance(amount) {
-        const current = parseFloat(balanceEl.innerText.replace(" R$", "").replace(",", ".")) || 0;
-        const newBalance = current + amount;
-        balanceEl.textContent = newBalance.toFixed(2) + " R$";
-        db.ref("users/" + userID + "/balance").set(newBalance).catch(err => console.error(err));
+    function displayBalance() {
+        // Récupère le solde depuis Firebase
+        db.ref("users/" + userID + "/balance").once("value")
+          .then(snapshot => {
+           const balance = snapshot.val() || 0; // si pas de valeur, 0
+            // Format FR avec 2 décimales et ajout " R$"
+            const formatted = balance.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " R$";
+            // Met à jour tes éléments
+            balanceEl.textContent = formatted;
+            balanceEl2.textContent = formatted;
+          })
+          .catch(err => console.error("Erreur récupération balance :", err));
     }
+
 
     // --- Attendre que TimeWall soit chargé ---
     function waitForTimeWall(callback) {
@@ -134,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Afficher container TimeWall
             const container = document.getElementById("timewall-container");
             if (container) {
-              container.style.display = "block";
+              container.style.display = "flex";
               container.src = container.src;
             }
         });
@@ -153,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Afficher container TimeWall
             const theoreme = document.getElementById("theoremecontainer");
             if (theoreme) {
-              theoreme.style.display = "block";
+              theoreme.style.display = "flex";
             }
         });
     }
@@ -165,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const offerwall = document.getElementById("offerwall1");
             if (offerwall, theoreme) {
               offerwall.src = offerwall.src
-              offerwall.style.display = "block";
+              offerwall.style.display = "flex";
               theoreme.style.display = "none";
             }
 
@@ -175,10 +207,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Sync solde Firebase en direct ---
-    db.ref("users/" + userID + "/balance").on("value", snapshot => {
-        const value = snapshot.val();
-        balanceEl.textContent = parseFloat(value || 0).toFixed(2) + " R$";
-    });
+db.ref("users/" + userID + "/balance").on("value", snapshot => {
+    const value = parseFloat(snapshot.val() || 0);
+    const formatted = value.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " R$";
+    balanceEl.textContent = formatted;
+    balanceEl2.textContent = formatted;
+});
 
     // --- Récupération avatar Roblox via Render ---
     async function setRobloxAvatar(robloxName) {
@@ -194,10 +228,50 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Erreur avatar Roblox :", err);
         }
     }
+
+const barres = document.getElementById("barres")
+const btns = document.getElementById("btns")
+const soldebox = document.getElementById("solde-box")
+if (window.innerWidth >= 1024) {
+  barres.style.display = "none"
+} else {
+  soldebox.style.display = "none"
+  btns.style.display = "none"
+}
 });
 </script>
+
+<div id="Block">
+ <img src="../img/Bloxlogo.png" alt="BloxRobuxLogo">
+<div id="BlockBottom">
+<div class="infos">
+  <div class="col">
+    <h2>A propos de nous :</h2>
+    <ul>
+      <li><a href="">Biographie du site</a></li>
+      <li><a href="">Paiements sécurisés</a></li>
+      <li><a href="">Support actif</a></li>
+    </ul>
+  </div>
+
+  <div class="col">
+    <h2>Mentions légales :</h2>
+    <ul>
+      <li><a href="C.G.U.html">Conditions d'utilisations</a></li>
+      <li><a href="../Legal/P.C.F.html">Politique de confidentialité</a></li>
+    </ul>
+  </div>
+
+    <div class="col">
+    <h2>Réseaux sociaux :</h2>
+    <ul>
+      <li><a href="https://discord.gg/QQMRtfBXpq">Discord</a></li>
+      <li>YouTube (à venir)</li>
+    </ul>
+  </div>
+</div>
+  </div>
+<img src="../img/Bloxlogo.png" alt="BloxRobuxLogo" style="visibility: hidden;">
+</div>
 </body>
 </html>
-
-
-
