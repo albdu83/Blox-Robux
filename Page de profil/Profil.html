@@ -34,10 +34,10 @@
     </div>
     <div id="warn">
         <div>
-            <span id="z">Veuillez vous reconnectez pour finaliser la procédure !</span>
-            <h3>Ancien nom d'utilisateur</h3>
-            <input type="text" id="a" placeholder="Ancien nom d'utilisateur" required>
-            <h3>Ancien mot de passe</h3>
+            <span id="z">Veuillez vous reconnectez pour finaliser la procédure</span>
+            <h3>Nom d'utilisateur actuel</h3>
+            <input type="text" id="a" placeholder="Nom d'utilisateur actuel" required>
+            <h3>Mot de passe actuel</h3>
             <input type="password" id="b" placeholder="••••••••" required>
             <input type="submit" value="Confirmer" id="Confirm">
             <p id="profileMessage2" class="msg"></p>
@@ -122,6 +122,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const msg = document.getElementById("profileMessage");
     const msg2 = document.getElementById("profileMessage2");
 
+    function formatTime(seconds) {
+        const min = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+        return `${min} min ${sec.toString().padStart(2, "0")} s`;
+    }
+
     let pendingData = null;
 
     /* =========================
@@ -160,13 +166,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
         /* On stocke l’action */
         pendingData = { username, password, robloxName };
+
         warn.style.display = "flex";
+        requestAnimationFrame(() => {
+            warn.classList.add("active");
+        });
     });
 
     /* =========================
        CONFIRMATION (RÉAUTH)
     ========================== */
     confirmBtn.addEventListener("click", async () => {
+        const DURATION = 5 * 60; // 300s
+        let time = 0;
+
+        const endTime = localStorage.getItem("endTime");
+
+        if (endTime) {
+        time = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+        }
+
+        // ⛔ Si le timer est encore actif
+        if (time > 0) {
+            return showMsg(
+                msg2,
+                `❌ Réessayez dans ${formatTime(time)}`
+            );
+        }
+
         msg2.textContent = "";
         if (!pendingData) return;
 
@@ -206,18 +233,38 @@ document.addEventListener("DOMContentLoaded", () => {
             await db.ref(`users/${uid}`).update(updates);
             await user.updatePassword(pendingData.password);
 
-            warn.style.display = "none";
+
+            warn.classList.remove("active");
+
+            warn.addEventListener("transitionend", function handleEnd() {
+                warn.style.display = "none";
+                warn.removeEventListener("transitionend", handleEnd);
+            });
+
             showMsg(msg, "✅ Profil mis à jour", true);
+
+            const newEndTime = Date.now() + DURATION * 1000;
+            localStorage.setItem("endTime", newEndTime);
+            time = DURATION;
 
             // reset champs
             ["username","password","email","Roblox","a","b"].forEach(id => document.getElementById(id).value = "");
             pendingData = null;
 
-        } catch (err) {
-            console.error(err);
-            showMsg(msg2, "❌ Erreur lors de la mise à jour");
-        }
-    });
+            const timer = setInterval(() => {
+                time--;
+
+                if (time <= 0) {
+                    clearInterval(timer);
+                    console.log("Temps écoulé");
+                }
+            }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                showMsg(msg2, "❌ Erreur lors de la mise à jour");
+            }
+        });
 
     /* =========================
        Fonctions utilitaires
