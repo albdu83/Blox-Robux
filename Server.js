@@ -109,10 +109,14 @@ if (btnprofil) btnprofil.style.display = "none";
   /* =======================
      INSCRIPTION
   ======================= */
-  const formInscription = document.getElementById("form-inscription");
+const gif = document.getElementById("loading")
+const inscription = document.getElementById("ininscription")
+const formInscription = document.getElementById("form-inscription");
   if (formInscription) {
     formInscription.addEventListener("submit", async (e) => {
       e.preventDefault();
+        inscription.style.display = "none"
+        gif.style.display = "block"
 
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
@@ -120,6 +124,8 @@ if (btnprofil) btnprofil.style.display = "none";
       const RobloxName = document.getElementById("RobloxName").value.trim();
 
       if (password !== confirmPassword) {
+        gif.style.display = "none";
+        inscription.style.display = "block";
         alert("Les mots de passe ne correspondent pas ❌");
         return;
       }
@@ -136,11 +142,14 @@ if (btnprofil) btnprofil.style.display = "none";
           RobloxName,
           balance: 0
         });
-
+        gif.style.display = "none";
+        inscription.style.display = "block";
         alert("Compte créé avec succès ✅");
         window.location.href = "../Page de gain/gagner.html";
 
       } catch (err) {
+        gif.style.display = "none";
+        inscription.style.display = "block";
         console.error(err);
         alert(err.message);
       }
@@ -151,16 +160,18 @@ if (btnprofil) btnprofil.style.display = "none";
      CONNEXION
   ======================= */
 const formConnexion = document.getElementById("form-connexion");
-
-if (formConnexion) {
+const connexion = document.getElementById("inconnexion")
 if (formConnexion) {
   formConnexion.addEventListener("submit", async (e) => {
     e.preventDefault();
-
+    connexion.style.display = "none"
+    gif.style.display = "block"
     const inputUsername = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value;
 
     if (!inputUsername || !password) {
+      gif.style.display = "none";
+      connexion.style.display = "block";
       alert("Veuillez remplir tous les champs ❌");
       return;
     }
@@ -170,6 +181,8 @@ if (formConnexion) {
       const res = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(inputUsername)}`);
       if (!res.ok) {
         const errData = await res.json();
+        gif.style.display = "none";
+        connexion.style.display = "block";
         alert(errData.error || "Utilisateur introuvable ❌");
         return;
       }
@@ -177,22 +190,26 @@ if (formConnexion) {
       const email = data.email;
 
       if (!email) {
-        alert("Email introuvable pour cet utilisateur ❌");
+        gif.style.display = "none";
+        connexion.style.display = "block";
+        alert("Erreur lors de la connexion ❌");
         return;
       }
 
       // 2️⃣ Se connecter avec Firebase Auth côté front
       await auth.signInWithEmailAndPassword(email, password);
-
+      connexion.style.display = "block";
+      gif.style.display = "none";
       alert("Connexion réussie ✅");
       window.location.href = "../Page de gain/gagner.html";
 
     } catch (err) {
+      gif.style.display = "none";
+      connexion.style.display = "block";
       console.error("Erreur connexion :", err);
       alert("Username ou mot de passe incorrect ❌");
     }
   });
-}
 }
   /* =======================
         MENU DEPLOYING
