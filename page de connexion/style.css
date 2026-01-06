@@ -16,6 +16,13 @@ body {
     padding: 10px; /* pour éviter que le contenu touche les bords */
 }
 
+#loading {
+    height: 45px;
+    width: 45px;
+    align-self: center;
+    display: none;
+}
+
 /* ----- FADE TRANSITION ----- */
 .fade-transition {
     position: fixed;
@@ -125,6 +132,7 @@ input[type="submit"] {
     cursor: pointer;
     font-weight: 600;
     transition: 0.3s;
+    display: block;
 }
 
 input[type="submit"]:hover {
