@@ -13,6 +13,13 @@ body {
   min-height: 100vh;
 }
 
+#loading {
+    height: 45px;
+    width: 45px;
+    align-self: center;
+    display: none;
+}
+
 /* ----- FADE TRANSITION ----- */
 .fade-transition {
   position: fixed;
@@ -45,6 +52,9 @@ body {
 }
 
 #warn > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centre horizontalement */
   background-color: #161616;
   border: 2px solid #757463;
   border-radius: 12px;
