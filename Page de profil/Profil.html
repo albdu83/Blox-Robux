@@ -40,6 +40,7 @@
             <h3>Mot de passe actuel</h3>
             <input type="password" id="b" placeholder="••••••••" required>
             <input type="submit" value="Confirmer" id="Confirm">
+            <img src="../img/loading.gif" alt="loading" id="loading">
             <p id="profileMessage2" class="msg"></p>
         </div>
     </div>
@@ -115,6 +116,7 @@
 <script defer>
 document.addEventListener("DOMContentLoaded", () => {
     const auth = firebase.auth();
+    const gif = document.getElementById("loading")
     const db = window.db;
     const saveBtn = document.getElementById("saveProfile");
     const warn = document.getElementById("warn");
@@ -177,6 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
        CONFIRMATION (RÉAUTH)
     ========================== */
     confirmBtn.addEventListener("click", async () => {
+        confirmBtn.style.display = "none";
+        gif.style.display = "flex";
         const DURATION = 5 * 60; // 300s
         let time = 0;
 
@@ -188,6 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // ⛔ Si le timer est encore actif
         if (time > 0) {
+            gif.style.display = "none"
+            confirmBtn.style.display = "block"
             return showMsg(
                 msg2,
                 `❌ Réessayez dans ${formatTime(time)}`
@@ -195,22 +201,36 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         msg2.textContent = "";
-        if (!pendingData) return;
+        if (!pendingData) {
+            gif.style.display = "none";
+            confirmBtn.style.display = "block";
+            return;
+        }
 
         const user = auth.currentUser;
         const oldUsername = document.getElementById("a").value.trim();
         const oldPassword = document.getElementById("b").value.trim();
-        if (!oldUsername || !oldPassword) return showMsg(msg2, "❌ Informations manquantes");
+        if (!oldUsername || !oldPassword) {
+            gif.style.display = "none";
+            confirmBtn.style.display = "block";
+            return showMsg(msg2, "❌ Informations manquantes");
+        }
 
         /* --- Récupération de l'email via backend --- */
         let email;
         try {
             const emailRes = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(oldUsername)}`);
-            if (!emailRes.ok) return showMsg(msg2, "❌ Ancien nom d'utilisateur incorrect");
+            if (!emailRes.ok) {
+                gif.style.display = "none";
+                confirmBtn.style.display = "block";
+                return showMsg(msg2, "❌ nom d'utilisateur incorrect");
+            }
             const json = await emailRes.json();
             email = json.email;
         } catch {
-            return showMsg(msg2, "❌ Impossible de récupérer l'email");
+            gif.style.display = "none"
+            confirmBtn.style.display = "block"
+            return showMsg(msg2, "❌ Impossible de récupérer les données");
         }
 
         /* --- Réauthentification --- */
@@ -218,6 +238,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const credential = firebase.auth.EmailAuthProvider.credential(email, oldPassword);
             await user.reauthenticateWithCredential(credential);
         } catch {
+            gif.style.display = "none"
+            confirmBtn.style.display = "block"
             return showMsg(msg2, "❌ Mot de passe incorrect");
         }
 
@@ -240,7 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 warn.style.display = "none";
                 warn.removeEventListener("transitionend", handleEnd);
             });
-
+            gif.style.display = "none"
+            confirmBtn.style.display = "block"
             showMsg(msg, "✅ Profil mis à jour", true);
 
             const newEndTime = Date.now() + DURATION * 1000;
@@ -261,6 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 1000);
 
             } catch (err) {
+                gif.style.display = "none"
+                confirmBtn.style.display = "block"
                 console.error(err);
                 showMsg(msg2, "❌ Erreur lors de la mise à jour");
             }
