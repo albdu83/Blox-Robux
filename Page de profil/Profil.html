@@ -6,9 +6,22 @@
     <link rel="stylesheet" href="Profil.css">
     <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
 </head>
-
 <body>
-    <header>
+    <div id="disconnect">
+    <h1>Vous avez été déconnecté... 😭</h1>
+    <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
+    <a href="../page de connexion/index.html">Se connecter ?</a>
+  </div>
+      <div class="welcome">
+        <div class="présentation" id="acceuil">
+            <div id="transition" class="fade-transition active">
+                <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+                <div class="text" id="text-chargement">Chargement...</div>
+            </div>
+        </div>
+    </div>
+    <div id="body">
+        <header>
         <a href="../index.html"><img src="../img/logo.png" alt="Logo De Blox Robux"></a>
         <div class="text">Blox R$</div>
         <ul>
@@ -23,15 +36,6 @@
         </li>
         </ul>
     </header>
-
-    <div class="welcome">
-        <div class="présentation" id="acceuil">
-            <div id="transition" class="fade-transition active">
-                <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
-                <div class="text" id="text-chargement">Chargement...</div>
-            </div>
-        </div>
-    </div>
     <div id="warn">
         <div>
             <span id="z">Veuillez vous reconnectez pour finaliser la procédure</span>
@@ -381,5 +385,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         })
     </script>
+    </div>
 </body>
 </html>
