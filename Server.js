@@ -166,63 +166,80 @@ const formInscription = document.getElementById("form-inscription");
      CONNEXION
   ======================= */
 const formConnexion = document.getElementById("form-connexion");
-const connexion = document.getElementById("inconnexion");
+const connexion = document.getElementById("inconnexion")
 if (formConnexion) {
-formConnexion.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  connexion.style.display = "none";
-  gif.style.display = "block";
+  formConnexion.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    connexion.style.display = "none"
+    gif.style.display = "block"
+    const inputUsername = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
-  const inputUsername = document.getElementById("loginUsername").value.trim();
-  const password = document.getElementById("loginPassword").value;
-
-  if (!inputUsername || !password) {
-    gif.style.display = "none";
-    connexion.style.display = "block";
-    alert("Veuillez remplir tous les champs ❌");
-    return;
-  }
-
-  const token = grecaptcha.getResponse();
-  if (!token) {
-    gif.style.display = "none";
-    connexion.style.display = "block";
-    alert("Veuillez cocher le CAPTCHA ❌");
-    return;
-  }
-
-  try {
-    // 1️⃣ Récupérer l'email via le backend (le serveur vérifie captcha)
-    const res = await fetch(`${API_BASE_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: inputUsername, password, captcha: token })
-    });
-    const data = await res.json();
-
-    if (!data.email) {
+    if (!inputUsername || !password) {
       gif.style.display = "none";
       connexion.style.display = "block";
-      alert(data.error || "Erreur connexion ❌");
+      alert("Veuillez remplir tous les champs ❌");
       return;
     }
 
-    // 2️⃣ Se connecter avec Firebase Auth côté front
-    await auth.signInWithEmailAndPassword(data.email, password);
-    connexion.style.display = "block";
-    gif.style.display = "none";
-    alert("Connexion réussie ✅");
-    window.location.href = "../Page de gain/gagner.html";
+    const token = grecaptcha.getResponse();
+    if (!token) {
+      gif.style.display = "none";
+      connexion.style.display = "block";
+      alert("Veuillez cocher le CAPTCHA ❌");
+      return;
+    }
 
-  } catch (err) {
-    gif.style.display = "none";
-    connexion.style.display = "block";
-    console.error("Erreur connexion :", err);
-    alert("Username ou mot de passe incorrect ❌");
-  }
-});
+    try {
+
+      const res2 = await fetch(`${API_BASE_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: inputUsername, password, captcha: token })
+      });
+      const data2 = await res2.json();
+
+      if (!data2.email) {
+        gif.style.display = "none";
+        connexion.style.display = "block";
+        alert(data2.error || "Erreur connexion ❌");
+        return;
+      }
+
+      // 1️⃣ Récupérer l'email via le backend
+      const res = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(inputUsername)}`);
+      if (!res.ok) {
+        const errData = await res.json();
+        gif.style.display = "none";
+        connexion.style.display = "block";
+        alert(errData.error || "Utilisateur introuvable ❌");
+        return;
+      }
+      const data = await res.json();
+      const email = data.email;
+
+      if (!email) {
+        gif.style.display = "none";
+        connexion.style.display = "block";
+        alert("Erreur lors de la connexion ❌");
+        return;
+      }
+
+      // 2️⃣ Se connecter avec Firebase Auth côté front
+      await auth.signInWithEmailAndPassword(email, password);
+      connexion.style.display = "block";
+      gif.style.display = "none";
+      alert("Connexion réussie ✅");
+      window.location.href = "../Page de gain/gagner.html";
+
+    } catch (err) {
+      gif.style.display = "none";
+      connexion.style.display = "block";
+      console.error("Erreur connexion :", err);
+      alert("Username ou mot de passe incorrect ❌");
+    }
+  });
 }
-
   /* =======================
         MENU DEPLOYING
   ======================= */
