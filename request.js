@@ -152,6 +152,27 @@ app.get("/timewall", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  const { username, password, captcha } = req.body;
+
+  // 1️⃣ Vérifier le CAPTCHA
+  const fetchRes = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${captcha}`, { method: "POST" });
+  const captchaResult = await fetchRes.json();
+
+  if (!captchaResult.success) {
+    return res.status(400).json({ error: "Captcha invalide !" });
+  }
+
+  // 2️⃣ Vérifier le login avec Firebase
+  try {
+    const email = await getEmailFromUsername(username); // ta fonction existante
+    await firebase.auth().signInWithEmailAndPassword(email, password);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: "Username ou mot de passe incorrect" });
+  }
+});
+
 app.get("/getEmail", async (req, res) => {
   const username = req.query.username;
   if (!username) return res.status(400).json({ error: "Username manquant" });
