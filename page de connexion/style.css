@@ -72,6 +72,7 @@ form {
     width: 100%;
     max-width: 400px;
     gap: 10px;
+    box-sizing: border-box;
 }
 
 h4 {
@@ -92,6 +93,11 @@ hr {
     border: 0;
     height: 1px;
     width: 100%;
+}
+
+.user-field input {
+    flex: 1 1 0;
+    min-width: 0; /* très important pour éviter le dépassement */
 }
 
 .user-field {
@@ -178,7 +184,7 @@ p a:hover {
 @media (max-width: 480px) {
     form {
         padding: 15px;
-        gap: 8px;
+        gap: 5px;
     }
 
     h4 {
