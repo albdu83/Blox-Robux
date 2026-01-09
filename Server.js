@@ -199,7 +199,7 @@ if (formConnexion) {
       });
       const data2 = await res2.json();
 
-      if (!data2.email) {
+      if (!data2) {
         gif.style.display = "none";
         connexion.style.display = "block";
         alert(data2.error || "Erreur connexion ❌");
