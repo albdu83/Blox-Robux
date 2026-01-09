@@ -136,7 +136,28 @@ const formInscription = document.getElementById("form-inscription");
         return;
       }
 
+      const token = grecaptcha.getResponse();
+      if (!token) {
+        gif.style.display = "none";
+        inscription.style.display = "block";
+        alert("Veuillez cocher le CAPTCHA ❌");
+        return;
+      }
+
       try {
+        const res2 = await fetch(`${API_BASE_URL}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: inputUsername, password, captcha: token })
+        });
+      const data2 = await res2.json();
+
+      if (!data2) {
+        gif.style.display = "none";
+        inscription.style.display = "block";
+        alert(data2.error || "Erreur connexion ❌");
+        return;
+      }
         const email = `${username}@bloxrobux.local`;
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         const uid = cred.user.uid;
