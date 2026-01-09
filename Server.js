@@ -148,7 +148,7 @@ const formInscription = document.getElementById("form-inscription");
         const res2 = await fetch(`${API_BASE_URL}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: inputUsername, password, captcha: token })
+          body: JSON.stringify({ username: username, password, captcha: token })
         });
       const data2 = await res2.json();
 
