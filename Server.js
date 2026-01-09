@@ -10,10 +10,16 @@ document.addEventListener("DOMContentLoaded", () => {
      AUTH STATE (SOURCE UNIQUE)
   ======================= */
 const btnprofil = document.getElementById("btn-profil")
+const disco = document.getElementById("disconnect")
+const body = document.getElementById("body")
 if (btnprofil) btnprofil.style.display = "none";
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
       console.log("Aucun utilisateur connecté");
+      if (disco) {
+        disco.style.display = "flex"
+        body.innerHTML = ""
+      }
       return;
     }
 
