@@ -8,7 +8,17 @@
   <link rel="icon" type="image/png" href="../favicon.ico">
 </head>
 <body>
-  <header>
+  <div id="disconnect">
+    <h1>Vous avez été déconnecté... 😭</h1>
+    <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
+    <a href="../page de connexion/index.html">Se connecter ?</a>
+  </div>
+  <div id="transition" class="fade-transition active">
+    <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+<div id="body">
+    <header>
   <!-- LEFT : logo + solde -->
   <div class="header-left">
     <a href="../index.html">
@@ -80,11 +90,7 @@
 </div>
 
   <!-- TRANSITION -->
-  <div id="transition" class="fade-transition active">
-    <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
-    <div class="text" id="text-chargement">Chargement...</div>
-  </div>
-    <div class="separator"></div>
+  <div class="separator"></div>
   <div class="separator" style="visibility: hidden;"></div>
   <!-- SCRIPT reach ET FIREBASE -->
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -270,6 +276,7 @@ if (window.innerWidth >= 1024) {
 </div>
   </div>
 <img src="../img/Bloxlogo.png" alt="BloxRobuxLogo" style="visibility: hidden;">
+</div>
 </div>
 </body>
 </html>
