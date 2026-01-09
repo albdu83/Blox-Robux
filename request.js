@@ -9,6 +9,7 @@ app.use(express.json());
 let ROBLO_COOKIE = null;
 
 // --- SECRET_KEY TimeWall ---
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
 
@@ -155,13 +156,28 @@ app.get("/timewall", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { username, password, captcha } = req.body;
 
-  // 1️⃣ Vérifier CAPTCHA
-  const captchaRes = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${captcha}`, { method: "POST" });
-  const captchaData = await captchaRes.json();
-  if (!captchaData.success) return res.status(400).json({ error: "Captcha invalide !" });
+  if (!RECAPTCHA_SECRET) {
+    return res.status(500).json({ error: "RECAPTCHA_SECRET non défini !" });
+  }
 
+  // 1️⃣ Vérifier CAPTCHA côté serveur
   try {
-    // 2️⃣ Récupérer l'email
+    const captchaRes = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
+      { method: "POST" }
+    );
+    const captchaData = await captchaRes.json();
+
+    if (!captchaData.success) {
+      return res.status(400).json({ error: "Captcha invalide !" });
+    }
+  } catch (err) {
+    console.error("Erreur captcha:", err);
+    return res.status(500).json({ error: "Erreur lors de la vérification du captcha" });
+  }
+
+  // 2️⃣ Récupérer l’email depuis Firebase Realtime DB
+  try {
     const snapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
     if (!snapshot.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
 
@@ -169,19 +185,16 @@ app.post("/login", async (req, res) => {
     const user = snapshot.val()[uid];
     const email = user.email || `${user.firstUsername}@bloxrobux.local`;
 
-    // 3️⃣ Login avec Firebase Admin
-    await admin.auth().getUserByEmail(email); // juste pour valider que l'email existe
-    // NOTE: Admin SDK ne gère pas directement les mots de passe, donc ici tu peux :
-    //    - Soit vérifier le mot de passe via ton front actuel
-    //    - Soit utiliser Firebase Auth REST API côté serveur
+    if (!email) return res.status(400).json({ error: "Email introuvable" });
 
-    res.json({ success: true });
-
+    // 3️⃣ Retourner l’email au front pour login Firebase
+    res.json({ email });
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: "Username ou mot de passe incorrect" });
+    console.error("Erreur login:", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
+
 
 
 app.get("/getEmail", async (req, res) => {
