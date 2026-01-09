@@ -182,6 +182,14 @@ if (formConnexion) {
       return;
     }
 
+    const token = grecaptcha.getResponse();
+    if (!token) {
+      gif.style.display = "none";
+      connexion.style.display = "block";
+      alert("Veuillez cocher le CAPTCHA ❌");
+      return;
+    }
+
     try {
       // 1️⃣ Récupérer l'email via le backend
       const res = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(inputUsername)}`);
