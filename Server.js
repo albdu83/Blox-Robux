@@ -166,12 +166,14 @@ const formInscription = document.getElementById("form-inscription");
      CONNEXION
   ======================= */
 const formConnexion = document.getElementById("form-connexion");
-const connexion = document.getElementById("inconnexion")
+const connexion = document.getElementById("inconnexion");
 if (formConnexion) {
   formConnexion.addEventListener("submit", async (e) => {
     e.preventDefault();
-    connexion.style.display = "none"
-    gif.style.display = "block"
+
+    connexion.style.display = "none";
+    gif.style.display = "block";
+
     const inputUsername = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value;
 
@@ -191,29 +193,37 @@ if (formConnexion) {
     }
 
     try {
-      // 1️⃣ Récupérer l'email via le backend
-      const res = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(inputUsername)}`);
-      if (!res.ok) {
-        const errData = await res.json();
+      // 1️⃣ Récupérer l'email via ton backend
+      const resEmail = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(inputUsername)}`);
+      const dataEmail = await resEmail.json();
+      if (!resEmail.ok || !dataEmail.email) {
         gif.style.display = "none";
         connexion.style.display = "block";
-        alert(errData.error || "Utilisateur introuvable ❌");
-        return;
-      }
-      const data = await res.json();
-      const email = data.email;
-
-      if (!email) {
-        gif.style.display = "none";
-        connexion.style.display = "block";
-        alert("Erreur lors de la connexion ❌");
+        alert(dataEmail.error || "Utilisateur introuvable ❌");
         return;
       }
 
-      // 2️⃣ Se connecter avec Firebase Auth côté front
-      await auth.signInWithEmailAndPassword(email, password);
-      connexion.style.display = "block";
+      const email = dataEmail.email;
+
+      // 2️⃣ Envoyer email + password + token CAPTCHA à ton backend
+      const resLogin = await fetch(`${API_BASE_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: inputUsername, password, captcha: token })
+      });
+
+      const loginData = await resLogin.json();
+
+      if (!resLogin.ok || loginData.error) {
+        gif.style.display = "none";
+        connexion.style.display = "block";
+        alert(loginData.error || "Erreur lors de la connexion ❌");
+        return;
+      }
+
+      // 3️⃣ Connexion réussie
       gif.style.display = "none";
+      connexion.style.display = "block";
       alert("Connexion réussie ✅");
       window.location.href = "../Page de gain/gagner.html";
 
@@ -221,10 +231,11 @@ if (formConnexion) {
       gif.style.display = "none";
       connexion.style.display = "block";
       console.error("Erreur connexion :", err);
-      alert("Username ou mot de passe incorrect ❌");
+      alert("Erreur lors de la connexion ❌");
     }
   });
 }
+
   /* =======================
         MENU DEPLOYING
   ======================= */
