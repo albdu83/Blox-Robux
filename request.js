@@ -154,13 +154,16 @@ app.get("/timewall", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  const { username, password, captcha } = req.body;
+  const { captcha } = req.body;
 
   if (!RECAPTCHA_SECRET) {
     return res.status(500).json({ error: "RECAPTCHA_SECRET non défini !" });
   }
 
-  // 1️⃣ Vérifier CAPTCHA côté serveur
+  if (!captcha) {
+    return res.status(400).json({ error: "Captcha manquant !" });
+  }
+
   try {
     const captchaRes = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
@@ -171,31 +174,14 @@ app.post("/login", async (req, res) => {
     if (!captchaData.success) {
       return res.status(400).json({ error: "Captcha invalide !" });
     }
+
+    return res.json({ success: true });
+
   } catch (err) {
     console.error("Erreur captcha:", err);
     return res.status(500).json({ error: "Erreur lors de la vérification du captcha" });
   }
-
-  // 2️⃣ Récupérer l’email depuis Firebase Realtime DB
-  try {
-    const snapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
-    if (!snapshot.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
-
-    const uid = Object.keys(snapshot.val())[0];
-    const user = snapshot.val()[uid];
-    const email = user.email || `${user.firstUsername}@bloxrobux.local`;
-
-    if (!email) return res.status(400).json({ error: "Email introuvable" });
-
-    // 3️⃣ Retourner l’email au front pour login Firebase
-    res.json({ email });
-  } catch (err) {
-    console.error("Erreur login:", err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
 });
-
-
 
 app.get("/getEmail", async (req, res) => {
   const username = req.query.username;
