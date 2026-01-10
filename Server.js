@@ -123,7 +123,7 @@ if (btnprofil) btnprofil.style.display = "none";
       console.warn("Vous n'avez pas la permission d'accéder à vos données (banni)");
       await auth.signOut();
       document.body.innerHTML = "";
-      window.location.replace("../banned.html");
+      window.location.replace("../Ban/Ban.html");
     } else {
       console.error("Erreur chargement profil :", err);
     }
