@@ -16,15 +16,11 @@ if (btnprofil) btnprofil.style.display = "none";
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
       console.log("Aucun utilisateur connecté");
-      if (disco) {
+      if (disco && body) {
         disco.style.display = "flex"
         body.innerHTML = ""
       }
       return;
-    }
-
-    if (user) {
-        localStorage.setItem("connectedUser", user.uid);
     }
 
     const uid = user.uid;
@@ -33,12 +29,27 @@ if (btnprofil) btnprofil.style.display = "none";
     try {
       const snapshot = await db.ref("users/" + uid).get();
       if (!snapshot.exists()) {
-        console.log("Utilisateur absent de la DB");
+        await auth.signOut();
         return;
       }
 
-      const { username, RobloxName } = snapshot.val();
-      localStorage.setItem("robloxName", RobloxName);
+      const data = snapshot.val();
+      if (data.banned === true) {
+        await auth.signOut();
+        document.body.innerHTML = ""; // nettoie l’UI
+        window.location.replace("../banned.html"); // plus sûr que href
+        return;
+      }
+
+      if (user) {
+        localStorage.setItem("connectedUser", uid);
+      }
+
+      const { username, RobloxName } = data;
+      if (RobloxName) {
+        localStorage.setItem("robloxName", RobloxName);
+      }
+
 
       /* ===== PROFIL HEADER ===== */
       const lienprofil = document.getElementById("lien-profil");
