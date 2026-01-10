@@ -119,8 +119,15 @@ if (btnprofil) btnprofil.style.display = "none";
         lienprofil.href = "../Page de profil/Profil.html"
       }
     } catch (err) {
+     if (err.code === "PERMISSION_DENIED") {
+      console.warn("Vous n'avez pas la permission d'accéder à vos données (banni)");
+      await auth.signOut();
+      document.body.innerHTML = "";
+      window.location.replace("../banned.html");
+    } else {
       console.error("Erreur chargement profil :", err);
     }
+  }
   });
 
   /* =======================
