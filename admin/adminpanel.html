@@ -192,6 +192,81 @@ const searchInput = document.getElementById("search");
 const nbuInput = document.getElementById("NBU");
 let allUsers = [];
 
+list.addEventListener("click", async (e) => {
+  const btn = e.target;
+  const tr = btn.closest("tr");
+  if (!tr) return;
+
+  const uid = tr.dataset.uid;
+  if (!uid) return;
+
+  // PROFIL
+  if (btn.classList.contains("profil")) {
+    window.location.href = `../Page de profil/Profil.html?uid=${uid}`;
+  }
+
+  // CRÉDITER
+  if (btn.classList.contains("credit")) {
+    const amount = prompt("Montant à créditer :");
+    if (!amount || isNaN(amount)) return;
+
+    await db.ref(`users/${uid}/balance`)
+      .transaction(b => (b || 0) + Number(amount));
+
+    alert("✅ Crédit ajouté");
+    loadUsers();
+  }
+
+  // BANNIR
+if (btn.classList.contains("ban")) {
+  const isBanned = tr.dataset.banned === "true"; // récupère l'état actuel
+
+  const confirmMsg = isBanned 
+    ? "Voulez-vous débannir cet utilisateur ?" 
+    : "Confirmer le bannissement ?";
+
+  if (!confirm(confirmMsg)) return;
+
+  // Mettre à jour la base de données
+  await db.ref(`users/${uid}/banned`).set(!isBanned);
+
+  alert(
+    !isBanned 
+      ? "🚫 Utilisateur banni" 
+      : "✅ Utilisateur débanni"
+  );
+
+  loadUsers(); // Recharge la liste pour mettre à jour le bouton et le dataset
+}
+
+  // PROMOUVOIR
+if (btn.classList.contains("promote")) {
+  if (uid === connectedUser) {
+    return alert("❌ Vous ne pouvez pas modifier votre propre rôle.");
+  }
+
+  const currentRole = tr.dataset.role;
+  const newRole = currentRole === "admin" ? "Utilisateur" : "admin";
+
+  const confirmMsg =
+    newRole === "admin"
+      ? "Promouvoir cet utilisateur en admin ?"
+      : "Retirer le rôle admin à cet utilisateur ?";
+
+  if (!confirm(confirmMsg)) return;
+
+  await db.ref(`users/${uid}/role`).set(newRole);
+
+  alert(
+    newRole === "admin"
+      ? "⭐ Utilisateur promu admin"
+      : "⬇️ Rôle admin retiré"
+  );
+
+  loadUsers();
+}
+});
+
 async function loadUsers() {
   try {
     const snapshot = await db.ref("users").get();
@@ -202,9 +277,11 @@ async function loadUsers() {
 
     const users = snapshot.val();
     allUsers = Object.keys(users).map(uid => ({
-      username: users[uid].username || uid,
+      uid: uid,
+      username: users[uid].username ,
       balance: users[uid].balance || 0,
-      role: users[uid].role || "Utilisateur"
+      role: (users[uid].role || "Utilisateur").toLowerCase(),
+      banned: users[uid].banned || false
     }));
 
     renderUsers();
@@ -230,20 +307,29 @@ function renderUsers() {
   let count = 0;
 
   for (const user of allUsers) {
-    if (!user.username.toLowerCase().includes(search)) continue;
+    if (
+        !user.username ||
+        !user.username.toLowerCase().includes(search)
+    ) continue;
     if (count >= limit) break;
     count++;
 
     const tr = document.createElement("tr");
+    tr.dataset.role = user.role;
+    tr.dataset.uid = user.uid;
+    tr.dataset.banned = user.banned || false;
+    const isAdmin = user.role === "admin";
     tr.innerHTML = `
-      <td>${user.username}</td>
+      <td>${user.username ?? "—"}</td>
       <td>${user.balance} R$</td>
       <td>${user.role}</td>
       <td class="actions">
         <button class="btn profil">Profil</button>
         <button class="btn credit">Créditer</button>
-        <button class="btn ban">Bannir</button>
-        <button class="btn promote">Promouvoir</button>
+        <button class="btn ban">${user.banned ? "Débannir" : "Bannir"}</button>
+        <button class="btn promote">
+          ${isAdmin ? "Rétrograder" : "Promouvoir"}
+        </button>
       </td>
     `;
     list.appendChild(tr);
