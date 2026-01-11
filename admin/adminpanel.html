@@ -7,7 +7,50 @@
     <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
 </head>
 <body>
-
+<div id="background">
+<div class="container">
+  <img src="../img/return.png" alt="retour" id="retour">
+  <div id="container">
+    <img src="../img/default-avatar.png" alt="avatar" id="roblox">
+    <h4 id="pseudoR">...</h4>
+    <div id="infos">
+  <div class="info-box">
+  <span class="label">Robux gagnés</span>
+  <span class="value" id="robuxGagnes">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Retraits</span>
+  <span class="value" id="retraits">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Balance</span>
+  <span class="value" id="balance">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Statut</span>
+  <span class="value" id="statut">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nom Roblox</span>
+  <span class="value" id="nomRoblox">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nom d'utilisateur</span>
+  <span class="value" id="username">...</span>
+</div>
+<div class="info-box">
+  <span class="label">date de céation</span>
+  <span class="value" id="motdepasse">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nombre de connexions</span>
+  <span class="value" id="nbConnexions">...</span>
+</div>
+  </div>
+</div>
+  </div>
+</div>
+</div>
     <!-- ===== RIDEAU CHARGEMENT ===== -->
     <div id="transition" class="fade-transition active">
         <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
@@ -63,7 +106,6 @@
                 </tbody>
             </table>
         </section>
-
         <!-- ===== PROMOCODES ===== -->
         <section class="card">
             <h2>Promocodes</h2>
@@ -141,9 +183,44 @@ const firebaseConfig = {
   appId: "1:178163807426:web:649b90d1867023d190b75b",
   measurementId: "G-YWK7EDQ55E"
 };
-
+const imgage = document.getElementById("roblox");
 // Initialisation Firebase
 firebase.initializeApp(firebaseConfig);
+
+async function setRobloxAvatar(robloxName) {
+  try {
+    const res = await fetch(`https://blox-robux.onrender.com/api/avatar/${robloxName}`);
+    const data = await res.json();
+    if (!imgage) return;
+
+    imgage.src = data.avatarUrl || "img/default-avatar.png";
+    imgage.style.display = "inline-block";
+
+  } catch (err) {
+    console.error("Erreur avatar :", err);
+  }
+}
+async function updateProfileInfo(uid) {
+  try {
+    const snapshot = await db.ref(`users/${uid}`).get();
+    if (!snapshot.exists()) return;
+
+    const data = snapshot.val();
+
+    document.getElementById("robuxGagnes").textContent = data.robuxGagnes ?? "0";
+    document.getElementById("retraits").textContent = Object.keys(data.transactions || {}).length;
+    document.getElementById("balance").textContent = data.balance ?? "0";
+    document.getElementById("statut").textContent = data.role ?? "Utilisateur";
+    document.getElementById("nomRoblox").textContent = data.RobloxName ?? "—";
+    document.getElementById("username").textContent = data.username ?? "—";
+    const date = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : "—";
+    document.getElementById("motdepasse").textContent = date;
+    document.getElementById("nbConnexions").textContent = data.nbConnexions ?? "0";
+
+  } catch (err) {
+    console.error("Erreur mise à jour profil :", err);
+  }
+}
 
 const auth = firebase.auth();
 const db = firebase.database();
@@ -190,7 +267,27 @@ auth.onAuthStateChanged(async (user) => {
 const list = document.getElementById("list");
 const searchInput = document.getElementById("search");
 const nbuInput = document.getElementById("NBU");
+const background = document.getElementById("background");
+const pseudoR = document.getElementById("pseudoR");
+const retour = document.getElementById("retour")
 let allUsers = [];
+
+retour.addEventListener("click", () => {
+  background.classList.remove("active")
+  background.addEventListener("transitionend", () => {
+    background.style.display = "none";
+    pseudoR.innerHTML = "...";
+    imgage.src = "../img/default-avatar.png";
+    document.getElementById("robuxGagnes").textContent = "...";
+    document.getElementById("retraits").textContent = "...";
+    document.getElementById("balance").textContent = "...";
+    document.getElementById("statut").textContent = "...";
+    document.getElementById("nomRoblox").textContent = "...";
+    document.getElementById("username").textContent = "...";
+    document.getElementById("motdepasse").textContent = "...";
+    document.getElementById("nbConnexions").textContent = "...";
+  }, { once: true })
+});
 
 list.addEventListener("click", async (e) => {
   const btn = e.target;
@@ -202,7 +299,16 @@ list.addEventListener("click", async (e) => {
 
   // PROFIL
   if (btn.classList.contains("profil")) {
-    window.location.href = `../Page de profil/Profil.html?uid=${uid}`;
+    background.style.display = "flex"
+    setTimeout(() => {
+      background.classList.toggle("active")
+    }, 0);
+    const snap = await db.ref(`users/${uid}/RobloxName`).get()
+    const robloxName = snap.val()
+    if (!robloxName) return alert("alertee");
+    pseudoR.innerHTML = `@${robloxName}`;
+    setRobloxAvatar(robloxName);
+    updateProfileInfo(uid);
   }
 
   // CRÉDITER
