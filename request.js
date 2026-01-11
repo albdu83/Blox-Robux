@@ -143,6 +143,9 @@ app.get("/timewall", async (req, res) => {
 
     await db.ref(`users/${uid}/balance`)
       .transaction(v => (v || 0) + amount);
+    
+    await db.ref(`users/${uid}/robuxGagnes`)
+      .transaction(v => (v || 0) + amount);  
 
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
@@ -152,6 +155,35 @@ app.get("/timewall", async (req, res) => {
     return res.status(200).send("OK");
   }
 });
+
+async function migrateRobuxGagnesFromBalance() {
+  const snap = await db.ref("users").get();
+  if (!snap.exists()) {
+    console.log("Aucun utilisateur trouvé");
+    return;
+  }
+
+  const users = snap.val();
+  const updates = {};
+
+  for (const uid in users) {
+    const user = users[uid];
+
+    // On ne touche pas aux comptes déjà migrés
+    if (user.robuxGagnes === undefined) {
+      const balance = Number(user.balance) || 0;
+      updates[`users/${uid}/robuxGagnes`] = balance;
+    }
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await db.ref().update(updates);
+    console.log("✅ robuxGagnes initialisé avec la balance actuelle");
+  } else {
+    console.log("ℹ️ Tous les comptes ont déjà robuxGagnes");
+  }
+}
+migrateRobuxGagnesFromBalance();
 
 app.post("/login", async (req, res) => {
   const { captcha } = req.body;
