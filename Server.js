@@ -185,7 +185,9 @@ const formInscription = document.getElementById("form-inscription");
           username: username,
           firstUsername: username,
           RobloxName,
-          balance: 0
+          balance: 0,
+          createdAt: new Date().toISOString(),
+          nbConnexions : 1,
         });
         gif.style.display = "none";
         inscription.style.display = "block";
