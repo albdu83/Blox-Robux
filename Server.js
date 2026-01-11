@@ -267,7 +267,16 @@ if (formConnexion) {
       }
 
       // 2️⃣ Se connecter avec Firebase Auth côté front
-      await auth.signInWithEmailAndPassword(email, password);
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+
+      // Maintenant on a accès à uid
+      const uid = cred.user.uid;
+
+      const snapshot = await db.ref("users/" + uid + "/nbConnexions").get();
+      const currentConnexions = snapshot.exists() ? snapshot.val() : 1;
+
+      await db.ref("users/" + uid + "/nbConnexions").set(currentConnexions + 1);
+
       connexion.style.display = "block";
       gif.style.display = "none";
       alert("Connexion réussie ✅");
