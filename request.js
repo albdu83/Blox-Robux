@@ -229,7 +229,7 @@ app.post('/api/roblox-user/:username', async (req, res) => {
 });
 
 app.get("/reach", (req, res) => {
-  console.log("🔥 /reach HIT", req.originalUrl);
+  console.log("🔥 /reach HIT", req.url);
 
   const { reward, user_id, tx_id, hash, reversal } = req.query;
 
@@ -241,8 +241,9 @@ app.get("/reach", (req, res) => {
     return res.status(200).send("OK");
   }
 
+  // ⚠️ UTILISER req.url
   const result = verifyTheoremReachHash(
-    req.originalUrl,
+    req.url,
     THEOREM_SECRET
   );
 
@@ -258,6 +259,7 @@ app.get("/reach", (req, res) => {
   console.log("✅ HASH VALIDE");
   return res.status(200).send("OK");
 });
+
 
 
 // --- Endpoint Admin ---
