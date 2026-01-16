@@ -18,7 +18,7 @@ function verifyTheoremReachHash(originalUrl, secret) {
   const [queryString, receivedHash] = urlPart.split("&hash=");
 
   const computedHash = crypto
-    .createHmac("sha256", secret)
+    .createHmac("sha1", secret)
     .update(queryString, "utf8")
     .digest("base64")
     .replace(/\+/g, "-")
