@@ -22,7 +22,7 @@ if (btnprofil) btnprofil.style.display = "none";
       }
       return;
     }
-
+    await checkAndFixRobloxName(user);
     const uid = user.uid;
     console.log("UID connecté :", uid);
 
@@ -581,4 +581,113 @@ btn.addEventListener("click", async () => {
     alert(payData.error || "❌ Erreur lors du paiement");
   }
 });
+async function checkAndFixRobloxName(user) {
+    if (!user) return;
+
+    const uid = user.uid;
+    const snapshot = await firebase.database().ref(`users/${uid}/RobloxName`).get();
+    const robloxName = snapshot.val();
+
+    // Vérifier via backend
+    const res = await fetch(`${API_BASE_URL}/api/roblox-user/${robloxName}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [robloxName], excludeBannedUsers: true })
+    });
+    const data = await res.json();
+
+    if (!data?.data?.length) {
+        // Pseudo invalide → afficher modal
+        showRobloxWarning("Le pseudo entré lors de votre inscription sur notre site est invalide ! Merci de bien vouloir mettre un pseudo Roblox valide pour poursuivre vos fonctions sur notre site.", async (newName, overlay) => {
+            // Vérifier le nouveau pseudo
+            const resCheck = await fetch(`${API_BASE_URL}/api/roblox-user/${newName}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ usernames: [newName], excludeBannedUsers: true })
+            });
+            const dataCheck = await resCheck.json();
+            if (!dataCheck?.data?.length) return alert("Pseudo invalide, essayez un autre !");
+
+            // Mettre à jour Firebase
+            await firebase.database().ref(`users/${uid}/RobloxName`).set(newName);
+            alert("Pseudo Roblox mis à jour ✅");
+
+            // Fermer le modal
+            document.body.removeChild(overlay);
+            window.location.reload();
+        });
+    }
+}
+
+
+function showRobloxWarning(message, callback) {
+    // Crée le fond modal
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100vw";
+    overlay.style.height = "100vh";
+    overlay.style.background = "rgba(0,0,0,0.6)";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = "9999";
+
+    // Crée le conteneur du modal
+    const modal = document.createElement("div");
+    modal.style.background = "#222";
+    modal.style.padding = "20px";
+    modal.style.borderRadius = "10px";
+    modal.style.width = "300px";
+    modal.style.textAlign = "center";
+    modal.style.color = "#fff";
+    overlay.appendChild(modal);
+    // Erreur
+    const errorMsg = document.createElement("p");
+    errorMsg.style.color = "#ff5555";
+    errorMsg.style.fontSize = "0.9rem";
+    modal.appendChild(errorMsg);
+    // Message
+    const msg = document.createElement("p");
+    msg.textContent = message;
+    modal.appendChild(msg);
+
+    // Input pseudo
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Nouveau pseudo Roblox";
+    input.style.width = "90%";
+    input.style.margin = "10px 0";
+    input.style.padding = "8px";
+    input.style.borderRadius = "5px";
+    input.style.border = "1px solid #555";
+    modal.appendChild(input);
+
+    // Boutons container
+    const btnContainer = document.createElement("div");
+    btnContainer.style.display = "flex";
+    btnContainer.style.justifyContent = "space-around";
+    modal.appendChild(btnContainer);
+
+    // Bouton Valider
+    const validateBtn = document.createElement("button");
+    validateBtn.textContent = "Valider";
+    validateBtn.style.padding = "8px 12px";
+    validateBtn.style.borderRadius = "5px";
+    validateBtn.style.border = "none";
+    validateBtn.style.cursor = "pointer";
+    validateBtn.style.background = "#00ff6a";
+    validateBtn.style.color = "#000";
+    btnContainer.appendChild(validateBtn);
+
+    document.body.appendChild(overlay);
+
+    // Event Valider
+    validateBtn.onclick = async () => {
+        const newName = input.value.trim();
+        if (!newName) return alert("Veuillez entrer un pseudo Roblox valide !");
+        callback(newName, overlay); // renvoie le pseudo au callback pour traitement
+    };
+}
 });
