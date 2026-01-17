@@ -478,6 +478,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     msg.style.color = "#ff5555";
                     msg.textContent = "❌ Code invalide.";
+                    setTimeout(() => {
+                        msg.textContent = ""
+                    }, 3000);
                 }
                 });
             }); 
