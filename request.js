@@ -7,6 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 let ROBLO_COOKIE = null;
+let lienavatar = null;
 
 // --- SECRET_KEY TimeWall ---
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET
@@ -59,7 +60,7 @@ app.get("/api/avatar/:username", async (req, res) => {
 
         const avatarData = await avatarRes.json();
         if (!avatarData.data || avatarData.data.length === 0) return res.status(500).json({ error: "Erreur avatar Roblox" });
-
+        lienavatar = avatarData.data[0].imageUrl,
         res.json({
             avatarUrl: avatarData.data[0].imageUrl,
             targetId: userId
@@ -144,6 +145,8 @@ app.get("/timewall", async (req, res) => {
       return res.status(200).send("OK");
     }
 
+    const snapshot = await db.ref("users/" + uid).get();
+    const data = snapshot.val()
     await txRef.set({ uid, amount, type, date: Date.now() });
 
     await db.ref(`users/${uid}/balance`)
@@ -151,7 +154,29 @@ app.get("/timewall", async (req, res) => {
     
     await db.ref(`users/${uid}/robuxGagnes`)
       .transaction(v => (v || 0) + amount);  
-
+    
+await fetch("https://discord.com/api/webhooks/1462212976273789115/5FJAFrFVr2aWyOyAw6CcyZ9FKFN8bHXZcKB7kAyzapkFkDcT0gFgj4jnfrvPL81vLxO_", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    embeds: [{
+      title: `💸 Gain Roblox`,
+      description: `**${data.username}** a gagné **${amount} R$** en complétant une offre sur TimeWall`,
+      color: 0x5865F2,
+      thumbnail: {
+        url: lienavatar
+      },
+      image: {
+        url: "https://imgur.com/G7f87gT"
+      },
+      footer: {
+        text: "BloxRobux",
+        icon_url: "https://imgur.com/a/lxUdFb0"
+      },
+      timestamp: new Date().toISOString()
+    }]
+  })
+});
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
 
@@ -374,17 +399,8 @@ app.post("/api/payServer", async (req, res) => {
       return res.status(500).json({ error: "Impossible de récupérer le CSRF token" });
     }
     if (!csrfToken) return res.status(500).json({ error: "CSRF token introuvable" });
-
-    // 4️⃣ Créer le VIP server
-    const vipRes = await fetch(`https://games.roblox.com/v1/games/${universeId}/vip-servers`, {
-      method: "POST",
-      headers: {
-        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}`,
-        "X-CSRF-TOKEN": csrfToken,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ name: `VIP Serv ${name}`, maxPlayers: 10 })
-    });
+    
+    const vipRes = await fetch(`https://games.roblox.com/v1/games/${gameId}/private-servers`, {method: "POST"});
 
     const vipData = await vipRes.json();
     console.log("Roblox VIP response:", vipData, vipRes.status);
