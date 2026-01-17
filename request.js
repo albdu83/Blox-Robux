@@ -74,6 +74,12 @@ app.get("/api/avatar/:username", async (req, res) => {
 // --- Endpoint TimeWall ---
 const admin = require("firebase-admin");
 
+admin.database()
+  .ref("roblox/cookies/cookies/0/value")
+  .on("value", snap => {
+    ROBLO_COOKIE = snap.val();
+    console.log("🍪 ROBLO_COOKIE chargé :", !!ROBLO_COOKIE);
+  });
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -259,8 +265,6 @@ app.get("/reach", (req, res) => {
   console.log("✅ HASH VALIDE");
   return res.status(200).send("OK");
 });
-
-
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE;
