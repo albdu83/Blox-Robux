@@ -74,13 +74,6 @@ app.get("/api/avatar/:username", async (req, res) => {
 // --- Endpoint TimeWall ---
 const admin = require("firebase-admin");
 
-admin.database()
-  .ref("roblox/cookies/cookies/0/value")
-  .on("value", snap => {
-    ROBLO_COOKIE = snap.val();
-    console.log("🍪 ROBLO_COOKIE chargé :", !!ROBLO_COOKIE);
-  });
-
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(
@@ -91,6 +84,12 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
+
+// Charger le cookie en temps réel
+db.ref("roblox/cookies/cookies/0/value").on("value", snap => {
+  ROBLO_COOKIE = snap.val();
+  console.log("🍪 ROBLO_COOKIE chargé :", !!ROBLO_COOKIE);
+});
 
 app.get("/timewall", async (req, res) => {
   const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
