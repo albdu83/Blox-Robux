@@ -136,11 +136,11 @@ if (btnprofil) btnprofil.style.display = "none";
 const gif = document.getElementById("loading")
 const inscription = document.getElementById("ininscription")
 const formInscription = document.getElementById("form-inscription");
-  if (formInscription) {
-    formInscription.addEventListener("submit", async (e) => {
-      e.preventDefault();
-        inscription.style.display = "none"
-        gif.style.display = "block"
+if (formInscription) {
+  formInscription.addEventListener("submit", async (e) => {
+    e.preventDefault();
+      inscription.style.display = "none"
+      gif.style.display = "block"
 
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
@@ -176,32 +176,42 @@ const formInscription = document.getElementById("form-inscription");
         alert(data2.error || "Erreur connexion ❌");
         return;
       }
-        const email = `${username}@bloxrobux.local`;
-        const cred = await auth.createUserWithEmailAndPassword(email, password);
-        const uid = cred.user.uid;
 
-        await db.ref("users/" + uid).set({
-          email: email,
-          username: username,
-          firstUsername: username,
-          RobloxName,
-          balance: 0,
-          createdAt: new Date().toISOString(),
-          nbConnexions : 1,
-        });
-        gif.style.display = "none";
-        inscription.style.display = "block";
-        alert("Compte créé avec succès ✅");
-        window.location.href = "../Page de gain/gagner.html";
+      const res = await fetch(`${API_BASE_URL}/api/roblox-user/${RobloxName}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usernames: [RobloxName], excludeBannedUsers: true })
+      });
+      const data = await res.json();
+      if (!data?.data?.length) return alert("Pseudo Roblox inexistant ❌");
 
-      } catch (err) {
-        gif.style.display = "none";
-        inscription.style.display = "block";
-        console.error(err);
-        alert(err.message);
-      }
-    });
-  }
+      const email = `${username}@bloxrobux.local`;
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      const uid = cred.user.uid;
+
+      await db.ref("users/" + uid).set({
+        email: email,
+        username: username,
+        firstUsername: username,
+        RobloxName,
+        balance: 0,
+        createdAt: new Date().toISOString(),
+        nbConnexions : 1,
+        robuxGagnes : 0,
+      });
+      gif.style.display = "none";
+      inscription.style.display = "block";
+      alert("Compte créé avec succès ✅");
+      window.location.href = "../Page de gain/gagner.html";
+
+    } catch (err) {
+      gif.style.display = "none";
+      inscription.style.display = "block";
+      console.error(err);
+      alert(err.message);
+    }
+  });
+}
 
   /* =======================
      CONNEXION
