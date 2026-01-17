@@ -33,7 +33,24 @@ function verifyTheoremReachHash(originalUrl, secret) {
     receivedHash
   };
 }
+async function getRobloxAvatar(username) {
+  const res = await fetch("https://users.roblox.com/v1/usernames/users", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
+  });
+  const data = await res.json();
+  if (!data.data || !data.data.length) return null;
 
+  const userId = data.data[0].id;
+
+  const avatarRes = await fetch(
+    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`
+  );
+  const avatarData = await avatarRes.json();
+
+  return avatarData?.data?.[0]?.imageUrl || null;
+}
 // --- Stockage temporaire ---
 const users = {};
 const transactions = {};
@@ -154,17 +171,17 @@ app.get("/timewall", async (req, res) => {
     
     await db.ref(`users/${uid}/robuxGagnes`)
       .transaction(v => (v || 0) + amount);  
-    
+    const avatarUrl = await getRobloxAvatar(userID);
 await fetch("https://discord.com/api/webhooks/1462212976273789115/5FJAFrFVr2aWyOyAw6CcyZ9FKFN8bHXZcKB7kAyzapkFkDcT0gFgj4jnfrvPL81vLxO_", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     embeds: [{
-      title: `💸 Gain Roblox`,
-      description: `**${data.username}** a gagné **${amount} R$** en complétant une offre sur TimeWall`,
+      title: `**${data.username}** a gagné **${amount} R$** !`,
+      description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
       color: 0x5865F2,
       thumbnail: {
-        url: lienavatar
+        url: avatarUrl
       },
       image: {
         url: "https://i.imgur.com/G7f87gT.png"
