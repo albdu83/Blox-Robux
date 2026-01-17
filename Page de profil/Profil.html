@@ -85,7 +85,7 @@
 </div>
 <div class="info-box">
   <span class="label">Nom d'utilisateur</span>
-  <span class="value" id="username">...</span>
+  <span class="value" id="Username">...</span>
 </div>
 <div class="info-box">
   <span class="label">date de céation</span>
@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("balance").textContent = data.balance ?? "0";
             document.getElementById("statut").textContent = data.role ?? "Utilisateur";
             document.getElementById("nomRoblox").textContent = data.RobloxName ?? "—";
-            document.getElementById("username").textContent = data.username ?? "—";
+            document.getElementById("Username").textContent = data.username ?? "—";
             const date = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : "—";
             document.getElementById("motdepasse").textContent = date;
             document.getElementById("nbConnexions").textContent = data.nbConnexions ?? "0";
