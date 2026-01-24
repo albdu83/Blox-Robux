@@ -42,7 +42,7 @@ body::before {
   position: absolute;
   inset: 0;
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="white" fill-opacity="0.03"><path d="M20,30 C25,10 35,10 40,30 C35,25 25,25 20,30 Z"/><path d="M60,40 C65,20 75,20 80,40 C75,35 65,35 60,40 Z"/><path d="M40,70 C45,50 55,50 60,70 C55,65 45,65 40,70 Z"/></g></svg>') repeat;
-  background-size: 100px 100px;
+  background-size: 50px 50px;
   pointer-events: none;
   z-index: 0;
 }
@@ -90,7 +90,7 @@ body::before {
   background: rgba(20, 20, 20, 0.75);
   backdrop-filter: blur(6px);
   border-radius: 18px;
-  box-shadow: 0 0 60px rgba(40, 124, 219, 0.541);
+  box-shadow: 0 0 30px rgba(40, 124, 219, 0.5);
 }
 
 /* ======= RESPONSIVE ======= */
@@ -162,10 +162,10 @@ main, header, footer, #Block {
   border: 2px solid #757463;
   border-radius: 12px;
   padding: clamp(20px, 6vw, 40px);
+  box-shadow: 0 0 6px rgba(180, 180, 173, 0.5);
   width: 90%;
   max-width: 420px;
   text-align: center;
-  box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
   z-index: 1;
 }
 
@@ -228,7 +228,7 @@ main, header, footer, #Block {
 
 .infos {
   display: flex;
-  gap: clamp(10px, 1.5vw, 18px);
+  gap: clamp(8px, 1vw, 12px);
 }
 
 .col {
