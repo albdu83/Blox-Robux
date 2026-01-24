@@ -270,7 +270,7 @@ nav ul li a.active {
   margin-top: clamp(20px, 6vw, 40px);
   margin-bottom: clamp(40px, 8vw, 80px);
 
-  padding: clamp(10px, 2vw, 30px);
+  padding: clamp(0px, 2vw, 30px);
 
   background: rgba(37, 37, 37, 0.95);
   border-radius: 14px;
@@ -443,7 +443,7 @@ nav ul li a.active {
 }
 
 #offerwall1 {
-    width: 80%;
+    width: clamp(300px, 80%, 800px);
     max-width: 800px;
     height: 50vh;
     border: none;
@@ -451,7 +451,7 @@ nav ul li a.active {
 
 #theoremecontainer,
 #timewall-container {
-    width: 80%;
+    width: clamp(300px, 80%, 800px);
     max-width: 800px;
     min-height: 70vh;
     border: none;
