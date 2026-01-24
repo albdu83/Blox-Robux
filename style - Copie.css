@@ -482,3 +482,10 @@ main, header, footer, #Block {
   color: white;
   font-size: clamp(12px, 3vw, 14px);
 }
+
+@media (max-width: 468px) {
+  /* Tous les éléments avec box-shadow que tu veux désactiver */
+  .hero {
+      box-shadow: none !important;
+  }
+}
