@@ -41,7 +41,7 @@ body::before {
   position: absolute;
   inset: 0;
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="white" fill-opacity="0.03"><path d="M20,30 C25,10 35,10 40,30 C35,25 25,25 20,30 Z"/><path d="M60,40 C65,20 75,20 80,40 C75,35 65,35 60,40 Z"/><path d="M40,70 C45,50 55,50 60,70 C55,65 45,65 40,70 Z"/></g></svg>') repeat;
-  background-size: 100px 100px;
+  background-size: 50px 50px; /* avant 100px → moins de pixels à calculer */
   pointer-events: none;
   z-index: 0;
 }
@@ -388,7 +388,7 @@ nav ul li a.active {
   padding: 12px;
   border-radius: 18px;
   cursor: pointer;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -406,14 +406,7 @@ nav ul li a.active {
     cursor: pointer;
 }
 
-#btnGagner {
-    width: clamp(60px, 15vw, 120px);
-    height: auto;
-    border-radius: 20px;
-    transition: transform 0.2s ease;
-    cursor: pointer;
-}
-
+#btnGagner,
 #theoreme {
     width: clamp(60px, 15vw, 120px);
     height: auto;
