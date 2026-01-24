@@ -20,6 +20,10 @@ if (btnprofil) btnprofil.style.display = "none";
         disco.style.display = "flex"
         body.innerHTML = ""
       }
+      const sign = document.getElementById('signup-image')
+      if (sign) {
+        sign.addEventListener('click', () => {window.location.href = "page de connexion/index2.html"});
+      }
       return;
     }
     await checkAndFixRobloxName(user);
@@ -691,3 +695,4 @@ function showRobloxWarning(message, callback) {
     };
 }
 });
+
