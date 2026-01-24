@@ -9,15 +9,20 @@
 </head>
 
 <body>
+<div id="transition" class="fade-transition active">
+    <img src="img/Robux.png" id="image" alt="Logo Blox Robux" />
+    <div class="text" id="text-chargement">Chargement...</div>
+</div>
 <header class="header">
-    <a href="./index.html" class="logo">
-        <img src="img/logo.png" alt="Logo De Blox Robux">
-    </a>
-    <div class="title">Blox R$</div>
-    <div class="logo2">
-        <img src="img/Barres.png" alt="Barres" id="barres">
-    </div>
+  <a href="./index.html" class="logo">
+    <img src="img/logo.png" alt="Logo De Blox Robux">
+  </a>
+  <div class="title">Blox R$</div>
+  <div class="logo2">
+    <img src="img/Barres.png" alt="Barres" id="barres">
+  </div>
 </header>
+<div class="header-shadow"></div>
 <div class="navigation" id="navigation">
   <div class="nav-panel" id="nav-panel">
     <div class="logo2" id="logo2">
@@ -36,28 +41,27 @@
     </ul>
   </div>
 </div>
+<div class="hero-wrapper">
+<div class="hero">
+<div style="text-align: center; font-weight: 700; font-size: x-large;">Bienvenue sur Blox R$</div>
 <div class="separator"></div>
 <div class="welcome">
-    <div class="présentation" id="acceuil">
-        <img src="img/step1.png" alt="Image Inscription">
-        <div>
-            <p>1. Inscrivez-vous sur notre site à l'aide de votre nom d'utilisateur Roblox.</p>
-        </div>
-        <img src="img/pièces.png" alt="Image Pièces">
-        <div>
-            <p>2. Complétez des offres rapides et simples sur les sites partenaires.</p>
-        </div>
-        <div id="warn">
-            <div>
-                <span id="z">Êtes-vous sûr de vouloir vous déconnecter de votre compte BloxRobux ?</span>
-                <span id="a">Se déconnecter</span>
-                <span id="b">Annuler</span>
-            </div>
-        </div>
-        <div id="transition" class="fade-transition active">
-            <img src="img/Robux.png" id="image" alt="Logo Blox Robux" />
-            <div class="text" id="text-chargement">Chargement...</div>
-        </div>
+  <div class="présentation" id="acceuil">
+    <img src="img/step1.png" alt="Image Inscription" class="signup-image" id="signup-image">
+  <div>
+    <p>1. Inscrivez-vous sur notre site à l'aide de votre nom d'utilisateur Roblox.</p>
+  </div>
+  <img src="img/pièces.png" alt="Image Pièces">
+  <div>
+    <p>2. Complétez des offres rapides et simples sur les sites partenaires.</p>
+  </div>
+  <div id="warn">
+    <div>
+      <span id="z">Êtes-vous sûr de vouloir vous déconnecter de votre compte BloxRobux ?</span>
+      <span id="a">Se déconnecter</span>
+      <span id="b">Annuler</span>
+    </div>
+</div>
 <script>
 document.getElementById('a').addEventListener('click', async () => {
   const frame = document.getElementById('warn');
@@ -76,33 +80,32 @@ document.getElementById('b').addEventListener('click', () => {
   const frame = document.getElementById('warn');
   frame.style.display = "none";
 });
-
-            </script>
-            <img src="img/carte bancaire.png" alt="Image Retrait">
-            <div>
-                <p>3. Retirez vos R$ directement sur votre compte Roblox !</p>
-            </div>
-            <div class="separator"></div>
-            <div class="Crédits" id="acceuil">
-                <img src="img/discordlogo.png" alt="Logo Discord">
-                <div>
-                    <p><strong>Besoin d'aide ?</strong> Rejoignez <a href="https://discord.gg/QQMRtfBXpq">notre serveur Discord</a> !</p>
-                </div>
-                <div>
-                    <p>© 2025 - Tous droits réservés</p>
-                </div>
-            </div>
-        </div>
+</script>
+<img src="img/carte bancaire.png" alt="Image Retrait">
+<div>
+  <p>3. Retirez vos R$ directement sur votre compte Roblox !</p>
+</div>
+<div class="separator"></div>
+  <div class="Crédits" id="acceuil">
+    <img src="img/discordlogo.png" alt="Logo Discord">
+    <div>
+      <p><strong>Besoin d'aide ?</strong> Rejoignez <a href="https://discord.gg/QQMRtfBXpq">notre serveur Discord</a> !</p>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="./Data.js" defer></script>
-    <script src="./Animation.js" defer></script>
-    <script src="./Server.js"defer></script>
-    <div class="separator" style="width: 85%; margin-left: 7.5%;"></div>
-    <div class="separator" style="opacity: 0;"></div>
-    <div class="separator"></div>
+    <div>
+      <p>© 2025 - Tous droits réservés</p>
+    </div>
+  </div>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="./Data.js" defer></script>
+<script src="./Animation.js" defer></script>
+<script src="./Server.js"defer></script>
+<div class="separator"></div>
+  </div>
+</div>
 <div id="Block">
  <img src="img/Bloxlogo.png" alt="BloxRobuxLogo">
   <div id="BlockBottom">
