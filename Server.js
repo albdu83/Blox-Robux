@@ -75,6 +75,7 @@ if (btnprofil) btnprofil.style.display = "none";
         iframe.width = "100%";
         iframe.height = "1000";
         iframe.frameBorder = "0";
+        iframe.loading = "lazy"
         container.appendChild(iframe);
       }
 
@@ -695,4 +696,5 @@ function showRobloxWarning(message, callback) {
     };
 }
 });
+
 
