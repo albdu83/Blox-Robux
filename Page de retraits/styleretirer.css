@@ -660,7 +660,6 @@ button:hover {
 @media (max-width: 768px) {
   header {
     flex-wrap: wrap;
-    justify-content: center;
   }
 
   header ul {
@@ -738,3 +737,4 @@ button:hover {
         width: 11vw;
     }
 }
+
