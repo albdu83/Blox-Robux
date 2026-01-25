@@ -419,7 +419,7 @@ app.post("/api/payServer", async (req, res) => {
     }
     if (!csrfToken) return res.status(500).json({ error: "CSRF token introuvable" });
     
-    const vipRes = await fetch(`https://games.roblox.com/v1/games/${gameId}/private-servers`, {method: "POST"});
+    const vipRes = await fetch(`https://games.roblox.com/v1/games/vip-servers/${universeId}`, {method: "POST"});
     const vipData = await vipRes.json();
     console.log("Roblox VIP response:", vipData, vipRes.status);
 
