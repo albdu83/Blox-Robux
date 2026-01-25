@@ -9,6 +9,24 @@
 </head>
 
 <body>
+  <div class="navigation" id="navigation">
+  <div class="nav-panel" id="nav-panel">
+    <div class="logo2" id="logo2">
+        <img src="../img/Back.png" alt="Barres" id="barres2">
+    </div>
+    <ul class="nave">
+      <li>
+        <div class="solde-box">
+          <span>💰 Solde</span>
+          <span id="balance2">0,00 R$</span>
+        </div>
+      </li>
+      <li><a id="btn-accueil" href="../index.html">Accueil</a></li>
+      <li><a id="btn-win" href="gagner.html">Gagner des R$</a></li>
+      <li><a id="btn-retrait" href="#">Retirer</a></li>
+    </ul>
+  </div>
+</div>
     <div class="background" id="background">
     <div class="Interface" id="finalStep">
       <p class="explain" id="explain">
@@ -65,20 +83,22 @@
     <a href="../index.html">
       <img src="../img/logo.png" alt="Logo Blox Robux">
     </a>
-    <div class="solde-box">
+    <div class="solde-box" id="solde-box">
       <span>💰 Solde :</span>
       <span id="balance">0,00 R$</span>
     </div>
-
-    <div class="header-title">Blox R$</div>
   </div>
-
-  <ul>
+  <div class="title">Blox R$</div>
+  <ul id="btns">
     <li><a href="../index.html">Accueil</a></li>
-      <li><a href="../Page de gain/gagner.html">Gagner des R$</a></li>
-      <li><a href="retirer.html" class="active">Retirer</a></li>
+    <li><a href="../Page de gain/gagner.html">Gagner des R$</a></li>
+    <li><a href="retirer.html" class="active">Retirer</a></li>
   </ul>
+  <div class="logo2" id="logo3">
+    <img src="../img/Barres.png" alt="Barres" id="barres">
+  </div>
   </header>
+  <div class="header-shadow"></div>
   <main>
     <section class="retrait-container">
       <h1>💸 Retirer des Robux</h1>
@@ -107,6 +127,20 @@
   <script src="../Server.js" defer></script>
   <script src="../Animation.js" defer></script>
   <script src="../Amount.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const barres = document.getElementById("barres")
+      const logo2 = document.getElementById("logo3")
+      const btns = document.getElementById("btns")
+      const soldebox = document.getElementById("solde-box")
+      if (window.innerWidth >= 1024) {
+        barres.style.display = "none"
+        logo2.style.position = "absolute"
+      } else {
+        soldebox.style.display = "none"
+        btns.style.display = "none"
+      }
+    });
+  </script>
 </body>
 </html>
-
