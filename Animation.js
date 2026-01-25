@@ -46,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!link) return;
 
         const url = link.getAttribute("href");
+        const target = link.getAttribute("target");
+        if (target === "_blank") return;
         if (url.startsWith("#") || (url.startsWith("http") && !url.includes(window.location.hostname))) return;
 
         e.preventDefault();
@@ -58,3 +60,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }, slideDuration);
     });
 });
+
