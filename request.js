@@ -7,6 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 let ROBLO_COOKIE = null;
+let lienavatar = null;
 
 // --- SECRET_KEY TimeWall ---
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET
@@ -32,7 +33,24 @@ function verifyTheoremReachHash(originalUrl, secret) {
     receivedHash
   };
 }
+async function getRobloxAvatar(username) {
+  const res = await fetch("https://users.roblox.com/v1/usernames/users", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
+  });
+  const data = await res.json();
+  if (!data.data || !data.data.length) return null;
 
+  const userId = data.data[0].id;
+
+  const avatarRes = await fetch(
+    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`
+  );
+  const avatarData = await avatarRes.json();
+
+  return avatarData?.data?.[0]?.imageUrl || null;
+}
 // --- Stockage temporaire ---
 const users = {};
 const transactions = {};
@@ -59,7 +77,7 @@ app.get("/api/avatar/:username", async (req, res) => {
 
         const avatarData = await avatarRes.json();
         if (!avatarData.data || avatarData.data.length === 0) return res.status(500).json({ error: "Erreur avatar Roblox" });
-
+        lienavatar = avatarData.data[0].imageUrl,
         res.json({
             avatarUrl: avatarData.data[0].imageUrl,
             targetId: userId
@@ -85,6 +103,12 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
+
+// Charger le cookie en temps réel
+db.ref("roblox/cookies/cookies/0/value").on("value", snap => {
+  ROBLO_COOKIE = snap.val();
+  console.log("🍪 ROBLO_COOKIE chargé :", !!ROBLO_COOKIE);
+});
 
 app.get("/timewall", async (req, res) => {
   const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
@@ -139,14 +163,38 @@ app.get("/timewall", async (req, res) => {
       return res.status(200).send("OK");
     }
 
+    const snapshot = await db.ref("users/" + uid).get();
+    const data = snapshot.val()
     await txRef.set({ uid, amount, type, date: Date.now() });
 
     await db.ref(`users/${uid}/balance`)
       .transaction(v => (v || 0) + amount);
-    
+
     await db.ref(`users/${uid}/robuxGagnes`)
       .transaction(v => (v || 0) + amount);  
-
+    const avatarUrl = await getRobloxAvatar(userID);
+await fetch("https://discord.com/api/webhooks/1462212976273789115/5FJAFrFVr2aWyOyAw6CcyZ9FKFN8bHXZcKB7kAyzapkFkDcT0gFgj4jnfrvPL81vLxO_", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    embeds: [{
+      title: `**${data.username}** a gagné **${amount} R$** !`,
+      description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
+      color: 0x5865F2,
+      thumbnail: {
+        url: avatarUrl
+      },
+      image: {
+        url: "https://i.imgur.com/G7f87gT.png"
+      },
+      footer: {
+        text: "BloxRobux",
+        icon_url: "https://i.imgur.com/PjcK6QD.png"
+      },
+      timestamp: new Date().toISOString()
+    }]
+  })
+});
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
 
@@ -229,7 +277,7 @@ app.post('/api/roblox-user/:username', async (req, res) => {
 });
 
 app.get("/reach", (req, res) => {
-  console.log("🔥 /reach HIT", req.originalUrl);
+  console.log("🔥 /reach HIT", req.url);
 
   const { reward, user_id, tx_id, hash, reversal } = req.query;
 
@@ -241,8 +289,9 @@ app.get("/reach", (req, res) => {
     return res.status(200).send("OK");
   }
 
+  // ⚠️ UTILISER req.url
   const result = verifyTheoremReachHash(
-    req.originalUrl,
+    req.url,
     THEOREM_SECRET
   );
 
@@ -369,18 +418,8 @@ app.post("/api/payServer", async (req, res) => {
       return res.status(500).json({ error: "Impossible de récupérer le CSRF token" });
     }
     if (!csrfToken) return res.status(500).json({ error: "CSRF token introuvable" });
-
-    // 4️⃣ Créer le VIP server
-    const vipRes = await fetch(`https://games.roblox.com/v1/games/vip-servers/${universeId}`, {
-      method: "POST",
-      headers: {
-        "Cookie": `.ROBLOSECURITY=${ROBLO_COOKIE}`,
-        "X-CSRF-TOKEN": csrfToken,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ name: `VIP Serv ${name}`, maxPlayers: 10 })
-    });
-
+    
+    const vipRes = await fetch(`https://games.roblox.com/v1/games/${gameId}/private-servers`, {method: "POST"});
     const vipData = await vipRes.json();
     console.log("Roblox VIP response:", vipData, vipRes.status);
 
