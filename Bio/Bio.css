@@ -1,0 +1,394 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  color: #e5e7eb;
+  position: relative; /* pour superposer correctement les pseudo-éléments */
+
+  background:
+    radial-gradient(
+      1200px 600px at top center,
+      #5a5a5a 0%,
+      #202020 40%,
+      #111111 85%
+    ),
+    linear-gradient(
+      to bottom,
+      #222222,
+      #0b0b0b
+    );
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="white" fill-opacity="0.03"><path d="M20,30 C25,10 35,10 40,30 C35,25 25,25 20,30 Z"/><path d="M60,40 C65,20 75,20 80,40 C75,35 65,35 60,40 Z"/><path d="M40,70 C45,50 55,50 60,70 C55,65 45,65 40,70 Z"/></g></svg>') repeat;
+  background-size: 50px 50px; /* avant 100px → moins de pixels à calculer */
+  pointer-events: none;
+  z-index: 0;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ===================== */
+/* TRANSITION CHARGEMENT  */
+/* ===================== */
+.fade-transition {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+
+    background: linear-gradient(#33279E, #7363ff);
+    transition: transform 0.5s ease-in-out;
+    z-index: 9999;
+}
+
+.fade-transition.active {
+    transform: translateY(0%);
+}
+
+.fade-transition.slide-down {
+    transform: translateY(100%);
+    pointer-events: none;
+}
+
+.fade-transition img {
+    width: clamp(30px, 7vw, 45px);
+    height: auto;
+}
+
+.fade-transition .text {
+    font-size: clamp(18px, 5vw, 32px);
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+}
+
+/* ===================== */
+/* HEADER                */
+/* ===================== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #153369;
+}
+
+.header-shadow {
+  height: 40px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.6),
+    transparent
+  );
+  position: relative;
+  z-index: 2;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+header img {
+  height: 50px;
+}
+
+header .text {
+  color: #2b6ac9;
+  font-size: 25px;
+  font-weight: bold;
+  text-align: center;
+}
+
+header ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+header ul li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+header ul li a:hover,
+header ul li a.active {
+  color: #ffea00;
+}
+
+#barres {
+  transition: transform 0.75s ease-in-out; /* transition pour l'animation */
+}
+
+#barres.rotated {
+  transform: rotate(180deg); /* rotation quand la classe est ajoutée */
+}
+
+.logo img {
+    height: 50px;
+}
+
+.logo2 img {
+    height: 50px;
+    cursor: pointer;
+    margin-left: auto;
+    transition: height 0.5s ease;
+}
+
+#logo2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.navigation {
+  opacity: 0;
+  overflow-x: hidden;
+  visibility: hidden;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(8, 12, 32, 0.6);
+  z-index: 9998;
+  transition: opacity 1s ease, visibility 1s ease;
+  pointer-events: none;
+}
+
+.nav-panel {
+  margin-left: 1%;
+  width: 260px;
+  height: 100vh;
+  background-color: #161638;
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation > div {
+  background-color: #161638;
+  border: 2px solid #757463;
+  border-radius: 12px;
+  padding: clamp(20px, 6vw, 40px);
+  width: 90%;
+  max-width: 75px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* 👇 AJOUTE ÇA */
+  height: 100vh;        /* prend 80% de la hauteur de l'écran */
+  max-height: 100vh;    /* limite pour éviter le débordement */
+  
+  text-align: center;
+  box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
+  transition: max-width 1s ease;
+}
+
+.navigation > div.active {
+  max-width: 220px;
+}
+
+.navigation.active {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.nave {
+  list-style: none;   /* enlève les puces */
+  padding: 0;         /* enlève le padding par défaut */
+  margin: 0;
+
+  display: flex;
+  flex-direction: column; /* 👈 vertical */
+  gap: 16px;
+}
+
+#lien-profil {
+    text-decoration: none;
+    background-color: #0e1f44;
+    padding: 6px 12px;
+    border-radius: 10px;
+    color: #ffea00;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+}
+
+/* Avatar */
+#avatar-roblox {
+    width: clamp(28px, 6vw, 40px);
+    height: clamp(28px, 6vw, 40px);
+    border-radius: 50%;
+}
+
+.nave li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: bolder;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  transition: color 0.5s ease;
+}
+
+.nave li a:hover {
+  color: #ffea00;
+}
+
+#Block {
+  display: flex;
+  align-items: center; /* centre l’image verticalement */
+  height: 15rem;
+  background-color: #0e1f41;
+  padding: 1vw;
+}
+
+#BlockBottom {
+  text-align: left; /* ou center si tu veux */
+}
+
+#BlockBottom ul li {
+  color: rgb(27, 59, 201);
+  cursor: pointer;
+}
+
+.infos {
+  display: flex;
+  gap: clamp(10px, 1.5vw, 18px);
+}
+
+.col {
+  flex: 1;            /* colonnes équilibrées */
+}
+
+.col h2 {
+  margin-bottom: 10px;
+}
+
+
+#BlockBottom h2 {
+  margin: 0 0 10px 0;
+  color: rgb(27, 59, 201);
+  text-align: center;
+  font-weight: bolder;
+  font-size: clamp(12px, 2vw + 0.5vh, 24px);
+}
+
+#BlockBottom ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+#BlockBottom ul li a {
+  text-decoration: none !important;
+  color: rgb(27, 59, 201);
+  font-size: clamp(10px, 1.5vw, 18px);
+}
+
+#Block img {
+  margin-right: auto;
+  height: clamp(25px, 8vw, 120px);
+  width: clamp(25px, 8vw, 120px); /* 🔒 carré */
+  border-radius: 50%;
+  background-color: #292929;
+  border: 3px solid black;
+}
+
+.separator {
+  width: 100%;
+  height: 2px;
+  background-color: #ddd;
+  margin: 20px 0;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    align-items: center;
+    justify-self: center;
+    justify-content: start;
+    background: linear-gradient(#636363, #292929);
+    height: 83vh;
+    width: 65vw;
+    border-radius: 10px;
+    border: #0a0a0a solid 5px;
+    overflow-y: scroll;
+}
+
+#container::-webkit-scrollbar {
+    width: 15px;               /* largeur de la scrollbar */
+}
+
+#container::-webkit-scrollbar-track {
+    border-radius: 1rem;
+}
+
+#container::-webkit-scrollbar-thumb {
+    background-color: #555;    /* couleur de la barre de défilement */
+    border-radius: 1rem;
+    border: 3px solid #1a1c2b; /* espace autour de la thumb */
+}
+#container::-webkit-scrollbar-thumb:hover {
+    background-color: #888;    /* couleur au survol */
+}
+#pagecontainer ol,
+#pagecontainer ul {
+  margin-left: 1vw;
+}
+
+#pagecontainer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 30px;
+  padding: 30px 20px;
+}
+
+@media (max-width: 600px) {
+    .text {
+        font-size: clamp(14px, 5vw, 20px);
+    }
+
+    .nav {
+        gap: 5px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
