@@ -6,6 +6,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+const jobs = {};
+
 let ROBLO_COOKIE = null;
 let lienavatar = null;
 
