@@ -377,34 +377,77 @@ async function deductBalance(uid, amount, gameId) {
 }
 
 app.post("/api/payServer", async (req, res) => {
-    try {
-        const response = await fetch("https://testbloxrobux.onrender.com/run", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: "RealpiRAP",
-                password: "BloxRobuxRAP",
-                server_name: "Hi"
-            })
-        });
+  try {
+    const { server_name, gameId } = req.body;
 
-        const data = await response.json();
+// credentials récupérés côté serveur
+    const username = process.env.ROBLOX_USERNAME;
+    const password = process.env.ROBLOX_PASSWORD;
 
-        // Réponse envoyée AU CLIENT
-        res.json({
-            success: true,
-            data
-        });
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            error: "Erreur lors de l'appel au service Render"
-        });
+    if (!server_name || !gameId) {
+      return res.status(400).json({ success: false, error: "Paramètres manquants" });
     }
+
+    // Générer un job_id unique
+    const job_id = crypto.randomUUID();
+
+    // Préparer payload pour GitHub
+    const payload = {
+      event_type: "run_selenium",
+      client_payload: {
+        username,
+        password,
+        server_name,
+        callback_url: "https://blox-robux.onrender.com/callback", // ton endpoint callback
+        secret: process.env.SELENIUM_SECRET,
+        job_id
+      }
+    };
+
+    // Appel API GitHub pour déclencher GitHub Actions
+    const response = await fetch("https://api.github.com/repos/louscript21/TestBloxRobux/dispatches", {
+      method: "POST",
+      headers: {
+        "Authorization": `token ${process.env.GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur GitHub API : ${response.status}`);
+    }
+
+    // Réponse immédiate au client
+    res.json({
+      success: true,
+      message: "Job lancé",
+      job_id
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post("/callback", (req, res) => {
+  const { job_id, status, secret, error } = req.body;
+
+  // Vérifier le secret
+  if (secret !== process.env.SELENIUM_SECRET) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  console.log(`Job ${job_id} terminé avec status: ${status}`);
+  if (error) console.log(`Erreur: ${error}`);
+
+  res.sendStatus(200);
 });
 
 
