@@ -378,19 +378,20 @@ async function deductBalance(uid, amount, gameId) {
 
 app.post("/api/payServer", async (req, res) => {
   try {
-    const { server_name, gameId } = req.body;
+    const { name, gameId } = req.body;
 
-// credentials récupérés côté serveur
     const username = process.env.ROBLOX_USERNAME;
     const password = process.env.ROBLOX_PASSWORD;
 
-
-    if (!server_name || !gameId) {
+    if (!name || !gameId) {
       return res.status(400).json({ success: false, error: "Paramètres manquants" });
     }
 
     // Générer un job_id unique
     const job_id = crypto.randomUUID();
+
+    // Initialiser le job à pending
+    jobs[job_id] = { status: "pending" };
 
     // Préparer payload pour GitHub
     const payload = {
@@ -398,7 +399,7 @@ app.post("/api/payServer", async (req, res) => {
       client_payload: {
         username,
         password,
-        server_name,
+        server_name: name,
         callback_url: "https://blox-robux.onrender.com/callback", // ton endpoint callback
         secret: process.env.SELENIUM_SECRET,
         job_id
@@ -420,7 +421,6 @@ app.post("/api/payServer", async (req, res) => {
       throw new Error(`Erreur GitHub API : ${response.status}`);
     }
 
-    // Réponse immédiate au client
     res.json({
       success: true,
       message: "Job lancé",
@@ -429,19 +429,21 @@ app.post("/api/payServer", async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
 app.post("/callback", (req, res) => {
   const { job_id, status, secret, error } = req.body;
 
-  // Vérifier le secret
   if (secret !== process.env.SELENIUM_SECRET) {
     return res.status(403).json({ error: "Forbidden" });
+  }
+
+  // Mettre à jour l'état du job
+  if (jobs[job_id]) {
+    jobs[job_id].status = status;
+    if (error) jobs[job_id].error = error;
   }
 
   console.log(`Job ${job_id} terminé avec status: ${status}`);
@@ -449,6 +451,15 @@ app.post("/callback", (req, res) => {
 
   res.sendStatus(200);
 });
+
+app.get("/api/jobStatus", (req, res) => {
+  const { job_id } = req.query;
+  if (!job_id || !jobs[job_id]) {
+    return res.status(404).json({ error: "Job introuvable" });
+  }
+  res.json(jobs[job_id]);
+});
+
 
 
 app.post("/api/getBalance", async (req, res) => {
