@@ -568,23 +568,38 @@ btn.addEventListener("click", async () => {
   }
 
   // 2️⃣ Payer le serveur privé
-  const payRes = await fetch(`${API_BASE_URL}/api/payServer`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: pseudo,
-      gameId: rootID,
-      amount
-    })
-  });
+  // 2️⃣ Payer le serveur privé
+const payRes = await fetch(`${API_BASE_URL}/api/payServer`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: pseudo,
+    gameId: rootID,
+    amount
+  })
+});
 
-  const payData = await payRes.json();
+const payData = await payRes.json();
 
-  if (payData.status === 200) {
-    alert("✅ Serveur privé payé avec succès !");
-  } else {
-    alert(payData.error || "❌ Erreur lors du paiement");
+if (!payData.success) return alert(payData.error || "❌ Erreur lors du lancement du job");
+
+alert("✅ Job lancé, le serveur privé sera créé sous peu !");
+
+// 3️⃣ Polling du job toutes les 3 secondes
+const job_id = payData.job_id;
+
+const pollJob = setInterval(async () => {
+  const statusRes = await fetch(`${API_BASE_URL}/api/jobStatus?job_id=${job_id}`);
+  const statusData = await statusRes.json();
+
+  if (statusData.status === "success") {
+    alert("🎉 Serveur privé créé avec succès !");
+    clearInterval(pollJob);
+  } else if (statusData.status === "error") {
+    alert(`❌ Erreur lors de la création du serveur : ${statusData.error}`);
+    clearInterval(pollJob);
   }
+}, 3000);
 });
 async function checkAndFixRobloxName(user) {
     if (!user) return;
@@ -696,5 +711,3 @@ function showRobloxWarning(message, callback) {
     };
 }
 });
-
-
