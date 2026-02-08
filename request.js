@@ -405,7 +405,8 @@ app.post("/api/payServer", async (req, res) => {
         server_name: name,
         callback_url: "https://blox-robux.onrender.com/callback", // ton endpoint callback
         secret: process.env.SELENIUM_SECRET,
-        job_id
+        job_id,
+        ROBLOX_COOKIE: ROBLO_COOKIE,
       }
     };
 
