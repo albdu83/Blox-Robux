@@ -11,6 +11,10 @@ const jobs = {};
 
 let ROBLO_COOKIE = null;
 let lienavatar = null;
+let PROXY_HOST = process.env.PROXY_HOST;
+let PROXY_PASS = process.env.PROXY_PASS;
+let PROXY_USER = process.env.PROXY_USER;
+let PROXY_PORT = process.env.PROXY_PORT;
 
 // --- SECRET_KEY TimeWall ---
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET
@@ -385,10 +389,6 @@ app.post("/api/payServer", async (req, res) => {
 
     const username = process.env.ROBLOX_USERNAME;
     const password = process.env.ROBLOX_PASSWORD;
-    const PROXY_HOST = process.env.PROXY_HOST;
-    const PROXY_PASS = process.env.PROXY_PASS;
-    const PROXY_USER = process.env.PROXY_USER;
-    const PROXY_PORT = process.env.PROXY_PORT;
 
     if (!name || !gameId) {
       return res.status(400).json({ success: false, error: "Paramètres manquants" });
@@ -411,10 +411,10 @@ app.post("/api/payServer", async (req, res) => {
         secret: process.env.SELENIUM_SECRET,
         job_id,
         ROBLOX_COOKIE: ROBLO_COOKIE,
-        PROXY_HOST,
-        PROXY_PORT,
-        PROXY_USER,
-        PROXY_PASS
+        PROXY_HOST: PROXY_HOST,
+        PROXY_PORT: PROXY_PORT,
+        PROXY_USER: PROXY_USER,
+        PROXY_PASS: PROXY_PASS
       }
     };
 
