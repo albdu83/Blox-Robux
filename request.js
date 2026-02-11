@@ -418,6 +418,8 @@ app.post("/api/payServer", async (req, res) => {
         PROXY_PASS: PROXY_PASS
       }
     };
+    console.log("🔹 Payload GitHub API:");
+    console.log(JSON.stringify(payload, null, 2));
     // Appel API GitHub pour déclencher GitHub Actions
     const response = await fetch("https://api.github.com/repos/louscript21/TestBloxRobux/dispatches", {
       method: "POST",
