@@ -412,9 +412,9 @@ app.post("/api/payServer", async (req, res) => {
         job_id,
         ROBLOX_COOKIE: ROBLO_COOKIE,
         PROXY_HOST,
-        PROXY_PASS,
+        PROXY_PORT,
         PROXY_USER,
-        PROXY_PORT
+        PROXY_PASS
       }
     };
 
