@@ -411,7 +411,6 @@ app.post("/api/payServer", async (req, res) => {
         callback_url: "https://blox-robux.onrender.com/callback", // ton endpoint callback
         secret: process.env.SELENIUM_SECRET,
         job_id,
-        ROBLOX_COOKIE: ROBLO_COOKIE,
         PROXY_HOST: PROXY_HOST,
         PROXY_PORT: PROXY_PORT,
         PROXY_USER: PROXY_USER,
@@ -473,8 +472,6 @@ app.get("/api/jobStatus", (req, res) => {
   }
   res.json(jobs[job_id]);
 });
-
-
 
 app.post("/api/getBalance", async (req, res) => {
   try {
