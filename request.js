@@ -98,6 +98,7 @@ app.get("/api/avatar/:username", async (req, res) => {
 
 // --- Endpoint TimeWall ---
 const admin = require("firebase-admin");
+const { text } = require("stream/consumers");
 
 
 if (!admin.apps.length) {
@@ -417,7 +418,6 @@ app.post("/api/payServer", async (req, res) => {
         PROXY_PASS: PROXY_PASS
       }
     };
-
     // Appel API GitHub pour déclencher GitHub Actions
     const response = await fetch("https://api.github.com/repos/louscript21/TestBloxRobux/dispatches", {
       method: "POST",
@@ -428,9 +428,9 @@ app.post("/api/payServer", async (req, res) => {
       },
       body: JSON.stringify(payload)
     });
-
+    const text = await response.text();
     if (!response.ok) {
-      throw new Error(`Erreur GitHub API : ${response.status}`);
+      throw new Error(`Erreur GitHub API : ${response.status, text}`);
     }
 
     res.json({
