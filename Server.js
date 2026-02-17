@@ -28,7 +28,6 @@ if (btnprofil) btnprofil.style.display = "none";
     }
     await checkAndFixRobloxName(user);
     const uid = user.uid;
-    console.log("UID connecté :", uid);
 
     try {
       const snapshot = await db.ref("users/" + uid).get();
@@ -75,7 +74,8 @@ if (btnprofil) btnprofil.style.display = "none";
         iframe.width = "100%";
         iframe.height = "1000";
         iframe.frameBorder = "0";
-        iframe.loading = "lazy"
+        iframe.loading = "lazy";
+        iframe.sandbox= "allow-scripts allow-same-origin"
         container.appendChild(iframe);
       }
 
@@ -99,6 +99,7 @@ if (btnprofil) btnprofil.style.display = "none";
           iframe2.height = "1000";
           iframe2.frameBorder = "0";
           iframe2.allow = "accelerometer; gyroscope; magnetometer; camera; microphone";
+          iframe2.sandbox= "allow-scripts allow-same-origin"
 
         container2.appendChild(iframe2);
       }
@@ -138,72 +139,70 @@ if (btnprofil) btnprofil.style.display = "none";
   /* =======================
      INSCRIPTION
   ======================= */
-const gif = document.getElementById("loading")
-const inscription = document.getElementById("ininscription")
+const gif = document.getElementById("loading");
+const inscription = document.getElementById("ininscription");
 const formInscription = document.getElementById("form-inscription");
+
 if (formInscription) {
   formInscription.addEventListener("submit", async (e) => {
     e.preventDefault();
-      inscription.style.display = "none"
-      gif.style.display = "block"
 
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-      const RobloxName = document.getElementById("RobloxName").value.trim();
+    inscription.style.display = "none";
+    gif.style.display = "block";
 
-      if (password !== confirmPassword) {
-        gif.style.display = "none";
-        inscription.style.display = "block";
-        alert("Les mots de passe ne correspondent pas ❌");
-        return;
-      }
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const RobloxName = document.getElementById("RobloxName").value.trim();
 
-      const token = grecaptcha.getResponse();
-      if (!token) {
-        gif.style.display = "none";
-        inscription.style.display = "block";
-        alert("Veuillez cocher le CAPTCHA ❌");
-        return;
-      }
+    // ✅ Vérifications côté client
+    if (password !== confirmPassword) {
+      gif.style.display = "none";
+      inscription.style.display = "block";
+      alert("Les mots de passe ne correspondent pas ❌");
+      return;
+    }
 
-      try {
-        const res2 = await fetch(`${API_BASE_URL}/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: username, password, captcha: token })
-        });
-      const data2 = await res2.json();
+    if (password.length < 8) {
+      gif.style.display = "none";
+      inscription.style.display = "block";
+      alert("Le mot de passe doit contenir au moins 8 caractères ❌");
+      return;
+    }
 
-      if (!data2) {
-        gif.style.display = "none";
-        inscription.style.display = "block";
-        alert(data2.error || "Erreur connexion ❌");
-        return;
-      }
+    if (!username || username.length < 3) {
+      gif.style.display = "none";
+      inscription.style.display = "block";
+      alert("Nom d'utilisateur invalide ❌");
+      return;
+    }
 
-      const res = await fetch(`${API_BASE_URL}/api/roblox-user/${RobloxName}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ usernames: [RobloxName], excludeBannedUsers: true })
+    const token = grecaptcha.getResponse();
+    if (!token) {
+      gif.style.display = "none";
+      inscription.style.display = "block";
+      alert("Veuillez cocher le CAPTCHA ❌");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, RobloxName, captcha: token })
       });
+
       const data = await res.json();
-      if (!data?.data?.length) return alert("Pseudo Roblox inexistant ❌");
 
-      const email = `${username}@bloxrobux.local`;
-      const cred = await auth.createUserWithEmailAndPassword(email, password);
-      const uid = cred.user.uid;
+      if (data.error) {
+        gif.style.display = "none";
+        inscription.style.display = "block";
+        grecaptcha.reset(); // Réinitialise le CAPTCHA
+        alert(data.error);
+        return;
+      }
 
-      await db.ref("users/" + uid).set({
-        email: email,
-        username: username,
-        firstUsername: username,
-        RobloxName,
-        balance: 0,
-        createdAt: new Date().toISOString(),
-        nbConnexions : 1,
-        robuxGagnes : 0,
-      });
+      // Succès
       gif.style.display = "none";
       inscription.style.display = "block";
       alert("Compte créé avec succès ✅");
@@ -213,7 +212,7 @@ if (formInscription) {
       gif.style.display = "none";
       inscription.style.display = "block";
       console.error(err);
-      alert(err.message);
+      alert("Erreur lors de l'inscription ❌");
     }
   });
 }
@@ -222,89 +221,69 @@ if (formInscription) {
      CONNEXION
   ======================= */
 const formConnexion = document.getElementById("form-connexion");
-const connexion = document.getElementById("inconnexion")
+const connexion = document.getElementById("inconnexion");
+
 if (formConnexion) {
   formConnexion.addEventListener("submit", async (e) => {
     e.preventDefault();
-    connexion.style.display = "none"
-    gif.style.display = "block"
-    const inputUsername = document.getElementById("loginUsername").value.trim();
+
+    connexion.style.display = "none";
+    gif.style.display = "block";
+
+    const username = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value;
 
-    if (!inputUsername || !password) {
-      gif.style.display = "none";
-      connexion.style.display = "block";
-      alert("Veuillez remplir tous les champs ❌");
+    if (typeof grecaptcha === "undefined") {
+      alert("reCAPTCHA non chargé ❌");
       return;
     }
 
-    const token = grecaptcha.getResponse();
-    if (!token) {
-      gif.style.display = "none";
-      connexion.style.display = "block";
-      alert("Veuillez cocher le CAPTCHA ❌");
-      return;
+    if (!username || !password) {
+      resetUI();
+      return alert("Veuillez remplir tous les champs ❌");
+    }
+
+    const captcha = grecaptcha.getResponse();
+    if (!captcha) {
+      resetUI();
+      return alert("Veuillez cocher le CAPTCHA ❌");
     }
 
     try {
-
-      const res2 = await fetch(`${API_BASE_URL}/login`, {
+      const res = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: inputUsername, password, captcha: token })
+        body: JSON.stringify({ username, password, captcha })
       });
-      const data2 = await res2.json();
 
-      if (!data2) {
-        gif.style.display = "none";
-        connexion.style.display = "block";
-        alert(data2.error || "Erreur connexion ❌");
-        return;
-      }
-
-      // 1️⃣ Récupérer l'email via le backend
-      const res = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(inputUsername)}`);
-      if (!res.ok) {
-        const errData = await res.json();
-        gif.style.display = "none";
-        connexion.style.display = "block";
-        alert(errData.error || "Utilisateur introuvable ❌");
-        return;
-      }
       const data = await res.json();
-      const email = data.email;
 
-      if (!email) {
-        gif.style.display = "none";
-        connexion.style.display = "block";
-        alert("Erreur lors de la connexion ❌");
-        return;
+      if (!res.ok || !data.token) {
+        resetUI();
+        grecaptcha.reset();
+        return alert("Connexion échouée ❌");
       }
 
-      // 2️⃣ Se connecter avec Firebase Auth côté front
-      const cred = await auth.signInWithEmailAndPassword(email, password);
+      // 🔐 Connexion Firebase
+      await firebase.auth().signInWithCustomToken(data.token);
 
-      // Maintenant on a accès à uid
-      const uid = cred.user.uid;
-
-      const snapshot = await db.ref("users/" + uid + "/nbConnexions").get();
-      const currentConnexions = snapshot.exists() ? snapshot.val() : 1;
-
-      await db.ref("users/" + uid + "/nbConnexions").set(currentConnexions + 1);
-
-      connexion.style.display = "block";
-      gif.style.display = "none";
+      resetUI();
       alert("Connexion réussie ✅");
       window.location.href = "../Page de gain/gagner.html";
 
     } catch (err) {
-      gif.style.display = "none";
-      connexion.style.display = "block";
-      console.error("Erreur connexion :", err);
-      alert("Username ou mot de passe incorrect ❌");
+      console.error(err);
+      resetUI();
+      alert("Erreur serveur ❌");
     }
   });
 }
+
+function resetUI() {
+  gif.style.display = "none";
+  connexion.style.display = "block";
+}
+
   /* =======================
         MENU DEPLOYING
   ======================= */
@@ -400,7 +379,6 @@ async function setRobloxAvatar(robloxName) {
 
     const img = document.getElementById("avatar-roblox");
     if (data.targetId) { 
-        console.log("UserId récupéré :", data.targetId) 
         getPublicsPlaces(data.targetId.toString()) 
     }
     if (!img) return;
