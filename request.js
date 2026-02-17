@@ -21,6 +21,11 @@ let PROXY_PORT = process.env.PROXY_PORT;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK
+if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY manquant");
+if (!process.env.RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
+if (!process.env.THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
+if (!DISCORD_WEBHOOK) throw new Error("DISCORD_WEBHOOK manquant");
 
 const loginAttempts = {};
 
@@ -35,21 +40,13 @@ async function checkPassword(password, hash) {
 }
 
 
-function isRateLimited(ip) {
+function isRateLimited(ip, username) {
+  const key = `${ip}:${username}`;
+  if (!loginAttempts[key]) loginAttempts[key] = [];
   const now = Date.now();
-  const windowMs = 60_000;
-
-  if (!loginAttempts[ip]) {
-    loginAttempts[ip] = [];
-  }
-
-  loginAttempts[ip] = loginAttempts[ip].filter(t => now - t < windowMs);
-
-  if (loginAttempts[ip].length >= 5) {
-    return true;
-  }
-
-  loginAttempts[ip].push(now);
+  loginAttempts[key] = loginAttempts[key].filter(t => now - t < 60_000);
+  if (loginAttempts[key].length >= 5) return true;
+  loginAttempts[key].push(now);
   return false;
 }
 
@@ -215,34 +212,116 @@ app.get("/timewall", async (req, res) => {
     await db.ref(`users/${uid}/robuxGagnes`)
       .transaction(v => (v || 0) + amount);  
     const avatarUrl = await getRobloxAvatar(userID);
-await fetch("https://discord.com/api/webhooks/1462212976273789115/5FJAFrFVr2aWyOyAw6CcyZ9FKFN8bHXZcKB7kAyzapkFkDcT0gFgj4jnfrvPL81vLxO_", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    embeds: [{
-      title: `**${data.username}** a gagné **${amount} R$** !`,
-      description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
-      color: 0x5865F2,
-      thumbnail: {
-        url: avatarUrl
-      },
-      image: {
-        url: "https://i.imgur.com/G7f87gT.png"
-      },
-      footer: {
-        text: "BloxRobux",
-        icon_url: "https://i.imgur.com/PjcK6QD.png"
-      },
-      timestamp: new Date().toISOString()
-    }]
-  })
-});
+    await fetch(`${DISCORD_WEBHOOK}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [{
+          title: `**${data.username}** a gagné **${amount} R$** !`,
+          description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
+          color: 0x5865F2,
+          thumbnail: {
+            url: avatarUrl
+          },
+          image: {
+            url: "https://i.imgur.com/G7f87gT.png"
+          },
+          footer: {
+            text: "BloxRobux",
+            icon_url: "https://i.imgur.com/PjcK6QD.png"
+          },
+          timestamp: new Date().toISOString()
+        }]
+      })
+    });
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
 
   } catch (err) {
     console.error("🔥 TimeWall error:", err);
     return res.status(200).send("OK");
+  }
+});
+
+app.post("/signup", async (req, res) => {
+  const { username, password, RobloxName, captcha } = req.body;
+
+  // 1️⃣ CAPTCHA côté serveur
+  if (!captcha) {
+    return res.status(400).json({ error: "Captcha manquant" });
+  }
+
+  try {
+    const captchaRes = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
+      { method: "POST" }
+    );
+    const captchaData = await captchaRes.json();
+
+    if (!captchaData.success) {
+      return res.status(403).json({ error: "Captcha invalide" });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: "Erreur de vérification captcha" });
+  }
+
+  // 2️⃣ Vérifications des champs
+  if (!username || username.length < 3 || username.length > 20) {
+    return res.status(400).json({ error: "Username invalide" });
+  }
+
+  if (!password || password.length < 8) {
+    return res.status(400).json({ error: "Mot de passe trop court (au moins 8 caractères)" });
+  }
+
+  if (!RobloxName) {
+    return res.status(400).json({ error: "RobloxName manquant" });
+  }
+
+  // 3️⃣ Vérification de l'existence du pseudo Roblox
+  try {
+    const response = await fetch("https://users.roblox.com/v1/usernames/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usernames: [RobloxName], excludeBannedUsers: true })
+    });
+    const data = await response.json();
+
+    if (!data?.data?.length) {
+      return res.status(404).json({ error: "Pseudo Roblox inexistant" });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: "Erreur vérification Roblox" });
+  }
+
+  // 4️⃣ Création de l'email et utilisateur Firebase
+  const email = `${username}@bloxrobux.local`;
+
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    const uid = cred.user.uid;
+
+    // 5️⃣ Stockage sécurisé dans la DB
+    await db.ref("users/" + uid).set({
+      email,
+      username,
+      firstUsername: username,
+      RobloxName,
+      balance: 0,
+      createdAt: Date.now(), // timestamp serveur
+      nbConnexions: 1,
+      robuxGagnes: 0,
+      isBanned: false
+    });
+
+    return res.status(201).json({ success: true, uid });
+  } catch (err) {
+    // Gestion des doublons / erreurs Firebase
+    if (err.code === "auth/email-already-in-use") {
+      return res.status(409).json({ error: "Nom d'utilisateur déjà pris" });
+    }
+    console.error(err);
+    return res.status(500).json({ error: "Erreur création utilisateur" });
   }
 });
 
@@ -269,13 +348,13 @@ app.post("/login", async (req, res) => {
   }
 
   // 2️⃣ Rate limit
-  if (isRateLimited(req.ip)) {
+  if (isRateLimited(req.ip, username)) {
     return res.status(429).json({ error: "Trop de tentatives" });
   }
 
   // 3️⃣ Vérif credentials
   const user = await getUserByUsername(username);
-  if (!user || !checkPassword(password, user.hash)) {
+  if (!user || !(await checkPassword(password, user.hash))) {
     logFailedAttempt(req.ip, username);
     return res.status(401).json({ error: "Identifiants invalides" });
   }
@@ -322,7 +401,6 @@ app.get("/getEmail", async (req, res) => {
 
 app.post('/api/roblox-user/:username', async (req, res) => {
     const username = req.params.username
-    console.log("mon pseudo", username)
     const response = await fetch("https://users.roblox.com/v1/usernames/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -448,7 +526,7 @@ app.post("/api/payServer", async (req, res) => {
 
     // Initialiser le job à pending
     jobs[job_id] = { status: "pending" };
-
+    setTimeout(() => delete jobs[job_id], 24*60*60*1000);
     // Préparer payload pour GitHub
     const payload = {
       event_type: "run_selenium",
