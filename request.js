@@ -3,6 +3,7 @@ const cors = require("cors");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
 const app = express();
+const bcrypt = require("bcrypt");
 app.use(cors());
 app.use(express.json());
 
@@ -20,6 +21,38 @@ let PROXY_PORT = process.env.PROXY_PORT;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
+
+const loginAttempts = {};
+
+async function getUserByUsername(username) {
+  const snap = await db.ref("auth_users/" + username).get();
+  if (!snap.exists()) return null;
+  return snap.val();
+}
+
+async function checkPassword(password, hash) {
+  return bcrypt.compare(password, hash);
+}
+
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const windowMs = 60_000;
+
+  if (!loginAttempts[ip]) {
+    loginAttempts[ip] = [];
+  }
+
+  loginAttempts[ip] = loginAttempts[ip].filter(t => now - t < windowMs);
+
+  if (loginAttempts[ip].length >= 5) {
+    return true;
+  }
+
+  loginAttempts[ip].push(now);
+  return false;
+}
+
 
 function verifyTheoremReachHash(originalUrl, secret) {
   const urlPart = originalUrl.split("/reach?")[1];
@@ -99,6 +132,7 @@ app.get("/api/avatar/:username", async (req, res) => {
 // --- Endpoint TimeWall ---
 const admin = require("firebase-admin");
 const { text } = require("stream/consumers");
+const { error } = require("console");
 
 
 if (!admin.apps.length) {
@@ -213,14 +247,11 @@ await fetch("https://discord.com/api/webhooks/1462212976273789115/5FJAFrFVr2aWyO
 });
 
 app.post("/login", async (req, res) => {
-  const { captcha } = req.body;
+  const { username, password, captcha } = req.body;
 
-  if (!RECAPTCHA_SECRET) {
-    return res.status(500).json({ error: "RECAPTCHA_SECRET non défini !" });
-  }
-
+  // 1️⃣ CAPTCHA
   if (!captcha) {
-    return res.status(400).json({ error: "Captcha manquant !" });
+    return res.status(400).json({ error: "Captcha manquant" });
   }
 
   try {
@@ -231,16 +262,33 @@ app.post("/login", async (req, res) => {
     const captchaData = await captchaRes.json();
 
     if (!captchaData.success) {
-      return res.status(400).json({ error: "Captcha invalide !" });
+      return res.status(403).json({ error: "Captcha invalide" });
     }
-
-    return res.json({ success: true });
-
   } catch (err) {
-    console.error("Erreur captcha:", err);
-    return res.status(500).json({ error: "Erreur lors de la vérification du captcha" });
+    return res.status(500).json({ error: "Erreur captcha" });
   }
+
+  // 2️⃣ Rate limit
+  if (isRateLimited(req.ip)) {
+    return res.status(429).json({ error: "Trop de tentatives" });
+  }
+
+  // 3️⃣ Vérif credentials
+  const user = await getUserByUsername(username);
+  if (!user || !checkPassword(password, user.hash)) {
+    logFailedAttempt(req.ip, username);
+    return res.status(401).json({ error: "Identifiants invalides" });
+  }
+
+  // 4️⃣ Token Firebase
+  const token = await admin.auth().createCustomToken(user.uid);
+
+  res.json({
+    success: true,
+    token
+  });
 });
+
 
 app.get("/getEmail", async (req, res) => {
   const username = req.query.username;
@@ -472,6 +520,8 @@ app.get("/api/jobStatus", (req, res) => {
   }
   res.json(jobs[job_id]);
 });
+
+
 
 app.post("/api/getBalance", async (req, res) => {
   try {
