@@ -96,52 +96,6 @@ async function getRobloxAvatar(username) {
   return avatarData?.data?.[0]?.imageUrl || null;
 }
 
-async function generateHashes() {
-  try {
-    const snapshot = await db.ref("users").get();
-    if (!snapshot.exists()) {
-      console.log("Aucun utilisateur trouvé !");
-      return;
-    }
-
-    const users = snapshot.val();
-
-    for (const uid in users) {
-      const user = users[uid];
-      const username = user.username;
-
-      // Si l'utilisateur a déjà un hash, on skip
-      const authSnap = await db.ref("auth_users/" + username).get();
-      if (authSnap.exists() && authSnap.val().hash) {
-        console.log(`✅ ${username} a déjà un hash`);
-        continue;
-      }
-
-      // Générer un mot de passe temporaire si user.password n'existe pas
-      let plainPassword = user.password || Math.random().toString(36).slice(2, 10);
-      const hash = await bcrypt.hash(plainPassword, 10);
-
-      // Stocker dans auth_users
-      await db.ref("auth_users/" + username).set({
-        hash,
-        email: user.email || `${username}@bloxrobux.local`,
-        createdAt: user.createdAt || Date.now()
-      });
-
-      console.log(`✅ Hash généré pour ${username}`);
-    }
-
-    console.log("✔️ Tous les utilisateurs ont maintenant un hash");
-    process.exit(0);
-
-  } catch (err) {
-    console.error("Erreur génération hash :", err);
-    process.exit(1);
-  }
-}
-
-generateHashes();
-
 // --- Stockage temporaire ---
 const users = {};
 const transactions = {};
@@ -196,6 +150,52 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
+
+async function generateHashes() {
+  try {
+    const snapshot = await db.ref("users").get();
+    if (!snapshot.exists()) {
+      console.log("Aucun utilisateur trouvé !");
+      return;
+    }
+
+    const users = snapshot.val();
+
+    for (const uid in users) {
+      const user = users[uid];
+      const username = user.username;
+
+      // Si l'utilisateur a déjà un hash, on skip
+      const authSnap = await db.ref("auth_users/" + username).get();
+      if (authSnap.exists() && authSnap.val().hash) {
+        console.log(`✅ ${username} a déjà un hash`);
+        continue;
+      }
+
+      // Générer un mot de passe temporaire si user.password n'existe pas
+      let plainPassword = user.password || Math.random().toString(36).slice(2, 10);
+      const hash = await bcrypt.hash(plainPassword, 10);
+
+      // Stocker dans auth_users
+      await db.ref("auth_users/" + username).set({
+        hash,
+        email: user.email || `${username}@bloxrobux.local`,
+        createdAt: user.createdAt || Date.now()
+      });
+
+      console.log(`✅ Hash généré pour ${username}`);
+    }
+
+    console.log("✔️ Tous les utilisateurs ont maintenant un hash");
+    process.exit(0);
+
+  } catch (err) {
+    console.error("Erreur génération hash :", err);
+    process.exit(1);
+  }
+}
+
+generateHashes();
 
 // Charger le cookie en temps réel
 db.ref("roblox/cookies/cookies/0/value").on("value", snap => {
