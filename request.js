@@ -29,6 +29,13 @@ if (!DISCORD_WEBHOOK) throw new Error("DISCORD_WEBHOOK manquant");
 
 const loginAttempts = {};
 
+function logFailedAttempt(ip, username) {
+  const key = `${ip}:${username}`;
+  if (!loginAttempts[key]) loginAttempts[key] = [];
+  loginAttempts[key].push(Date.now());
+  console.log(`⚠️ Tentative de login échouée pour ${username} depuis ${ip}`);
+}
+
 async function getUserByUsername(username) {
   const snap = await db.ref("auth_users/" + username).get();
   if (!snap.exists()) return null;
