@@ -150,53 +150,32 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-
 async function generateHashes() {
-  try {
-    const snapshot = await db.ref("users").get();
-    if (!snapshot.exists()) {
-      console.log("Aucun utilisateur trouvé !");
-      return;
-    }
+  const snap = await db.ref("users").get();
+  if (!snap.exists()) return;
 
-    const users = snapshot.val();
+  const users = snap.val();
 
-    for (const uid in users) {
-      const user = users[uid];
-      const username = user.username;
+  for (const uid of Object.keys(users)) {
+    const user = users[uid];
 
-      // Si l'utilisateur a déjà un hash, on skip
-      const authSnap = await db.ref("auth_users/" + username).get();
-      if (authSnap.exists() && authSnap.val().hash) {
-        console.log(`✅ ${username} a déjà un hash`);
-        continue;
-      }
+    if (!user.password || user.hash) continue;
 
-      // Générer un mot de passe temporaire si user.password n'existe pas
-      let plainPassword = user.password || Math.random().toString(36).slice(2, 10);
-      const hash = await bcrypt.hash(plainPassword, 10);
+    try {
+      const hash = await bcrypt.hash(user.password, 12);
 
-      // Stocker dans auth_users
-      await db.ref("auth_users/" + username).set({
+      await db.ref(`auth_users/${uid}`).set({
         hash,
-        email: user.email || `${username}@bloxrobux.local`,
-        createdAt: user.createdAt || Date.now()
+        createdAt: Date.now()
       });
 
-      console.log(`✅ Hash généré pour ${username}`);
+      console.log(`✔ Hash généré pour ${uid}`);
+    } catch (err) {
+      console.error(`❌ Erreur pour ${uid}`, err);
     }
-
-    console.log("✔️ Tous les utilisateurs ont maintenant un hash");
-    process.exit(0);
-
-  } catch (err) {
-    console.error("Erreur génération hash :", err);
-    process.exit(1);
   }
 }
-
-generateHashes();
-
+generateHashes()
 // Charger le cookie en temps réel
 db.ref("roblox/cookies/cookies/0/value").on("value", snap => {
   ROBLO_COOKIE = snap.val();
@@ -354,7 +333,6 @@ app.post("/signup", async (req, res) => {
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     const uid = cred.user.uid;
-    const hash = await bcrypt.hash(password, 10);
 
     // 5️⃣ Stockage sécurisé dans la DB
     await db.ref("users/" + uid).set({
@@ -364,7 +342,6 @@ app.post("/signup", async (req, res) => {
       RobloxName,
       balance: 0,
       createdAt: Date.now(), // timestamp serveur
-      hash,
       nbConnexions: 1,
       robuxGagnes: 0,
       isBanned: false
@@ -384,11 +361,12 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { username, password, captcha } = req.body;
 
-  // 1️⃣ CAPTCHA
-  if (!captcha) {
-    return res.status(400).json({ error: "Captcha manquant" });
+  // 1️⃣ Vérifications basiques
+  if (!username || !password || !captcha) {
+    return res.status(400).json({ error: "Champs manquants" });
   }
 
+  // 2️⃣ CAPTCHA
   try {
     const captchaRes = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
@@ -399,31 +377,74 @@ app.post("/login", async (req, res) => {
     if (!captchaData.success) {
       return res.status(403).json({ error: "Captcha invalide" });
     }
-  } catch (err) {
+  } catch {
     return res.status(500).json({ error: "Erreur captcha" });
   }
 
-  // 2️⃣ Rate limit
+  // 3️⃣ Rate limit
   if (isRateLimited(req.ip, username)) {
     return res.status(429).json({ error: "Trop de tentatives" });
   }
 
-  // 3️⃣ Vérif credentials
-  const user = await getUserByUsername(username);
-  if (!user || !(await checkPassword(password, user.hash))) {
-    logFailedAttempt(req.ip, username);
-    return res.status(401).json({ error: "Identifiants invalides" });
+  try {
+    // 4️⃣ Récupérer l'utilisateur via username
+    const snap = await db
+      .ref("users")
+      .orderByChild("username")
+      .equalTo(username)
+      .get();
+
+    if (!snap.exists()) {
+      logFailedAttempt(req.ip, username);
+      return res.status(401).json({ error: "Identifiants invalides" });
+    }
+
+    const uid = Object.keys(snap.val())[0];
+    const user = snap.val()[uid];
+
+    if (user.isBanned) {
+      return res.status(403).json({ error: "Compte banni" });
+    }
+
+    const email = user.email;
+
+    // 5️⃣ Vérification mot de passe via Firebase REST API
+    const fbRes = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: true
+        })
+      }
+    );
+
+    const fbData = await fbRes.json();
+
+    if (!fbRes.ok) {
+      logFailedAttempt(req.ip, username);
+      return res.status(401).json({ error: "Identifiants invalides" });
+    }
+
+    // 6️⃣ Génération du custom token Firebase
+    const customToken = await admin.auth().createCustomToken(uid);
+
+    // 7️⃣ Stats
+    await db.ref(`users/${uid}/nbConnexions`).transaction(v => (v || 0) + 1);
+
+    res.json({
+      success: true,
+      token: customToken
+    });
+
+  } catch (err) {
+    console.error("Erreur login:", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
-
-  // 4️⃣ Token Firebase
-  const token = await admin.auth().createCustomToken(user.uid);
-
-  res.json({
-    success: true,
-    token
-  });
 });
-
 
 app.get("/getEmail", async (req, res) => {
   const username = req.query.username;
