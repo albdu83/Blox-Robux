@@ -3,7 +3,7 @@ const cors = require("cors");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
 const app = express();
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 app.use(cors());
 app.use(express.json());
 
