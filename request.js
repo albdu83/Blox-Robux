@@ -21,10 +21,12 @@ const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET
 const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK
+const DISCORD_WEBHOOK_TRACKER = process.env.DISCORD_WEBHOOK_TRACKER
 if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY manquant");
 if (!process.env.RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
 if (!process.env.THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
 if (!DISCORD_WEBHOOK) throw new Error("DISCORD_WEBHOOK manquant");
+if (!DISCORD_WEBHOOK_TRACKER) throw new Error("DISCORD_WEBHOOK_TRACKER manquant");
 
 const loginAttempts = {};
 
@@ -36,6 +38,45 @@ function logFailedAttempt(ip, username) {
 }
 
 const attempts = new Map();
+
+const trackerCooldown = new Map();
+
+async function StatList(message, key = "Erreur fatale ou iconnue") {
+  try {
+    const now = Date.now();
+
+    // ⏱️ Anti-spam (1 message / 30s par clé)
+    if (trackerCooldown.has(key)) {
+      if (now - trackerCooldown.get(key) < 5_000) return;
+    }
+    trackerCooldown.set(key, now);
+
+    // 🧼 Nettoyage anti-mention Discord
+    const safeMessage = message
+      .replace(/@/g, "@\u200b")
+      .slice(0, 1800); // limite Discord
+
+    await fetch(DISCORD_WEBHOOK_TRACKER, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [{
+          title: "🚨 Tentative de connexion échouée ou bloquée",
+          description: safeMessage,
+          color: 0x992d22,
+          footer: {
+            text: "BloxRobux Security",
+            icon_url: "https://i.imgur.com/PjcK6QD.png"
+          },
+          timestamp: new Date().toISOString()
+        }]
+      })
+    });
+  } catch (err) {
+    console.error("Tracker Discord erreur :", err.message);
+  }
+}
+
 
 function isRateLimited(ip, username) {
   const now = Date.now();
@@ -362,10 +403,17 @@ app.post("/login", async (req, res) => {
     typeof password !== "string" ||
     typeof captcha !== "string"
   ) {
+    StatList(
+      `Erreur lors du saisie des informations\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`
+    ); 
     return res.status(400).json({ error: "Requête invalide" });
   }
 
   if (username.length < 3 || username.length > 20 || password.length < 8) {
+    StatList(
+      `Mot de passe entré non sécurisé\n\n👤 Username : ${username}\n🌍 password : ${password}`,
+      `password:${password}`
+    );
     return res.status(401).json({ error: "Identifiants invalides" });
   }
 
@@ -378,14 +426,25 @@ app.post("/login", async (req, res) => {
     const captchaData = await captchaRes.json();
 
     if (!captchaData.success) {
+      StatList(
+        `Captcha invalide\n\n👤 Username : ${username}\n🌍 IP: : ${req.ip}`,
+        `IP:${req.ip}`
+      );
       return res.status(403).json({ error: "Captcha invalide" });
     }
   } catch {
+    StatList(
+      `Erreur Captcha inconnue\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`
+    ); 
     return res.status(500).json({ error: "Erreur captcha" });
   }
 
   /* ───────── 3️⃣ RATE LIMIT ───────── */
   if (isRateLimited(req.ip, username)) {
+    StatList(
+      `Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+      `ratelimit:${req.ip}`
+    );
     return res.status(429).json({
       error: "Trop de tentatives, réessaie plus tard"
     });
@@ -401,22 +460,10 @@ app.post("/login", async (req, res) => {
 
     if (!snap.exists()) {
       logFailedAttempt(req.ip, username);
-        await fetch(`${DISCORD_WEBHOOK_TRACKER}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          embeds: [{
-            title: `Tentative de connexion échoué !`,
-            description: `## Un utilisateur a essayé de se connecter mais a échoué... username : ${username} password : ${password}`,
-            color: 0x992d22,
-            footer: {
-              text: "BloxRobux",
-              icon_url: "https://i.imgur.com/PjcK6QD.png"
-            },
-            timestamp: new Date().toISOString()
-          }]
-        })
-      });
+      StatList(
+        `Un utilisateur a tenté de se connecter à un **compte inexistant**\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+        `IP:${req.ip}`
+      );
       return res.status(401).json({ error: "Identifiants invalides" });
     }
 
@@ -425,10 +472,18 @@ app.post("/login", async (req, res) => {
 
     /* ───────── 5️⃣ CONTRÔLES COMPTE ───────── */
     if (user.isBanned === true) {
+      StatList(
+        `Un utilisateur a tenté de se connecter à un **compte banni**\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+        `banned:${username}`
+      );
       return res.status(403).json({ error: "Compte suspendu" });
     }
 
     if (!user.email) {
+      StatList(
+        `Compte corrompu\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+        `Compte:${username}`
+      );
       return res.status(500).json({ error: "Compte corrompu" });
     }
 
@@ -448,6 +503,9 @@ app.post("/login", async (req, res) => {
 
     if (!fbRes.ok) {
       logFailedAttempt(req.ip, username);
+      StatList(
+        `Erreur fatale lors de la connexion\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`
+      );
       return res.status(401).json({ error: "Identifiants invalides" });
     }
 
@@ -462,8 +520,30 @@ app.post("/login", async (req, res) => {
     await db
       .ref(`users/${uid}/nbConnexions`)
       .transaction(v => (v || 0) + 1);
+    
+    /* ───────── 9️⃣ WEBHOOK ───────── */
+    try {
+      await fetch(DISCORD_WEBHOOK_TRACKER, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          embeds: [{
+            title: "✅ Tentative de connexion réussi",
+            description: `Connexion réussi pour le compte`,
+            color: 0xc27c0e,
+            footer: {
+              text: "BloxRobux Security",
+              icon_url: "https://i.imgur.com/PjcK6QD.png"
+            },
+            timestamp: new Date().toISOString()
+          }]
+        })
+      });
+    } catch (err) {
+      console.error("Tracker Discord erreur :", err.message);
+    }
 
-    /* ───────── 9️⃣ RÉPONSE ───────── */
+    /* ───────── 🔟 RÉPONSE ───────── */
     return res.json({
       success: true,
       token: customToken
