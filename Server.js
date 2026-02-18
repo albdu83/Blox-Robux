@@ -269,6 +269,7 @@ if (formConnexion) {
 
       resetUI();
       alert("Connexion réussie ✅");
+      window.location.reload();
       window.location.href = "../Page de gain/gagner.html";
 
     } catch (err) {
