@@ -442,7 +442,7 @@ app.post("/login", async (req, res) => {
   /* ───────── 3️⃣ RATE LIMIT ───────── */
   if (isRateLimited(req.ip, username)) {
     StatList(
-      `@🛡️ Propriétaire Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+      `<@&1437038598494093333> Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
       `ratelimit:${req.ip}`
     );
     return res.status(429).json({
