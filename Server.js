@@ -269,7 +269,8 @@ if (formConnexion) {
       if (!res.ok || !data.token) {
         resetUI();
         grecaptcha.reset();
-        return alert("Connexion échouée ❌");
+        const msg = data.error || "Connexion échouée ❌";
+        return alert(msg);
       }
 
       // 🔐 Connexion Firebase
