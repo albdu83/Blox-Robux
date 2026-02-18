@@ -35,16 +35,36 @@ function logFailedAttempt(ip, username) {
   console.log(`⚠️ Tentative de login échouée pour ${username} depuis ${ip}`);
 }
 
-function isRateLimited(ip, username) {
-  const key = `${ip}:${username}`;
-  if (!loginAttempts[key]) loginAttempts[key] = [];
-  const now = Date.now();
-  loginAttempts[key] = loginAttempts[key].filter(t => now - t < 300_000);
-  if (loginAttempts[key].length >= 5) return true;
-  loginAttempts[key].push(now);
-  return false;
-}
+const attempts = new Map();
 
+function isRateLimited(ip, username) {
+  const now = Date.now();
+
+  const keys = [
+    `ip:${ip}`,
+    `user:${username}`,
+    `ip-user:${ip}:${username}`
+  ];
+
+  let blocked = false;
+
+  keys.forEach(key => {
+    const data = attempts.get(key) || { count: 0, first: now };
+
+    // reset après 5 minutes
+    if (now - data.first > 5 * 60_000) {
+      data.count = 0;
+      data.first = now;
+    }
+
+    data.count++;
+    attempts.set(key, data);
+
+    if (data.count >= 5) blocked = true;
+  });
+
+  return blocked;
+}
 
 function verifyTheoremReachHash(originalUrl, secret) {
   const urlPart = originalUrl.split("/reach?")[1];
