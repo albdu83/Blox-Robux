@@ -39,7 +39,7 @@ function isRateLimited(ip, username) {
   const key = `${ip}:${username}`;
   if (!loginAttempts[key]) loginAttempts[key] = [];
   const now = Date.now();
-  loginAttempts[key] = loginAttempts[key].filter(t => now - t < 60_000);
+  loginAttempts[key] = loginAttempts[key].filter(t => now - t < 300_000);
   if (loginAttempts[key].length >= 5) return true;
   loginAttempts[key].push(now);
   return false;
