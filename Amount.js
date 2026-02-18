@@ -1,78 +1,48 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const db = window.db; // récupère la db initialisée dans Data.js
-    if (!db) {
-        console.error("Firebase Database n'est pas initialisée !");
+    /* =====================================================
+       1️⃣ RÉCUPÉRATION FIREBASE
+    ===================================================== */
+    const db = window.db;
+    const auth = window.auth;
+
+    if (!db || !auth) {
+        console.error("Firebase n'est pas initialisé !");
         return;
     }
 
+    /* =====================================================
+       2️⃣ ÉLÉMENTS DOM
+    ===================================================== */
     const balanceEl = document.getElementById("balance");
     const balanceEl2 = document.getElementById("balance2");
     const amountEl = document.getElementById("amount");
     const withdrawBtn = document.getElementById("withdrawBtn");
     const transactionsEl = document.getElementById("transactions");
     const errorEl = document.getElementById("error");
-    const template = document.getElementById("background")
-    const connectedUser = localStorage.getItem("connectedUser");
-    const finalStep = document.getElementById("finalStep")
-    const finalStep2 = document.getElementById("finalStep2")
-    const helpbutton = document.getElementById("HELP")
-    const btnretour = document.getElementById("btnretour")
-    if (!connectedUser) {
-        if (balanceEl) {
-            balanceEl.textContent = "0.00 R$";
-            balanceEl2.textContent = "0.00 R$";
-        }
-        showError("Vous devez être connecté pour retirer des Robux !");
-        if (withdrawBtn) withdrawBtn.disabled = true;
-        return;
-    }
 
-    const userRef = db.ref('users/' + connectedUser);
+    const template = document.getElementById("background");
+    const finalStep = document.getElementById("finalStep");
+    const finalStep2 = document.getElementById("finalStep2");
+    const helpbutton = document.getElementById("HELP");
+    const btnretour = document.getElementById("btnretour");
 
-    // Etat local pour l'affichage
-    let state = { balance: 0, transactions: [] };
+    /* =====================================================
+       3️⃣ ÉTAT LOCAL
+    ===================================================== */
+    let state = {
+        balance: 0,
+        transactions: []
+    };
 
-    // ==================== UTILITAIRES ====================
+    let userRef = null; // référence DB dynamique
+
+    /* =====================================================
+       4️⃣ UTILITAIRES
+    ===================================================== */
     function formatMoney(num) {
         const n = (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
         return n.replace('.', ',') + ' R$';
-    }
-
-    function showTemplate() {
-        template.style.display = "flex"
-        setTimeout(() => {
-            template.classList.add("active")
-            finalStep.classList.add("active")
-        }, 0);
-    }
-
-    function HideTemplate() {
-        setTimeout(() => {
-            finalStep.classList.add("active2")
-        }, 0);
-    }
-
-    function ShowTemplate2() {
-        finalStep.style.display = "none"
-        finalStep2.style.display = "flex"
-        setTimeout(() => {
-            finalStep2.classList.add("active3")
-        }, 0);
-    }
-
-    function ShowTemplate3() {
-        finalStep2.style.display = "none"
-        finalStep.style.display = "flex"
-        setTimeout(() => {
-            finalStep.classList.add("active4")
-        }, 0);
-    }
-
-    function HideTemplate2() {
-        setTimeout(() => {
-            finalStep2.classList.add("active5")
-        }, 0);
     }
 
     function showError(msg) {
@@ -82,17 +52,53 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => errorEl.style.display = "none", 3000);
     }
 
+    /* =====================================================
+       5️⃣ TEMPLATES UI (inchangés)
+    ===================================================== */
+    function showTemplate() {
+        template.style.display = "flex";
+        setTimeout(() => {
+            template.classList.add("active");
+            finalStep.classList.add("active");
+        }, 0);
+    }
+
+    function HideTemplate() {
+        setTimeout(() => finalStep.classList.add("active2"), 0);
+    }
+
+    function ShowTemplate2() {
+        finalStep.style.display = "none";
+        finalStep2.style.display = "flex";
+        setTimeout(() => finalStep2.classList.add("active3"), 0);
+    }
+
+    function ShowTemplate3() {
+        finalStep2.style.display = "none";
+        finalStep.style.display = "flex";
+        setTimeout(() => finalStep.classList.add("active4"), 0);
+    }
+
+    function HideTemplate2() {
+        setTimeout(() => finalStep2.classList.add("active5"), 0);
+    }
+
+    /* =====================================================
+       6️⃣ RENDER
+    ===================================================== */
     function renderTransactions() {
         if (!transactionsEl) return;
+
         transactionsEl.innerHTML = "";
+
         if (!state.transactions || state.transactions.length === 0) {
-            transactionsEl.innerHTML = '<p class="empty">Aucun retrait effectué.</p>';
+            transactionsEl.innerHTML =
+                '<p class="empty">Aucun retrait effectué.</p>';
             return;
         }
 
         const total = state.transactions.length;
 
-            // Création du header
         const divHeader = document.createElement("div");
         divHeader.className = "divHeader";
         divHeader.innerHTML = `
@@ -102,58 +108,83 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         transactionsEl.appendChild(divHeader);
 
-        // Prendre les 10 dernières transactions et les inverser
-        const transactionsToShow = state.transactions.slice(-10).reverse();
+        state.transactions
+            .slice(-10)
+            .reverse()
+            .forEach((tx, index) => {
+                const order = total - index;
 
-        transactionsToShow.forEach((tx, index) => {
-            const order = total - index; // Numéro d'ordre global
-
-            const div = document.createElement("div");
-            div.className = "transaction";
-            div.innerHTML = `
-                <span>${order} - Retrait</span>
-                <span class="copy-id" data-copy="${tx.id}">ID : ${tx.id}
-                    <img 
-                        src="../img/copy (2).png"
-                        class="copy-img"
-                        id="copyimg"
-                        data-copy="${tx.id}"
-                    >
-                </span>
-                <span class="neg">${formatMoney(Math.abs(tx.amount))}</span>
-            `;
-            transactionsEl.appendChild(div);
-        });
+                const div = document.createElement("div");
+                div.className = "transaction";
+                div.innerHTML = `
+                    <span>${order} - Retrait</span>
+                    <span class="copy-id" data-copy="${tx.id}">
+                        ID : ${tx.id}
+                        <img src="../img/copy (2).png" class="copy-img">
+                    </span>
+                    <span class="neg">${formatMoney(Math.abs(tx.amount))}</span>
+                `;
+                transactionsEl.appendChild(div);
+            });
     }
 
     function render() {
-        if (balanceEl) {
+        if (balanceEl && balanceEl2) {
             balanceEl.textContent = formatMoney(state.balance);
             balanceEl2.textContent = formatMoney(state.balance);
         }
         renderTransactions();
     }
 
-    // ==================== ECOUTE FIREBASE ====================
-    userRef.on('value', snapshot => {
-        const data = snapshot.val() || { balance: 0, transactions: [] };
-        state.balance = data.balance || 0;
-        state.transactions = data.transactions || [];
-        render();
+    /* =====================================================
+       7️⃣ 🔥 AUTH FIREBASE — CORRECTION PRINCIPALE
+    ===================================================== */
+    auth.onAuthStateChanged(user => {
+
+        // ❌ Non connecté
+        if (!user) {
+            state.balance = 0;
+            state.transactions = [];
+            render();
+            if (withdrawBtn) withdrawBtn.disabled = true;
+            return;
+        }
+
+        // ✅ Connecté
+        const uid = user.uid;
+        userRef = db.ref("users/" + uid);
+        if (withdrawBtn) withdrawBtn.disabled = false;
+
+        // 🔁 Écoute temps réel du user
+        userRef.on("value", snapshot => {
+            if (!snapshot.exists()) return;
+
+            const data = snapshot.val();
+            state.balance = data.balance || 0;
+            state.transactions = data.transactions || [];
+            render();
+        });
     });
 
-    // ==================== RETRAIT ====================
+    /* =====================================================
+       8️⃣ RETRAIT
+    ===================================================== */
     function addTransaction(value) {
         const amount = Math.round(value * 100) / 100;
 
         if (amount <= 0) return showError("Montant invalide !");
-        if (amount < 25) return showError("le montant doit être supérieur à 25!");
-        if (amount > 375) return showError("le montant doit être inférieur à 375!");
+        if (amount < 25) return showError("Minimum 25 !");
+        if (amount > 375) return showError("Maximum 375 !");
         if (amount > state.balance) return showError("Solde insuffisant !");
-        showTemplate()
-        const taxe = Math.round(amount * 1.3)
-        const taxelabel = document.getElementById("robuxadd")
-        taxelabel.innerHTML = `🛑 Vous indiquerez ${taxe} Robux dans l'encadré rouge de l'image!`
+
+        showTemplate();
+
+        const taxe = Math.round(amount * 1.3);
+        const taxelabel = document.getElementById("robuxadd");
+        if (taxelabel) {
+            taxelabel.innerHTML =
+                `🛑 Vous indiquerez ${taxe} Robux dans l'encadré rouge de l'image !`;
+        }
         //const tx = {
             //id: Date.now(),
             //type: "withdraw",
@@ -174,42 +205,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (withdrawBtn) {
         withdrawBtn.addEventListener("click", () => {
-            if (!amountEl) return showError("Champ montant introuvable !");
+            if (!amountEl) return showError("Champ montant introuvable");
             const value = parseFloat(amountEl.value);
-            if (isNaN(value)) return showError("Montant invalide !");
+            if (isNaN(value)) return showError("Montant invalide");
+
             addTransaction(value);
-            finalStep.classList.forEach(cls => {
-                if (cls.startsWith("active")) finalStep.classList.remove(cls);
-            });
-            finalStep2.classList.forEach(cls => {
-                if (cls.startsWith("active")) finalStep2.classList.remove(cls);
-            });
+
+            finalStep.classList.forEach(c => c.startsWith("active") && finalStep.classList.remove(c));
+            finalStep2.classList.forEach(c => c.startsWith("active") && finalStep2.classList.remove(c));
         });
     }
 
+    /* =====================================================
+       9️⃣ NAVIGATION UI
+    ===================================================== */
     if (helpbutton) {
         helpbutton.addEventListener("click", () => {
-            finalStep.classList.forEach(cls => {
-                if (cls.startsWith("active")) finalStep.classList.remove(cls);
-            });
-            finalStep2.classList.forEach(cls => {
-                if (cls.startsWith("active")) finalStep2.classList.remove(cls);
-            });
-            HideTemplate()
-            ShowTemplate2()
+            HideTemplate();
+            ShowTemplate2();
         });
     }
 
     if (btnretour) {
         btnretour.addEventListener("click", () => {
-            finalStep.classList.forEach(cls => {
-                if (cls.startsWith("active")) finalStep.classList.remove(cls);
-            });
-            finalStep2.classList.forEach(cls => {
-                if (cls.startsWith("active")) finalStep2.classList.remove(cls);
-            });
-            HideTemplate2()
-            ShowTemplate3()
+            HideTemplate2();
+            ShowTemplate3();
         });
     }
 });
