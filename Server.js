@@ -75,7 +75,6 @@ if (btnprofil) btnprofil.style.display = "none";
         iframe.height = "1000";
         iframe.frameBorder = "0";
         iframe.loading = "lazy";
-        iframe.sandbox= "allow-scripts allow-same-origin"
         container.appendChild(iframe);
       }
 
@@ -99,7 +98,6 @@ if (btnprofil) btnprofil.style.display = "none";
           iframe2.height = "1000";
           iframe2.frameBorder = "0";
           iframe2.allow = "accelerometer; gyroscope; magnetometer; camera; microphone";
-          iframe2.sandbox= "allow-scripts allow-same-origin"
 
         container2.appendChild(iframe2);
       }
@@ -269,7 +267,6 @@ if (formConnexion) {
 
       resetUI();
       alert("Connexion réussie ✅");
-      window.location.reload();
       window.location.href = "../Page de gain/gagner.html";
 
     } catch (err) {
