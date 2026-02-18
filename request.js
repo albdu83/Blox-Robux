@@ -3,7 +3,6 @@ const cors = require("cors");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
 const app = express();
-const bcrypt = require("bcryptjs");
 app.use(cors());
 app.use(express.json());
 
@@ -35,17 +34,6 @@ function logFailedAttempt(ip, username) {
   loginAttempts[key].push(Date.now());
   console.log(`⚠️ Tentative de login échouée pour ${username} depuis ${ip}`);
 }
-
-async function getUserByUsername(username) {
-  const snap = await db.ref("auth_users/" + username).get();
-  if (!snap.exists()) return null;
-  return snap.val();
-}
-
-async function checkPassword(password, hash) {
-  return bcrypt.compare(password, hash);
-}
-
 
 function isRateLimited(ip, username) {
   const key = `${ip}:${username}`;
@@ -150,32 +138,7 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-async function generateHashes() {
-  const snap = await db.ref("users").get();
-  if (!snap.exists()) return;
 
-  const users = snap.val();
-
-  for (const uid of Object.keys(users)) {
-    const user = users[uid];
-
-    if (!user.password || user.hash) continue;
-
-    try {
-      const hash = await bcrypt.hash(user.password, 12);
-
-      await db.ref(`auth_users/${uid}`).set({
-        hash,
-        createdAt: Date.now()
-      });
-
-      console.log(`✔ Hash généré pour ${uid}`);
-    } catch (err) {
-      console.error(`❌ Erreur pour ${uid}`, err);
-    }
-  }
-}
-generateHashes()
 // Charger le cookie en temps réel
 db.ref("roblox/cookies/cookies/0/value").on("value", snap => {
   ROBLO_COOKIE = snap.val();
@@ -329,10 +292,21 @@ app.post("/signup", async (req, res) => {
 
   // 4️⃣ Création de l'email et utilisateur Firebase
   const email = `${username}@bloxrobux.local`;
+  const usernameSnap = await db
+    .ref("users")
+    .orderByChild("username")
+    .equalTo(username)
+    .get();
 
+  if (usernameSnap.exists()) {
+    return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
+  }
   try {
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
-    const uid = cred.user.uid;
+    const userRecord = await admin.auth().createUser({
+      email,
+      password
+    });
+    const uid = userRecord.uid;
 
     // 5️⃣ Stockage sécurisé dans la DB
     await db.ref("users/" + uid).set({
@@ -361,12 +335,20 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { username, password, captcha } = req.body;
 
-  // 1️⃣ Vérifications basiques
-  if (!username || !password || !captcha) {
-    return res.status(400).json({ error: "Champs manquants" });
+  /* ───────── 1️⃣ VALIDATIONS STRICTES ───────── */
+  if (
+    typeof username !== "string" ||
+    typeof password !== "string" ||
+    typeof captcha !== "string"
+  ) {
+    return res.status(400).json({ error: "Requête invalide" });
   }
 
-  // 2️⃣ CAPTCHA
+  if (username.length < 3 || username.length > 20 || password.length < 8) {
+    return res.status(401).json({ error: "Identifiants invalides" });
+  }
+
+  /* ───────── 2️⃣ CAPTCHA (ANTI-BOT) ───────── */
   try {
     const captchaRes = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
@@ -381,13 +363,15 @@ app.post("/login", async (req, res) => {
     return res.status(500).json({ error: "Erreur captcha" });
   }
 
-  // 3️⃣ Rate limit
+  /* ───────── 3️⃣ RATE LIMIT ───────── */
   if (isRateLimited(req.ip, username)) {
-    return res.status(429).json({ error: "Trop de tentatives" });
+    return res.status(429).json({
+      error: "Trop de tentatives, réessaie plus tard"
+    });
   }
 
   try {
-    // 4️⃣ Récupérer l'utilisateur via username
+    /* ───────── 4️⃣ RÉCUPÉRATION UTILISATEUR ───────── */
     const snap = await db
       .ref("users")
       .orderByChild("username")
@@ -402,47 +386,55 @@ app.post("/login", async (req, res) => {
     const uid = Object.keys(snap.val())[0];
     const user = snap.val()[uid];
 
-    if (user.isBanned) {
-      return res.status(403).json({ error: "Compte banni" });
+    /* ───────── 5️⃣ CONTRÔLES COMPTE ───────── */
+    if (user.isBanned === true) {
+      return res.status(403).json({ error: "Compte suspendu" });
     }
 
-    const email = user.email;
+    if (!user.email) {
+      return res.status(500).json({ error: "Compte corrompu" });
+    }
 
-    // 5️⃣ Vérification mot de passe via Firebase REST API
+    /* ───────── 6️⃣ VÉRIFICATION MOT DE PASSE (FIREBASE) ───────── */
     const fbRes = await fetch(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
+          email: user.email,
           password,
-          returnSecureToken: true
+          returnSecureToken: false
         })
       }
     );
-
-    const fbData = await fbRes.json();
 
     if (!fbRes.ok) {
       logFailedAttempt(req.ip, username);
       return res.status(401).json({ error: "Identifiants invalides" });
     }
 
-    // 6️⃣ Génération du custom token Firebase
+    /* ───────── 7️⃣ TOKEN FIREBASE CUSTOM ───────── */
     const customToken = await admin.auth().createCustomToken(uid);
 
-    // 7️⃣ Stats
-    await db.ref(`users/${uid}/nbConnexions`).transaction(v => (v || 0) + 1);
+    /* ───────── 8️⃣ STATS & CLEANUP ───────── */
+    await db.ref(`users/${uid}`).update({
+      lastLoginAt: Date.now()
+    });
 
-    res.json({
+    await db
+      .ref(`users/${uid}/nbConnexions`)
+      .transaction(v => (v || 0) + 1);
+
+    /* ───────── 9️⃣ RÉPONSE ───────── */
+    return res.json({
       success: true,
       token: customToken
     });
 
   } catch (err) {
-    console.error("Erreur login:", err);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error("🔥 Erreur login:", err);
+    return res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
