@@ -199,13 +199,23 @@ if (formInscription) {
         alert(data.error);
         return;
       }
+      const customToken = data.customToken;
+      try {
+        await firebase.auth().signInWithCustomToken(customToken);
 
-      // Succès
-      gif.style.display = "none";
-      inscription.style.display = "block";
-      alert("Compte créé avec succès ✅");
-      window.location.href = "../Page de gain/gagner.html";
+        // Maintenant que l'utilisateur est connecté
+        gif.style.display = "none";
+        inscription.style.display = "block";
+        alert("Compte créé avec succès ✅");
 
+        // Redirection sûre après login
+        window.location.href = "../Page de gain/gagner.html";
+      } catch (err) {
+        gif.style.display = "none";
+        inscription.style.display = "block";
+        console.error(err);
+        alert("Erreur lors de la connexion avec le token ❌");
+      }
     } catch (err) {
       gif.style.display = "none";
       inscription.style.display = "block";
