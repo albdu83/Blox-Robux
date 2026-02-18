@@ -308,6 +308,7 @@ app.post("/signup", async (req, res) => {
     });
     const uid = userRecord.uid;
 
+    const customToken = await admin.auth().createCustomToken(uid);
     // 5️⃣ Stockage sécurisé dans la DB
     await db.ref("users/" + uid).set({
       email,
@@ -321,7 +322,7 @@ app.post("/signup", async (req, res) => {
       isBanned: false
     });
 
-    return res.status(201).json({ success: true, uid });
+    return res.status(201).json({ success: true, uid, customToken });
   } catch (err) {
     // Gestion des doublons / erreurs Firebase
     if (err.code === "auth/email-already-in-use") {
