@@ -41,7 +41,7 @@ const attempts = new Map();
 
 const trackerCooldown = new Map();
 
-async function StatList(message, key = "Erreur fatale ou iconnue") {
+async function StatList(message, key = "Erreur fatale ou iconnue", ping) {
   try {
     const now = Date.now();
 
@@ -60,6 +60,10 @@ async function StatList(message, key = "Erreur fatale ou iconnue") {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        content: ping || "",
+        allowed_mentions: {
+          roles: ["143703859849409333"]
+        },
         embeds: [{
           title: "🚨 Tentative de connexion échouée ou bloquée",
           description: safeMessage,
@@ -442,8 +446,9 @@ app.post("/login", async (req, res) => {
   /* ───────── 3️⃣ RATE LIMIT ───────── */
   if (isRateLimited(req.ip, username)) {
     StatList(
-      `<@&1437038598494093333> Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-      `ratelimit:${req.ip}`
+      `Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+      `ratelimit:${req.ip}`,
+      `<@&1437038598494093333>`
     );
     return res.status(429).json({
       error: "Trop de tentatives, réessaie plus tard"
