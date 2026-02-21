@@ -90,7 +90,6 @@ body::before {
   background: rgba(20, 20, 20, 0.75);
   backdrop-filter: blur(6px);
   border-radius: 18px;
-  box-shadow: 0 0 30px rgba(40, 124, 219, 0.5);
 }
 
 /* ======= RESPONSIVE ======= */
@@ -483,9 +482,10 @@ main, header, footer, #Block {
   font-size: clamp(12px, 3vw, 14px);
 }
 
-@media (max-width: 468px) {
+/* Mobile first : max-width pour petits écrans */
+@media (min-width: 468px) {
   /* Tous les éléments avec box-shadow que tu veux désactiver */
   .hero {
-      box-shadow: none !important;
+    box-shadow: 0 0 30px rgba(40, 124, 219, 0.5);
   }
 }
