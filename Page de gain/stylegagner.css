@@ -427,6 +427,10 @@ nav ul li a.active {
     transform: scale(1);
 }
 
+#offerwall1 {
+  display: none;
+}
+
 .theoremereach,
 .bitLabs,
 .TimeWall {
@@ -438,7 +442,8 @@ nav ul li a.active {
 #offerwall1 {
     width: clamp(300px, 80%, 800px);
     max-width: 800px;
-    height: 50vh;
+    min-height: 50vh;
+    max-height: 110vh;
     border: none;
 }
 
@@ -557,6 +562,19 @@ nav ul li a.active {
 
 .nave li a:hover {
     color: #ffea00;
+}
+
+#sous-container-wrapper {
+  height: 40vh; /* ou le conteneur */
+  margin: 0;
+  display: flex;
+  justify-content: center; /* centre horizontalement */
+  align-items: center;     /* centre verticalement */
+}
+
+#loading-gif {
+  height: 6vh;
+  width: 3vw;
 }
 
 @media (max-width: 1168px) {
