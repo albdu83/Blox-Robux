@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blox R$ - Gagner</title>
   <link rel="stylesheet" href="stylegagner.css">
-  <link rel="icon" type="image/png" href="../favicon.ico">
+  <link rel="icon" type="image/png" href="../img/Bloxlogo.png">
 </head>
 <body>
   <div id="disconnect">
@@ -113,46 +113,13 @@
   <!-- SCRIPT PRINCIPAL -->
 <script defer>
 document.addEventListener("DOMContentLoaded", () => {
-    const db = window.db;
-    if (!db) return console.error("Firebase Database non initialisée !");
-
     const loadinggif = document.getElementById("sous-container-wrapper");
     const balanceEl = document.getElementById("balance");
     const balanceEl2 = document.getElementById("balance2");
     const btnGagner = document.getElementById("btnGagner");
     const reloadBtn = document.getElementById("reload-bitlabs");
     const reachbtn = document.getElementById("theoreme")
-
-    const API_BASE = "https://blox-robux.onrender.com";
     loadinggif.style.display = "flex"
-    // --- Récupération ou création ID utilisateur ---
-    function getUserID() {
-        let userID = localStorage.getItem("userID");
-        if (!userID) {
-            userID = "user_" + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem("userID", userID);
-            db.ref("users/" + userID).set({ createdAt: Date.now(), balance: 0 })
-              .catch(err => console.error("Erreur création utilisateur :", err));
-        }
-        return userID;
-    }
-    const userID = getUserID();
-
-    // --- Mise à jour du solde ---
-    function displayBalance() {
-        // Récupère le solde depuis Firebase
-        db.ref("users/" + userID + "/balance").once("value")
-          .then(snapshot => {
-           const balance = snapshot.val() || 0; // si pas de valeur, 0
-            // Format FR avec 2 décimales et ajout " R$"
-            const formatted = balance.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " R$";
-            // Met à jour tes éléments
-            balanceEl.textContent = formatted;
-            balanceEl2.textContent = formatted;
-          })
-          .catch(err => console.error("Erreur récupération balance :", err));
-    }
-
 
     // --- Attendre que TimeWall soit chargé ---
     function waitForTimeWall(callback) {
@@ -218,29 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const container = document.getElementById("timewall-container");
             if (container) container.style.display = "none";
         });
-    }
-
-    // --- Sync solde Firebase en direct ---
-db.ref("users/" + userID + "/balance").on("value", snapshot => {
-    const value = parseFloat(snapshot.val() || 0);
-    const formatted = value.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " R$";
-    balanceEl.textContent = formatted;
-    balanceEl2.textContent = formatted;
-});
-
-    // --- Récupération avatar Roblox via Render ---
-    async function setRobloxAvatar(robloxName) {
-        try {
-            const res = await fetch(`${API_BASE}/api/avatar/${robloxName}`);
-            if (!res.ok) throw new Error("Avatar non trouvé");
-            const data = await res.json();
-            const avatarImg = document.getElementById("avatar-roblox");
-            if (!avatarImg) return;
-            avatarImg.src = data.avatarUrl || "../img/default-avatar.png";
-            avatarImg.style.display = "inline-block";
-        } catch (err) {
-            console.error("Erreur avatar Roblox :", err);
-        }
     }
 
 const barres = document.getElementById("barres")
