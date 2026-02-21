@@ -3,6 +3,7 @@ const cors = require("cors");
 const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
 const app = express();
+app.set("trust proxy", 1);
 app.use(cors());
 app.use(express.json());
 
