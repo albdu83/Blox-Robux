@@ -388,7 +388,7 @@ app.get("/cpx", async (req, res) => {
             url: avatarUrl
           },
           image: {
-            url: "https://i.imgur.com/G7f87gT.png"
+            url: "https://i.imgur.com/qT78ezf.png"
           },
           footer: {
             text: "BloxRobux",
