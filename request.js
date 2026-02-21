@@ -22,6 +22,8 @@ const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK
 const DISCORD_WEBHOOK_TRACKER = process.env.DISCORD_WEBHOOK_TRACKER
+const CPX_SECRET = process.env.CPX_SECRET;
+if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
 if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY manquant");
 if (!process.env.RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
 if (!process.env.THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
@@ -41,7 +43,7 @@ const attempts = new Map();
 
 const trackerCooldown = new Map();
 
-async function StatList(message, key = "Erreur fatale ou iconnue", ping) {
+async function StatList(message, key = "Erreur fatale ou iconnue") {
   try {
     const now = Date.now();
 
@@ -60,10 +62,6 @@ async function StatList(message, key = "Erreur fatale ou iconnue", ping) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        content: ping || "",
-        allowed_mentions: {
-          roles: ["143703859849409333"]
-        },
         embeds: [{
           title: "🚨 Tentative de connexion échouée ou bloquée",
           description: safeMessage,
@@ -303,7 +301,129 @@ app.get("/timewall", async (req, res) => {
     return res.status(200).send("OK");
   }
 });
+//---------------------------------------------------------------------------------------------------------------------------//
+app.get("/cpx", async (req, res) => {
+  const {
+    status,
+    trans_id,
+    user_id,
+    amount_local,
+    amount_usd,
+    hash
+  } = req.query;
+  console.log("🔥 /CPX HIT", req.query);
 
+  try {
+    if (!status || !trans_id || !user_id || !amount_usd || !hash ) {
+      console.log("❌ Paramètres manquants");
+      return res.status(200).send("OK");
+    }
+
+    if (status !== "approved") {
+      console.log("⚠️ Status non approuvé :", status);
+      return res.status(200).send("OK");
+    }
+
+    const expectedHash = crypto
+      .createHash("md5")
+      .update(`${trans_id}-${CPX_SECRET}`)
+      .digest("hex");
+
+    if (expectedHash !== hash ) {
+      console.log("❌ Hash invalide", {
+        user_id,
+        amount_usd,
+        received: hash,
+        expected: expectedHash
+      });
+      return res.status(200).send("OK");
+    }
+
+    // ✅ Solde = currencyAmount
+    const amount = Math.ceil(Number(amount_local));
+    if (amount <= 0) {
+      console.log("❌ Amount invalide :", amount);
+      return res.status(200).send("OK");
+    }
+
+    // 🔎 Récupération UID Firebase via RobloxName
+    const snap = await db.ref("users")
+      .orderByChild("RobloxName")
+      .equalTo(user_id)
+      .get();
+
+    if (!snap.exists()) {
+      console.log("❌ Utilisateur Firebase introuvable");
+      return res.status(200).send("OK");
+    }
+
+    const uid = Object.keys(snap.val())[0];
+
+    // 🔒 Anti-doublon
+    const txRef = db.ref("transactions/" + trans_id);
+    if ((await txRef.get()).exists()) {
+      console.log("⚠️ Transaction déjà traitée");
+      return res.status(200).send("OK");
+    }
+    const source = "cpx";
+    const snapshot = await db.ref("users/" + uid).get();
+    const data = snapshot.val()
+    await txRef.set({ uid, amount, source, date: Date.now() });
+
+    await db.ref(`users/${uid}/balance`)
+      .transaction(v => (v || 0) + amount);
+
+    await db.ref(`users/${uid}/robuxGagnes`)
+      .transaction(v => (v || 0) + amount);  
+    const avatarUrl = await getRobloxAvatar(user_id);
+    await fetch(`${DISCORD_WEBHOOK}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [{
+          title: `**${data.username}** a gagné **${amount} R$** !`,
+          description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
+          color: 0x5865F2,
+          thumbnail: {
+            url: avatarUrl
+          },
+          image: {
+            url: "https://i.imgur.com/G7f87gT.png"
+          },
+          footer: {
+            text: "BloxRobux",
+            icon_url: "https://i.imgur.com/PjcK6QD.png"
+          },
+          timestamp: new Date().toISOString()
+        }]
+      })
+    });
+    console.log(`✅ Crédité ${user_id} (${uid}) +${amount}`);
+    return res.status(200).send("OK");
+
+  } catch (err) {
+    console.error("🔥 TimeWall error:", err);
+    return res.status(200).send("OK");
+  }
+});
+
+//---------------------------------------------------------------------------------------------------------------------------//
+
+app.get("/CPXHASH", async (req, res) => {
+  const { user_id } = req.body
+  // Génération du secure_hash
+  const app_id = "26353"
+  const secure_hash = crypto
+    .createHash("sha256")
+    .update(app_id + user_id + CPX_SECRET)
+    .digest("hex");
+
+  // URL iframe à envoyer au front
+  const iframeUrl = `https://offers.cpx-research.com/index.php?app_id=${app_id}&ext_user_id=${user_id}&secure_hash=${secure_hash}`;
+  return res.status(200).json({ iframeUrl })
+});
+
+//---------------------------------------------------------------------------------------------------------------------------//
 app.post("/signup", async (req, res) => {
   const { username, password, RobloxName, captcha } = req.body;
 
@@ -446,9 +566,8 @@ app.post("/login", async (req, res) => {
   /* ───────── 3️⃣ RATE LIMIT ───────── */
   if (isRateLimited(req.ip, username)) {
     StatList(
-      `Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-      `ratelimit:${req.ip}`,
-      `<@&1437038598494093333>`
+      `@🛡️ Propriétaire Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+      `ratelimit:${req.ip}`
     );
     return res.status(429).json({
       error: "Trop de tentatives, réessaie plus tard"
