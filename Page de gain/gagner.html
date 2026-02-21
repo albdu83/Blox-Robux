@@ -71,18 +71,17 @@
 
   <!-- BITLABS -->
   <ul id="pk">
-    <li><img src="../img/Bitlabs Logo.jfif" id="reload-bitlabs" alt="Reload Bitlabs"></li>
+    <li><img src="../img/cpx.jpg" id="reload-bitlabs" alt="Reload Bitlabs"></li>
     <li><img src="../img/Timewall.png" id="btnGagner" alt="Gagner des Robux"></li>
     <li><img src="../img/theoremereach_logo.png" alt="theoremereach" id="theoreme" class="theoreme"></li>
   </ul>
 
  <div class="offers-wrapper">
-
+  <div id="sous-container-wrapper">
+    <img src="../img/loading-gif.gif" alt="loading" id="loading-gif">
+  </div>
   <div class="bitLabs" id="bitlabs">
-    <iframe
-      src="https://web.bitlabs.ai/?uid=12345&token=5fe6d711-ec6d-4a09-b6a6-343b8f0d3c9b"
-      id="offerwall1">
-    </iframe>
+    <div id="offerwall1"></div>
   </div>
 
   <div class="TimeWall" id="TimeWall">
@@ -117,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const db = window.db;
     if (!db) return console.error("Firebase Database non initialisée !");
 
+    const loadinggif = document.getElementById("sous-container-wrapper");
     const balanceEl = document.getElementById("balance");
     const balanceEl2 = document.getElementById("balance2");
     const btnGagner = document.getElementById("btnGagner");
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const reachbtn = document.getElementById("theoreme")
 
     const API_BASE = "https://blox-robux.onrender.com";
-
+    loadinggif.style.display = "flex"
     // --- Récupération ou création ID utilisateur ---
     function getUserID() {
         let userID = localStorage.getItem("userID");
@@ -172,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (offerwall, theoreme) {
               offerwall.style.display = "none";
               theoreme.style.display = "none";
+              loadinggif.style.display = "none"
             }
 
             // Afficher container TimeWall
@@ -191,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (offerwall, container) {
               offerwall.style.display = "none";
               container.style.display = "none";
+              loadinggif.style.display = "none"
             }
 
             // Afficher container TimeWall
@@ -210,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
               offerwall.src = offerwall.src
               offerwall.style.display = "flex";
               theoreme.style.display = "none";
+              loadinggif.style.display = "none"
             }
 
             const container = document.getElementById("timewall-container");
