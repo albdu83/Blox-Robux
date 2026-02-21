@@ -88,6 +88,7 @@ header {
   justify-content: space-between;
   background-color: #153369;
   padding: 15px 30px;
+  z-index: 3;
 }
 
 .header-shadow {
@@ -245,14 +246,14 @@ button:hover {
 
 .background {
   position: absolute;
-    height: 100%;       /* Prend toute la hauteur de la fenêtre */
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0);
-    transition: background-color 0.5s ease;
-    display: none;
-    justify-content: center; /* centre horizontalement le contenu */
-    align-items: center;
-    
+  height: 100%;       /* Prend toute la hauteur de la fenêtre */
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  transition: background-color 0.5s ease;
+  display: none;
+  justify-content: center; /* centre horizontalement le contenu */
+  align-items: center;
+  z-index: 2;
 }
 
 .background.active {
