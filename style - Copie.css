@@ -88,7 +88,6 @@ body::before {
   margin: 0 auto;
   padding: 50px 40px;
   background: rgba(20, 20, 20, 0.75);
-  backdrop-filter: blur(6px);
   border-radius: 18px;
 }
 
@@ -486,6 +485,7 @@ main, header, footer, #Block {
 @media (min-width: 468px) {
   /* Tous les éléments avec box-shadow que tu veux désactiver */
   .hero {
+    backdrop-filter: blur(6px);
     box-shadow: 0 0 30px rgba(40, 124, 219, 0.5);
   }
 }
