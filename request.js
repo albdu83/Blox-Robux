@@ -319,7 +319,7 @@ app.get("/cpx", async (req, res) => {
       return res.status(200).send("OK");
     }
 
-    if (status !== "approved") {
+    if (status !== "1") {
       console.log("⚠️ Status non approuvé :", status);
       return res.status(200).send("OK");
     }
