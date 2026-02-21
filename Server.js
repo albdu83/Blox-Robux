@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
 const btnprofil = document.getElementById("btn-profil")
 const disco = document.getElementById("disconnect")
 const body = document.getElementById("body")
+const loadinggif = document.getElementById("sous-container-wrapper")
+if (loadinggif) loadinggif.style.display = "flex";
 if (btnprofil) btnprofil.style.display = "none";
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
@@ -65,6 +67,28 @@ if (btnprofil) btnprofil.style.display = "none";
       /* ===== AVATAR ROBLOX ===== */
       setRobloxAvatar(RobloxName);
 
+      /* ===== CPX REASEARCH ===== */
+      const container3 = document.getElementById("offerwall1");
+      if (container3) {
+        const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          content: JSON.stringify({ RobloxName })
+        });
+        if (!res) return console.error("Erreur lors du postback CPXHASH")
+        const data = await res.json()
+        container3.innerHTML = "";
+        const offerwall1 = document.getElementById("offerwall1")
+        const iframe = document.createElement("iframe");
+        iframe.src = data.iframeUrl;
+        iframe.width = "100%";
+        iframe.height = "1000";
+        iframe.frameBorder = "0";
+        iframe.loading = "lazy";
+        container3.appendChild(iframe);
+        offerwall1.style.display = "flex"
+        loadinggif.style.display = "none"
+      }
       /* ===== TIMEWALL ===== */
       const container = document.getElementById("timewall-container");
       if (container) {
@@ -78,7 +102,7 @@ if (btnprofil) btnprofil.style.display = "none";
         container.appendChild(iframe);
       }
 
- 
+      /* ===== THEOREME REACH ===== */
       const container2 = document.getElementById("theoremecontainer");
       if (container2) {
         container2.innerHTML = "";
