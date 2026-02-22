@@ -936,7 +936,14 @@ app.get("/api/jobStatus", (req, res) => {
   res.json(jobs[job_id]);
 });
 
+app.get("/getmultiplier", async (req, res) => {
+  const snap = await firebase.database().ref("settings").get();
+  if (!snap.exists()) return;
 
+  const settings = snap.val();
+  const multiplier = Number(settings.gainMultiplier) || 1;
+  res.json(multiplier)
+})
 
 app.post("/api/getBalance", async (req, res) => {
   try {
