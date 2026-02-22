@@ -585,6 +585,15 @@ nav ul li a.active {
   transform: translateX(-50%);
   z-index: 9997;
   animation: pulse 1.5s infinite;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+}
+
+#boost-banner img {
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
 }
 
 @keyframes pulse {
