@@ -937,7 +937,7 @@ app.get("/api/jobStatus", (req, res) => {
 });
 
 app.get("/getmultiplier", async (req, res) => {
-  const snap = await firebase.database().ref("settings").get();
+  const snap = await db.ref("settings").get();
   if (!snap.exists()) return;
 
   const settings = snap.val();
