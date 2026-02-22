@@ -436,7 +436,7 @@ app.get("/cpx", async (req, res) => {
 
 //---------------------------------------------------------------------------------------------------------------------------//
 
-app.get("/CPXHASH", async (req, res) => {
+app.post("/CPXHASH", async (req, res) => {
   const { RobloxName } = req.body
   const user_id = RobloxName
   console.log(RobloxName, user_id)
