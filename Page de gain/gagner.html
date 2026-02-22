@@ -45,6 +45,10 @@
     <img src="../img/Barres.png" alt="Barres" id="barres">
   </div>
 </header>
+<!-- Bandeau de boost -->
+<div id="boost-banner" style="display: none;">
+  🚀 Boost actif ! +<span id="boost-percent">0</span>% de gains sur toutes les offres !
+</div>
 <div class="header-shadow"></div>
 <div class="navigation" id="navigation">
   <div class="nav-panel" id="nav-panel">
@@ -197,6 +201,27 @@ if (window.innerWidth >= 1024) {
   btns.style.display = "none"
 }
 });
+
+const boostBanner = document.getElementById("boost-banner");
+const boostPercentEl = document.getElementById("boost-percent");
+
+async function bandeau() {
+  try {
+// On récupère le settings depuis Firebase
+    const snap = await fetch("https://blox-robux.onrender.com/getmultiplier")
+    const multiplier = await snap.json()
+    if (multiplier > 1) {
+        const boostPercent = Math.round((multiplier - 1) * 100);
+        boostPercentEl.textContent = boostPercent;
+        boostBanner.style.display = "block"; // afficher le bandeau
+    } else {
+        boostBanner.style.display = "none"; // pas de boost → cacher
+    }
+  } catch (err) {
+    console.error("Erreur récupération settings pour boost :", err);
+  }
+}
+bandeau()
 </script>
 
 <div id="Block">
