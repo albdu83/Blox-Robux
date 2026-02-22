@@ -605,6 +605,10 @@ nav ul li a.active {
   #boost-banner {
     font-size: 0.5rem;
   }
+  #boost-banner img {
+    height: 10px;
+    width: 10px;
+  }
 }
 
 /* Desktop large */
