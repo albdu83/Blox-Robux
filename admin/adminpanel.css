@@ -550,6 +550,225 @@ main {
   margin-left: 1%;
 }
 
+.optionsbtn {
+  height: 40px;
+  width: 100px;
+  font-weight:900;
+  cursor: pointer;
+  transform: scale(1);
+  transition: transform 0.4s ease;
+  border-radius: 5px;
+  background-color: #00c7f9;
+}
+
+.optionsbtn:hover {
+  transform: scale(1.2);
+}
+
+.optionsbtn:active {
+  transform: scale(1);
+}
+
+#promo-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  max-width: 400px;
+  width: 100%;
+  background: linear-gradient(#4e4e4e, #1d1d1d);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+  border-radius: 12px 0 0 12px;
+  padding: 20px 24px;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Segoe UI', sans-serif;
+  color: #111827;
+}
+#promo-drawer:not(.hidden) {
+  transform: translateX(0);
+}
+
+/* Header */
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.drawer-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.drawer-header .code-badge {
+  background: linear-gradient(90deg, #facc15, #f59e0b);
+  color: #111827;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.drawer-header button {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.drawer-header button:hover {
+  transform: rotate(90deg);
+}
+
+/* Sections */
+.drawer-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 22px;
+  padding: 12px;
+  background: #575757;
+  border: #000000 dashed 3px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.drawer-section h4 {
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Switch */
+.switch-wrapper {
+  display: flex;
+  align-items: center; /* aligne verticalement le texte avec le switch */
+  gap: 12px;           /* espace entre le switch et le texte */
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #d1d5db;
+  transition: 0.3s;
+  border-radius: 26px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.switch input:checked + .slider {
+  background-color: #f59e0b;
+}
+.switch input:checked + .slider:before {
+  transform: translateX(24px);
+}
+.switch-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap; /* empêche le texte de retourner à la ligne */
+}
+/* Inputs */
+.input-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.input-group label {
+  margin-right: 10px;
+  font-weight: 500;
+  flex: 1;
+}
+.input-group input {
+  flex: 1.5;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s;
+}
+.input-group input:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+}
+
+#drawer-expiration {
+  width: 40.5%;
+  padding: 3px 10px;
+  background: #141421;
+  border: rgb(255, 255, 255) solid 1px;
+  border-radius: 8px;
+  color: white;
+}
+
+#drawer-name {
+  width: 40.5%;
+  padding: 3px 10px;
+  background: #141421;
+  border: rgb(255, 255, 255) solid 1px;
+  border-radius: 8px;
+  color: white;
+}
+
+#drawer-uses,
+#drawer-amount {
+  width: 22.5%;
+  padding: 3px 10px;
+  background: #141421;
+  border: rgb(255, 255, 255) solid 1px;
+  border-radius: 8px;
+  color: white;
+}
+
+/* Buttons */
+.drawer-actions .btn,
+.drawer-danger .btn {
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+.drawer-actions .btn.primary {
+  background-color: #f59e0b;
+  color: #111827;
+}
+.drawer-actions .btn.primary:hover {
+  background-color: #d97706;
+}
+.drawer-danger .btn.danger {
+  background-color: #ef4444;
+  color: #fff;
+}
+.drawer-danger .btn.danger:hover {
+  background-color: #b91c1c;
+}
+
 @media (max-width: 900px) {
   #infos {
     grid-template-columns: repeat(3, 1fr);
