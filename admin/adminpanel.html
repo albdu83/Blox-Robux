@@ -132,6 +132,7 @@
                         <th>Utilisations restantes</th>
                         <th>Expiration</th>
                         <th>Statut</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,6 +153,65 @@
                 </tbody>
             </table>
         </section>
+        <div id="promo-drawer" class="drawer hidden">
+          <div class="drawer-header">
+            <h3>🎟 Gestion du code</h3>
+            <span id="drawer-code" class="code-badge">—</span>
+            <button id="closeDrawer">✕</button>
+          </div>
+
+          <div class="drawer-body">
+
+            <!-- STATUS -->
+            <div class="drawer-section">
+              <h4>Statue</h4>
+              <div class="switch-wrapper">
+                <label class="switch">
+                  <input type="checkbox" id="drawer-enabled">
+                  <span class="slider"></span>
+                </label>
+                <span class="switch-label">Code actif</span>
+              </div>
+            </div>
+
+            <!-- CONFIG -->
+            <div class="drawer-section">
+              <h4>Configuration</h4>
+
+              <label>
+                Nom du code
+                <input type="text" id="drawer-name">
+              </label>
+
+              <label>
+                Montant (R$)
+                <input type="number" id="drawer-amount">
+              </label>
+
+              <label>
+                Utilisations restantes
+                <input type="number" id="drawer-uses">
+              </label>
+
+              <label>
+                Expiration
+                <input type="date" id="drawer-expiration">
+              </label>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="drawer-actions">
+              <button id="saveDrawer" class="btn primary">💾 Sauvegarder</button>
+            </div>
+
+            <!-- DANGER -->
+            <div class="drawer-danger">
+              <h4>Zone dangereuse</h4>
+              <button id="deleteDrawer" class="btn danger">🗑 Supprimer le code</button>
+            </div>
+
+          </div>
+        </div>
 
         <!-- ===== MULTIPLICATEUR ===== -->
         <section class="card">
@@ -185,6 +245,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const imgage = document.getElementById("roblox");
   const auth = window.auth;
   const db = window.db;
+  const drawer = document.getElementById("promo-drawer");
 
   if (!auth || !db) {
     console.error("Firebase non initialisé");
@@ -453,25 +514,39 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ------------------------
 
   document.getElementById("createPromo").addEventListener("click", async () => {
-    const name = document.getElementById("promoName").value.trim().toUpperCase();
-    const amount = parseInt(document.getElementById("promoAmount").value);
-    const uses = parseInt(document.getElementById("promoUses").value);
-    const expiration = document.getElementById("promoExpiration").value; // yyyy-mm-dd
+      const nameInput = document.getElementById("promoName");
+      const amountInput = document.getElementById("promoAmount");
+      const usesInput = document.getElementById("promoUses");
+      const expirationInput = document.getElementById("promoExpiration");
 
-    if (!name || !amount || isNaN(uses) || !expiration) return alert("Remplissez tous les champs");
+      const name = nameInput.value.trim().toUpperCase();
+      const amount = parseInt(amountInput.value);
+      const uses = parseInt(usesInput.value);
+      const expiration = expirationInput.value; // yyyy-mm-dd
 
-    try {
-        await db.ref(`promocodes/${name}`).set({
-            amount: amount,
-            usesLeft: uses,
-            expiration: new Date(expiration).toISOString(),
-            usedBy: {}
-        });
-        alert("✔️ Code promo créé !");
-    } catch (err) {
-        console.error(err);
-        alert("❌ Erreur lors de la création du code");
-    }
+      if (!name || !amount || isNaN(uses) || !expiration) return alert("Remplissez tous les champs");
+      if (name.length > 11) return alert("11 caractères maximum pour le promocode !")
+      try {
+          await db.ref(`promocodes/${name}`).set({
+              amount: amount,
+              usesLeft: uses,
+              expiration: new Date(expiration).toISOString(),
+              usedBy: {},
+              enabled: true
+          });
+          alert("✔️ Code promo créé !");
+
+          // ✅ Réinitialiser les champs correctement
+          nameInput.value = "";
+          amountInput.value = "";
+          usesInput.value = "";
+          expirationInput.value = "";
+
+          loadPromocodes();
+      } catch (err) {
+          console.error(err);
+          alert("❌ Erreur lors de la création du code");
+      }
   });
   const promoTableBody = document.querySelector("section.card:nth-of-type(2) tbody"); // tbody de la section Promocodes
 
@@ -494,7 +569,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Statut
             let status = "Actif";
-            if ((expirationDate && expirationDate < now) || (promo.usesLeft !== undefined && promo.usesLeft <= 0)) {
+            if ((expirationDate && expirationDate < now) || (promo.usesLeft !== undefined && promo.usesLeft <= 0) || (promo.enabled === false)) {
                 status = "Inactif";
             }
 
@@ -505,6 +580,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <td>${usesLeft}</td>
                 <td>${expirationDate ? expirationDate.toLocaleDateString() : "∞"}</td>
                 <td><span class="status ${status.toLowerCase()}">${status}</span></td>
+                <td><button class="optionsbtn" data-code="${code}">Options</button></td>
             `;
             promoTableBody.appendChild(tr);
         });
@@ -514,6 +590,99 @@ document.addEventListener("DOMContentLoaded", async () => {
         promoTableBody.innerHTML = "<tr><td colspan='5'>Erreur lors du chargement des codes promo.</td></tr>";
     }
   }
+  let currentPromo = null;
+
+  promoTableBody.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".optionsbtn");
+    if (!btn) return;
+
+    currentPromo = btn.dataset.code;
+
+    const snap = await db.ref(`promocodes/${currentPromo}`).get();
+    if (!snap.exists()) return;
+
+    const p = snap.val();
+    document.getElementById("drawer-name").value = currentPromo;
+    document.getElementById("drawer-code").textContent = currentPromo;
+    document.getElementById("drawer-enabled").checked = p.enabled !== false;
+    document.getElementById("drawer-amount").value = p.amount ?? 0;
+    document.getElementById("drawer-uses").value = p.usesLeft ?? 0;
+    document.getElementById("drawer-expiration").value =
+      p.expiration ? p.expiration.split("T")[0] : "";
+
+    drawer.classList.remove("hidden");
+  });
+
+  document.getElementById("saveDrawer").addEventListener("click", async () => {
+    if (!currentPromo) return;
+
+    const newName = document
+      .getElementById("drawer-name")
+      .value
+      .trim()
+      .toUpperCase();
+
+    if (!newName) return alert("Nom du code invalide");
+
+    const data = {
+      enabled: document.getElementById("drawer-enabled").checked,
+      amount: Number(document.getElementById("drawer-amount").value),
+      usesLeft: Number(document.getElementById("drawer-uses").value),
+      expiration: document.getElementById("drawer-expiration").value
+        ? new Date(document.getElementById("drawer-expiration").value).toISOString()
+        : null,
+      updatedAt: Date.now()
+    };
+
+    try {
+      if (newName !== currentPromo) {
+        if (newName.length > 11) return alert("11 caractère maximum pour le nom !")
+        // 🔁 vérifier si le nouveau nom existe déjà
+        const exists = await db.ref(`promocodes/${newName}`).get();
+        if (exists.exists()) {
+          return alert("❌ Ce nom de code existe déjà");
+        }
+
+        // 🔁 créer le nouveau
+        await db.ref(`promocodes/${newName}`).set(data);
+
+        // 🗑 supprimer l’ancien
+        await db.ref(`promocodes/${currentPromo}`).remove();
+
+        currentPromo = newName;
+      } else {
+        // ✏️ simple update
+        await db.ref(`promocodes/${currentPromo}`).update(data);
+      }
+
+      closeDrawer();
+      loadPromocodes();
+      alert("✅ Code promo mis à jour");
+
+    } catch (err) {
+      console.error(err);
+      alert("❌ Erreur lors de la modification");
+    }
+  });
+
+  document.getElementById("deleteDrawer").addEventListener("click", async () => {
+    if (!currentPromo) return;
+
+    if (!confirm(`Supprimer définitivement le code "${currentPromo}" ?`)) return;
+
+    await db.ref(`promocodes/${currentPromo}`).remove();
+
+    closeDrawer();
+    loadPromocodes();
+  });
+
+  function closeDrawer() {
+    drawer.classList.add("hidden");
+    currentPromo = null;
+  }
+
+  document.getElementById("closeDrawer").addEventListener("click", closeDrawer);
+
   const multiplierSpan = document.querySelector(".current-multiplier");
   const multiplierInput = document.getElementById("Multiplicator");
   const applyMultiplierBtn = document.querySelector(".btn.apply");
