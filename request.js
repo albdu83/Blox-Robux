@@ -236,11 +236,24 @@ app.get("/timewall", async (req, res) => {
     }
 
     // ✅ Solde = currencyAmount
-    const amount = Math.ceil(Number(currencyAmount));
+    let amount = Math.ceil(Number(currencyAmount));
+
     if (amount <= 0) {
       console.log("❌ Amount invalide :", currencyAmount);
       return res.status(200).send("OK");
     }
+
+    const snap2 = await db.ref("settings").get();
+
+    if (!snap2.exists()) {
+      console.error("❌ Erreur fatale : settings manquant");
+      return res.status(500).send("Settings missing");
+    }
+
+    const settings = snap.val();
+    const multiplier = Number(settings.gainMultiplier) || 1;
+
+    amount = Math.round(amount * multiplier);
 
     // 🔎 Récupération UID Firebase via RobloxName
     const snap = await db.ref("users")
