@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =======================
      AUTH STATE (SOURCE UNIQUE)
   ======================= */
+let RobloxP = null
 const btnprofil = document.getElementById("btn-profil")
 const disco = document.getElementById("disconnect")
 const body = document.getElementById("body")
@@ -46,15 +47,8 @@ if (btnprofil) btnprofil.style.display = "none";
         return;
       }
 
-      if (user) {
-        localStorage.setItem("connectedUser", uid);
-      }
-
       const { username, RobloxName } = data;
-      if (RobloxName) {
-        localStorage.setItem("robloxName", RobloxName);
-      }
-
+      pseudo = RobloxName
 
       /* ===== PROFIL HEADER ===== */
       const lienprofil = document.getElementById("lien-profil");
@@ -71,15 +65,17 @@ if (btnprofil) btnprofil.style.display = "none";
       const container3 = document.getElementById("offerwall1");
       if (container3) {
         const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
-          method: "GET",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          content: JSON.stringify({ RobloxName })
+          body: JSON.stringify({ RobloxName })
         });
         if (!res) return console.error("Erreur lors du postback CPXHASH")
         const data = await res.json()
         container3.innerHTML = "";
         const offerwall1 = document.getElementById("offerwall1")
         const iframe = document.createElement("iframe");
+        console.log(data.iframeUrl)
+        console.log(RobloxName)
         iframe.src = data.iframeUrl;
         iframe.width = "100%";
         iframe.height = "1000";
@@ -424,19 +420,6 @@ async function setRobloxAvatar(robloxName) {
   }
 }
 
-async function getRobloxUserId(username) {
-    const response = await fetch("https://users.roblox.com/v1/usernames/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
-    });
-    const data = await response.json();
-    if (data.data && data.data.length > 0) {
-        return data.data[0].id;
-    } else {
-        throw new Error("Utilisateur Roblox introuvable");
-    }
-}
 const rootIdMap = {};
 async function getPublicsPlaces(targetId) {
     if (!targetId) return;
@@ -557,7 +540,7 @@ btn.addEventListener("click", async () => {
 
   if (!selectedGameID) return alert("Sélectionne un jeu");
 
-  const pseudo = localStorage.getItem("robloxName");
+  const pseudo = RobloxP;
   const amountEl = document.getElementById("amount");
   const amount = parseFloat(amountEl.value);
 
