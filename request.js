@@ -250,7 +250,7 @@ app.get("/timewall", async (req, res) => {
       return res.status(500).send("Settings missing");
     }
 
-    const settings = snap.val();
+    const settings = snap2.val();
     const multiplier = Number(settings.gainMultiplier) || 1;
 
     amount = Math.round(amount * multiplier);
@@ -368,7 +368,7 @@ app.get("/cpx", async (req, res) => {
       return res.status(500).send("Settings missing");
     }
 
-    const settings = snap.val();
+    const settings = snap2.val();
     const multiplier = Number(settings.gainMultiplier) || 1;
 
     amount = Math.round(amount * multiplier);
