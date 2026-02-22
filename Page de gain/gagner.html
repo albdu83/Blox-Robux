@@ -215,7 +215,7 @@ async function bandeau() {
     if (multiplier > 1) {
         const boostPercent = Math.round((multiplier - 1) * 100);
         boostPercentEl.textContent = boostPercent;
-        boostBanner.style.display = "flex"; // afficher le bandeau
+        boostBanner.style.display = "block"; // afficher le bandeau
     } else {
         boostBanner.style.display = "none"; // pas de boost → cacher
     }
