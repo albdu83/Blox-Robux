@@ -181,7 +181,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const imgage = document.getElementById("roblox");
   const auth = window.auth;
   const db = window.db;
@@ -477,9 +477,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadPromocodes() {
     try {
-        const snapshot = await db.ref("promocodes").get();
         promoTableBody.innerHTML = ""; // vider le tableau
-
+        const snapshot = await db.ref("promocodes").get();
         if (!snapshot.exists()) {
             promoTableBody.innerHTML = "<tr><td colspan='5'>Aucun code promo trouvé.</td></tr>";
             return;
@@ -515,6 +514,41 @@ document.addEventListener("DOMContentLoaded", () => {
         promoTableBody.innerHTML = "<tr><td colspan='5'>Erreur lors du chargement des codes promo.</td></tr>";
     }
   }
+  const multiplierSpan = document.querySelector(".current-multiplier");
+  const multiplierInput = document.getElementById("Multiplicator");
+  const applyMultiplierBtn = document.querySelector(".btn.apply");
+
+  // 🔁 Charger le multiplicateur en temps réel
+  db.ref("settings/gainMultiplier").on("value", (snap) => {
+    const value = snap.val() ?? 1;
+    multiplierSpan.textContent = `x${Number(value).toFixed(2)}`;
+  });
+
+  // ✅ Appliquer un nouveau multiplicateur
+  applyMultiplierBtn.addEventListener("click", async () => {
+    const percent = Number(multiplierInput.value);
+
+    if (isNaN(percent) || percent < 0) {
+      alert("❌ Pourcentage invalide");
+      return;
+    }
+
+    const multiplier = 1 + percent / 100;
+
+    try {
+      await db.ref("settings").update({
+        gainMultiplier: Number(multiplier.toFixed(2)),
+        updatedAt: Date.now()
+      });
+
+      alert(`✅ Multiplicateur mis à jour : x${multiplier.toFixed(2)}`);
+      multiplierInput.value = "";
+
+    } catch (err) {
+      console.error("Erreur multiplicateur :", err);
+      alert("❌ Erreur lors de la mise à jour");
+    }
+  });
 
   // Charger les codes au démarrage
   loadPromocodes();
