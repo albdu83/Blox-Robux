@@ -74,8 +74,6 @@ if (btnprofil) btnprofil.style.display = "none";
         container3.innerHTML = "";
         const offerwall1 = document.getElementById("offerwall1")
         const iframe = document.createElement("iframe");
-        console.log(data.iframeUrl)
-        console.log(RobloxName)
         iframe.src = data.iframeUrl;
         iframe.width = "100%";
         iframe.height = "1000";
