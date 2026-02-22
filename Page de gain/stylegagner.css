@@ -570,6 +570,28 @@ nav ul li a.active {
   width: 40px;
 }
 
+#boost-banner {
+  background: linear-gradient(90deg, #facc15, #f59e0b);
+  color: #000;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  border-radius: 0 0 10px 10px;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+}
+
 @media (max-width: 1168px) {
   .offers-wrapper {
     margin: 20px 14px 60px;
