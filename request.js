@@ -850,6 +850,7 @@ async function deductBalance(uid, amount, gameId) {
 }
 
 app.post("/api/payServer", async (req, res) => {
+  console.log("requete ok")
   try {
     const { name, gameId } = req.body;
 
