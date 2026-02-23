@@ -853,9 +853,6 @@ app.post("/api/payServer", async (req, res) => {
   try {
     const { name, gameId } = req.body;
 
-    const username = process.env.ROBLOX_USERNAME;
-    const password = process.env.ROBLOX_PASSWORD;
-
     if (!name || !gameId) {
       return res.status(400).json({ success: false, error: "Paramètres manquants" });
     }
@@ -867,37 +864,24 @@ app.post("/api/payServer", async (req, res) => {
     jobs[job_id] = { status: "pending" };
     setTimeout(() => delete jobs[job_id], 24*60*60*1000);
     // Préparer payload pour GitHub
-    const payload = {
-      event_type: "run_selenium",
-      client_payload: {
-        username,
-        password,
-        server_name: name,
-        callback_url: "https://blox-robux.onrender.com/callback", // ton endpoint callback
+    const response = await fetch("http://87.106.245.156:5000/run_job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         secret: process.env.SELENIUM_SECRET,
+        username: process.env.ROBLOX_USERNAME,
+        password: process.env.ROBLOX_PASSWORD,
+        server_name: name,
         job_id,
         PROXY_HOST: PROXY_HOST,
         PROXY_PORT: PROXY_PORT,
         PROXY_USER: PROXY_USER,
         PROXY_PASS: PROXY_PASS
-      }
-    };
-    console.log("🔹 Payload GitHub API:");
-    console.log(JSON.stringify(payload, null, 2));
-    // Appel API GitHub pour déclencher GitHub Actions
-    const response = await fetch("https://api.github.com/repos/louscript21/TestBloxRobux/dispatches", {
-      method: "POST",
-      headers: {
-        "Authorization": `token ${process.env.GITHUB_TOKEN}`,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
+      })
     });
-    const text = await response.text();
-    if (!response.ok) {
-      throw new Error(`Erreur GitHub API : ${response.status, text}`);
-    }
+
+    const data = await response.json();
+    console.log("Job envoyé au VPS:", data);
 
     res.json({
       success: true,
