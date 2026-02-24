@@ -110,8 +110,6 @@ function isRateLimited(ip, username) {
   return blocked;
 }
 
-const crypto = require("crypto");
-
 function verifyTheoremReachHash(originalUrl, secret) {
   // on récupère tout après /reach?
   const raw = originalUrl.split("/reach?")[1];
