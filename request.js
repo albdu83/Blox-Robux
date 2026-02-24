@@ -110,21 +110,21 @@ function isRateLimited(ip, username) {
   return blocked;
 }
 
-function verifyTheoremReachHash(originalUrl, secret) {
-  // on récupère tout après /reach?
-  const raw = originalUrl.split("/reach?")[1];
-  if (!raw) return { valid: false, reason: "no query" };
+function verifyTheoremReachHash(req, secret) {
+  // URL complète (protocole + host + path + query)
+  const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
 
-  // on coupe AVANT &hash=
-  const hashIndex = raw.lastIndexOf("&hash=");
-  if (hashIndex === -1) return { valid: false, reason: "hash missing" };
+  const hashIndex = fullUrl.lastIndexOf("&hash=");
+  if (hashIndex === -1) {
+    return { valid: false, reason: "hash missing" };
+  }
 
-  const queryString = raw.substring(0, hashIndex);
-  const receivedHash = raw.substring(hashIndex + 6);
+  const urlToSign = fullUrl.substring(0, hashIndex);
+  const receivedHash = fullUrl.substring(hashIndex + 6);
 
   const computedHash = crypto
     .createHmac("sha1", secret)
-    .update(queryString, "utf8")
+    .update(urlToSign, "utf8")
     .digest("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
@@ -132,7 +132,7 @@ function verifyTheoremReachHash(originalUrl, secret) {
 
   return {
     valid: computedHash === receivedHash,
-    queryString,
+    urlToSign,
     computedHash,
     receivedHash
   };
@@ -780,7 +780,7 @@ app.get("/reach", async (req, res) => {
 
   // 🔐 Vérification du hash AVANT TOUT
   const result = verifyTheoremReachHash(
-    req.originalUrl,
+    req,
     process.env.THEOREM_SECRET
   );
 
