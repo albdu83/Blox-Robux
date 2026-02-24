@@ -833,6 +833,7 @@ app.get("/reach", async (req, res) => {
   }
 
   const uid = Object.keys(snap.val())[0];
+  const data = snap.val()
 
   // 💾 Enregistrement transaction
   await db.ref(`transactions/${tx_id}`).set({
