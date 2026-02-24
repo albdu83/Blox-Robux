@@ -110,9 +110,19 @@ function isRateLimited(ip, username) {
   return blocked;
 }
 
+const crypto = require("crypto");
+
 function verifyTheoremReachHash(originalUrl, secret) {
-  const urlPart = originalUrl.split("/reach?")[1];
-  const [queryString, receivedHash] = urlPart.split("&hash=");
+  // on récupère tout après /reach?
+  const raw = originalUrl.split("/reach?")[1];
+  if (!raw) return { valid: false, reason: "no query" };
+
+  // on coupe AVANT &hash=
+  const hashIndex = raw.lastIndexOf("&hash=");
+  if (hashIndex === -1) return { valid: false, reason: "hash missing" };
+
+  const queryString = raw.substring(0, hashIndex);
+  const receivedHash = raw.substring(hashIndex + 6);
 
   const computedHash = crypto
     .createHmac("sha1", secret)
@@ -129,6 +139,7 @@ function verifyTheoremReachHash(originalUrl, secret) {
     receivedHash
   };
 }
+
 async function getRobloxAvatar(username) {
   const res = await fetch("https://users.roblox.com/v1/usernames/users", {
     method: "POST",
@@ -749,23 +760,30 @@ app.post('/api/roblox-user/:username', async (req, res) => {
     res.json(data);
 });
 
-app.get("/reach", (req, res) => {
-  console.log("🔥 /reach HIT", req.url);
+app.get("/reach", async (req, res) => {
+  console.log("🔥 /reach HIT", req.originalUrl);
 
-  const { reward, user_id, tx_id, hash, reversal } = req.query;
+  const {
+    user_id,
+    reward,
+    tx_id,
+    debug,
+    reversal
+  } = req.query;
 
-  if (!reward || !user_id || !tx_id || !hash) {
-    return res.status(200).send("OK");
+  // Toujours répondre 200 à Reach
+  const OK = () => res.status(200).send("OK");
+
+  // Paramètres minimum requis
+  if (!user_id || !reward || !tx_id) {
+    console.log("❌ paramètres manquants");
+    return OK();
   }
 
-  if (reversal === "true") {
-    return res.status(200).send("OK");
-  }
-
-  // ⚠️ UTILISER req.url
+  // 🔐 Vérification du hash AVANT TOUT
   const result = verifyTheoremReachHash(
-    req.url,
-    THEOREM_SECRET
+    req.originalUrl,
+    process.env.THEOREM_SECRET
   );
 
   console.log("RAW QUERY :", result.queryString);
@@ -774,13 +792,69 @@ app.get("/reach", (req, res) => {
 
   if (!result.valid) {
     console.log("❌ HASH INVALIDE");
-    return res.status(200).send("OK");
+    return OK();
   }
 
   console.log("✅ HASH VALIDE");
-  return res.status(200).send("OK");
-});
 
+  // 🧪 Debug → on ignore totalement
+  if (debug === "true") {
+    console.log("🧪 DEBUG CALLBACK → ignoré");
+    return OK();
+  }
+
+  // 🔁 Reversal → on ignore (ou logique de retrait si tu veux)
+  if (reversal === "true") {
+    console.log("↩️ REVERSAL → ignoré");
+    return OK();
+  }
+
+  // 💰 Conversion reward
+  const amount = Math.round(Number(reward));
+  if (amount <= 0) {
+    console.log("❌ reward invalide :", reward);
+    return OK();
+  }
+
+  // 🔒 Anti-doublon tx_id (exemple simple)
+  const txSnap = await db.ref(`transactions/${tx_id}`).get();
+  if (txSnap.exists()) {
+    console.log("⚠️ tx_id déjà traité");
+    return OK();
+  }
+
+  // 🔎 Récupération utilisateur (exemple RobloxName)
+  const snap = await db.ref("users")
+    .orderByChild("RobloxName")
+    .equalTo(user_id)
+    .get();
+
+  if (!snap.exists()) {
+    console.log("❌ utilisateur introuvable :", user_id);
+    return OK();
+  }
+
+  const uid = Object.keys(snap.val())[0];
+
+  // 💾 Enregistrement transaction
+  await db.ref(`transactions/${tx_id}`).set({
+    uid,
+    amount,
+    source: "theoremreach",
+    date: Date.now()
+  });
+
+  // 💸 Crédit utilisateur
+  await db.ref(`users/${uid}/balance`)
+    .transaction(v => (v || 0) + amount);
+
+  await db.ref(`users/${uid}/robuxGagnes`)
+    .transaction(v => (v || 0) + amount);
+
+  console.log(`✅ ${user_id} crédité +${amount}`);
+
+  return OK();
+});
 
 // --- Endpoint Admin ---
 const ADMIN_CODE = process.env.ADMIN_CODE;
