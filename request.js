@@ -856,7 +856,7 @@ app.get("/reach", async (req, res) => {
     body: JSON.stringify({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
-        description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
+        description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur Theoreme Reach`,
         color: 0x5865F2,
         thumbnail: {
           url: avatarUrl
