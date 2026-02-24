@@ -781,7 +781,7 @@ app.get("/reach", async (req, res) => {
   // 🔐 Vérification du hash AVANT TOUT
   const result = verifyTheoremReachHash(
     req,
-    process.env.THEOREM_SECRET
+    THEOREM_SECRET
   );
 
   console.log("RAW QUERY :", result.queryString);
@@ -850,7 +850,28 @@ app.get("/reach", async (req, res) => {
     .transaction(v => (v || 0) + amount);
 
   console.log(`✅ ${user_id} crédité +${amount}`);
-
+  await fetch(`${DISCORD_WEBHOOK}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      embeds: [{
+        title: `**${data.username}** a gagné **${amount} R$** !`,
+        description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
+        color: 0x5865F2,
+        thumbnail: {
+          url: avatarUrl
+        },
+        image: {
+          url: "https://i.imgur.com/yAhLYcw.png"
+        },
+        footer: {
+          text: "BloxRobux",
+          icon_url: "https://i.imgur.com/PjcK6QD.png"
+        },
+        timestamp: new Date().toISOString()
+      }]
+    })
+  });
   return OK();
 });
 
