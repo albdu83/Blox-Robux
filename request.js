@@ -1041,6 +1041,45 @@ app.post("/api/getBalance", async (req, res) => {
   }
 });
 
+app.post("/api/withdraw", async (req, res) => {
+    const { amount, RobloxName } = req.body;
+    const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
+    if (!snap.exists()) return null;
+    const userId = Object.keys(snap.val())[0];
+    // 1️⃣ Vérifier authentification (ex: Firebase token)
+    // TODO : valider token avec Firebase Admin SDK
+    if (!amount) return res.status(400).json({ error: "Paramètres manquants" });
+
+    // 2️⃣ Récupérer la balance actuelle depuis Firebase
+    const dbUrl = `https://your-firebase-database.firebaseio.com/users/${userId}.json`;
+    const userData = await fetch(dbUrl).then(r => r.json());
+    const balance = userData.balance || 0;
+
+    // 3️⃣ Vérifier montant
+    if (amount < 25 || amount > 375) return res.status(400).json({ error: "Montant invalide" });
+    if (amount > balance) return res.status(400).json({ error: "Solde insuffisant" });
+
+    // 4️⃣ Calculer la nouvelle balance et ajouter transaction
+    //const newBalance = balance - amount;
+    //const transaction = {
+        //id: Date.now(),
+        //type: "withdraw",
+        //amount: -amount,
+        //date: new Date().toISOString()
+    //};
+
+    //await fetch(dbUrl, {
+        //method: "PATCH",
+        //headers: { "Content-Type": "application/json" },
+        //body: JSON.stringify({
+            //balance: newBalance,
+            //transactions: [...(userData.transactions || []), transaction]
+        //})
+    //});
+
+    res.json({ balance: balance });
+});
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
