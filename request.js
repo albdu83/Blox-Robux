@@ -5,8 +5,7 @@ const fetch = require("node-fetch"); // si Node < 18
 const app = express();
 app.set("trust proxy", 1);
 app.use(cors({
-    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr/"],
-    credentials: true
+    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr/"]
 }));
 app.use(express.json());
 
@@ -37,7 +36,8 @@ if (!DISCORD_WEBHOOK_TRACKER) throw new Error("DISCORD_WEBHOOK_TRACKER manquant"
 const loginAttempts = {};
 
 async function authenticate(req, res, next) {
-    const token = req.headers.authorization?.split(" ")[1];
+    // Token depuis query string pour EventSource
+    const token = req.query.token;
     if (!token) return res.status(401).send("Token manquant");
 
     try {
