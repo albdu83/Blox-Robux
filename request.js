@@ -5,7 +5,7 @@ const fetch = require("node-fetch"); // si Node < 18
 const app = express();
 app.set("trust proxy", 1);
 app.use(cors({
-    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr/"]
+    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr"]
 }));
 app.use(express.json());
 
