@@ -36,6 +36,19 @@ if (!DISCORD_WEBHOOK_TRACKER) throw new Error("DISCORD_WEBHOOK_TRACKER manquant"
 
 const loginAttempts = {};
 
+async function authenticate(req, res, next) {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).send("Token manquant");
+
+    try {
+        const decoded = await admin.auth().verifyIdToken(token);
+        req.user = { uid: decoded.uid };
+        next();
+    } catch (err) {
+        res.status(401).send("Token invalide");
+    }
+}
+
 function logFailedAttempt(ip, username) {
   const key = `${ip}:${username}`;
   if (!loginAttempts[key]) loginAttempts[key] = [];
