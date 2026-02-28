@@ -1105,19 +1105,29 @@ app.get("/api/sse/balance", authenticate, (req, res) => {
 
     res.flushHeaders();
 
-    const uid = req.user.uid; // récupéré par ton middleware authenticate
+    const uid = req.user.uid; 
     const userRef = admin.database().ref(`users/${uid}`);
+
+    let lastBalance = null; // pour calculer la différence
 
     // Envoi initial
     userRef.once("value").then(snapshot => {
         const data = snapshot.val() || { balance: 0, transactions: [] };
-        res.write(`data: ${JSON.stringify(data)}\n\n`);
+        lastBalance = data.balance || 0;
+        res.write(`data: ${JSON.stringify({...data, delta: 0})}\n\n`);
     });
 
     // 🔁 Écoute en temps réel Firebase
     const listener = userRef.on("value", snapshot => {
         const data = snapshot.val() || { balance: 0, transactions: [] };
-        res.write(`data: ${JSON.stringify(data)}\n\n`);
+        const balance = data.balance || 0;
+
+        // Calcul de la différence
+        const delta = lastBalance !== null ? balance - lastBalance : 0;
+        lastBalance = balance;
+
+        // Envoi SSE
+        res.write(`data: ${JSON.stringify({...data, delta})}\n\n`);
     });
 
     // 🛑 Nettoyage si le client ferme la connexion
