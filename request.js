@@ -4,7 +4,10 @@ const crypto = require("crypto");
 const fetch = require("node-fetch"); // si Node < 18
 const app = express();
 app.set("trust proxy", 1);
-app.use(cors());
+app.use(cors({
+    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr/"],
+    credentials: true
+}));
 app.use(express.json());
 
 
@@ -1078,6 +1081,44 @@ app.post("/api/withdraw", async (req, res) => {
     //});
 
     res.json({ balance: balance });
+});
+
+app.get("/api/sse/balance", authenticate, (req, res) => {
+    res.set({
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
+    });
+
+    res.flushHeaders();
+
+    const uid = req.user.uid; // récupéré par ton middleware authenticate
+    const userRef = admin.database().ref(`users/${uid}`);
+
+    // Envoi initial
+    userRef.once("value").then(snapshot => {
+        const data = snapshot.val() || { balance: 0, transactions: [] };
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+
+    // 🔁 Écoute en temps réel Firebase
+    const listener = userRef.on("value", snapshot => {
+        const data = snapshot.val() || { balance: 0, transactions: [] };
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+
+    // 🛑 Nettoyage si le client ferme la connexion
+    req.on("close", () => {
+        userRef.off("value", listener);
+        res.end();
+    });
+
+    // 🔧 Keep-alive pour Render
+    const keepAlive = setInterval(() => {
+        res.write(": keep-alive\n\n");
+    }, 20000);
+
+    req.on("close", () => clearInterval(keepAlive));
 });
 
 // --- Lancement serveur ---
