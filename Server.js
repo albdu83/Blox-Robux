@@ -41,7 +41,7 @@ if (btnprofil) btnprofil.style.display = "none";
       }
 
       const data = snapshot.val();
-      if (data.banned === true) {
+      if (data.isBanned === true) {
         await auth.signOut();
         document.body.innerHTML = ""; // nettoie l’UI
         window.location.replace("../Ban/Ban.html"); // plus sûr que href
