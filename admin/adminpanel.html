@@ -397,7 +397,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!confirm(confirmMsg)) return;
 
       // Mettre à jour la base de données
-      await db.ref(`users/${uid}/banned`).set(!isBanned);
+      await db.ref(`users/${uid}/isBanned`).set(!isBanned);
 
       alert(
         !isBanned 
