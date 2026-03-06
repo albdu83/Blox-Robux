@@ -2,6 +2,8 @@ const API_BASE_URL = location.hostname === "localhost"
   ? "http://localhost:3000"
   : "https://blox-robux.onrender.com";
 
+let RobloxP = null
+
 document.addEventListener("DOMContentLoaded", () => {
   const auth = firebase.auth();
   const db = firebase.database();
@@ -9,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =======================
      AUTH STATE (SOURCE UNIQUE)
   ======================= */
-let RobloxP = null
 const btnprofil = document.getElementById("btn-profil")
 const disco = document.getElementById("disconnect")
 const body = document.getElementById("body")
@@ -43,7 +44,7 @@ if (btnprofil) btnprofil.style.display = "none";
       if (data.banned === true) {
         await auth.signOut();
         document.body.innerHTML = ""; // nettoie l’UI
-        window.location.replace("../banned.html"); // plus sûr que href
+        window.location.replace("../Ban/Ban.html"); // plus sûr que href
         return;
       }
 
