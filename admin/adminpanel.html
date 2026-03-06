@@ -486,7 +486,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const tr = document.createElement("tr");
       tr.dataset.role = user.role;
       tr.dataset.uid = user.uid;
-      tr.dataset.banned = user.banned || false;
+      tr.dataset.banned = user.isBanned || false;
       const isAdmin = user.role === "admin";
       tr.innerHTML = `
         <td>${user.username ?? "—"}</td>
@@ -495,7 +495,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <td class="actions">
           <button class="btn profil">Profil</button>
           <button class="btn credit">Créditer</button>
-          <button class="btn ban">${user.banned ? "Débannir" : "Bannir"}</button>
+          <button class="btn ban">${user.isBanned ? "Débannir" : "Bannir"}</button>
           <button class="btn promote">
             ${isAdmin ? "Rétrograder" : "Promouvoir"}
           </button>
