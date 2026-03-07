@@ -1057,22 +1057,20 @@ app.post("/api/getBalance", async (req, res) => {
 });
 
 app.post("/api/withdraw", async (req, res) => {
-    const { amount, userN } = req.body;
-    const snap = await db.ref("users").orderByChild("username").equalTo(userN).get();
-    if (!snap.exists()) return null;
-    const userId = Object.keys(snap.val())[0];
-    // 1️⃣ Vérifier authentification (ex: Firebase token)
-    // TODO : valider token avec Firebase Admin SDK
-    if (!amount) return res.status(400).json({ error: "Paramètres manquants" });
+  const token = req.headers.authorization?.split("Bearer ")[1];
+  if (!token) return res.status(401).json({ error: "Non authentifié" });
 
-    // 2️⃣ Récupérer la balance actuelle depuis Firebase
-    const dbUrl = `https://your-firebase-database.firebaseio.com/users/${userId}.json`;
-    const userData = await fetch(dbUrl).then(r => r.json());
-    const balance = userData.balance || 0;
+  const decoded = await admin.auth().verifyIdToken(token);
+  const uid = decoded.uid;
 
-    // 3️⃣ Vérifier montant
-    if (amount < 25 || amount > 375) return res.status(400).json({ error: "Montant invalide" });
-    if (amount > balance) return res.status(400).json({ error: "Solde insuffisant" });
+  const snap = await db.ref("users/" + uid).get();
+  const userData = snap.val();
+  const balance = userData.balance || 0;
+
+  const { amount } = req.body;
+  if (!amount) return res.status(400).json({ error: "Paramètres manquants" });
+  if (amount < 25 || amount > 375) return res.status(400).json({ error: "Montant invalide" });
+  if (amount > balance) return res.status(400).json({ error: "Solde insuffisant" });
 
     // 4️⃣ Calculer la nouvelle balance et ajouter transaction
     //const newBalance = balance - amount;
@@ -1092,7 +1090,8 @@ app.post("/api/withdraw", async (req, res) => {
         //})
     //});
 
-    res.json({ balance: balance });
+  // Juste pour info : renvoyer le solde actuel
+  res.json({ balance });
 });
 
 app.get("/api/sse/balance", authenticate, (req, res) => {
