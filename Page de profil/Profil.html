@@ -8,11 +8,11 @@
 </head>
 <body>
     <div id="disconnect">
-    <h1>Vous avez été déconnecté... 😭</h1>
-    <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
-    <a href="../page de connexion/index.html">Se connecter ?</a>
-  </div>
-      <div class="welcome">
+        <h1>Vous avez été déconnecté... 😭</h1>
+        <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
+        <a href="../page de connexion/index.html">Se connecter ?</a>
+    </div>
+    <div class="welcome">
         <div class="présentation" id="acceuil">
             <div id="transition" class="fade-transition active">
                 <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
@@ -22,46 +22,46 @@
     </div>
     <div id="body">
         <header>
-        <a href="../index.html"><img src="../img/logo.png" alt="Logo De Blox Robux"></a>
-        <div class="text">Blox R$</div>
-        <div class="logo2">
-            <img src="../img/Barres.png" alt="Barres" id="barres">
+            <a href="../index.html"><img src="../img/logo.png" alt="Logo De Blox Robux"></a>
+            <div class="text">Blox R$</div>
+            <div class="logo2">
+                <img src="../img/Barres.png" alt="Barres" id="barres">
+            </div>
+        </header>
+        <div class="header-shadow"></div>
+        <div class="navigation" id="navigation">
+            <div class="nav-panel" id="nav-panel">
+                <div class="logo2" id="logo2">
+                    <img src="../img/Back.png" alt="Barres" id="barres2">
+                </div>
+                <ul class="nave">
+                    <li>
+                        <a id="lien-profil" href="#">
+                            <span>Aucun compte</span>
+                            <img id="avatar-roblox" src="../img/default-avatar.png">
+                        </a>
+                    </li>
+                    <li><a id="btn-Retour" href="../index.html">Retour</a></li>
+                </ul>
+            </div>
         </div>
-    </header>
-    <div class="header-shadow"></div>
-    <div class="navigation" id="navigation">
-  <div class="nav-panel" id="nav-panel">
-    <div class="logo2" id="logo2">
-        <img src="../img/Back.png" alt="Barres" id="barres2">
-    </div>
-    <ul class="nave">
-        <li>
-        <a id="lien-profil" href="#">
-          <span>Aucun compte</span>
-          <img id="avatar-roblox" src="../img/default-avatar.png">
-        </a>
-      </li>
-      <li><a id="btn-Retour" href="../index.html">Retour</a></li>
-    </ul>
-  </div>
-</div>
-    <div id="warn">
-        <div>
-            <span id="z">Veuillez vous reconnectez pour finaliser la procédure</span>
-            <h3>Nom d'utilisateur actuel</h3>
-            <input type="text" id="a" placeholder="Nom d'utilisateur actuel" required>
-            <h3>Mot de passe actuel</h3>
-            <input type="password" id="b" placeholder="••••••••" required>
-            <input type="submit" value="Confirmer" id="Confirm">
-            <img src="../img/loading.gif" alt="loading" id="loading">
-            <p id="profileMessage2" class="msg"></p>
+        <div id="warn">
+            <div>
+                <span id="z">Veuillez vous reconnectez pour finaliser la procédure</span>
+                <h3>Nom d'utilisateur actuel</h3>
+                <input type="text" id="a" placeholder="Nom d'utilisateur actuel" required>
+                <h3>Mot de passe actuel</h3>
+                <input type="password" id="b" placeholder="••••••••" required>
+                <input type="submit" value="Confirmer" id="Confirm">
+                <img src="../img/loading.gif" alt="loading" id="loading">
+                <p id="profileMessage2" class="msg"></p>
+            </div>
         </div>
-    </div>
-<div id="background">
-<div class="container">
-  <div id="container">
-    <h2 style="color: yellow; text-align: center;">👤 Informations du compte</h2>
-    <img src="../img/default-avatar.png" alt="avatar" id="roblox">
+        <div id="background">
+        <div class="container">
+            <div id="container">
+                <h2 style="color: yellow; text-align: center;">👤 Informations du compte</h2>
+                <img src="../img/default-avatar.png" alt="avatar" id="roblox">
     <h4 id="pseudoR">...</h4>
     <div id="infos">
   <div class="info-box">
@@ -483,9 +483,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         msg.textContent = ""
                     }, 3000);
                 }
-                });
-            }); 
-        })
+            });
+        });
+
+        const header = document.querySelector("header");
+        
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 50) {
+                header.classList.add("scrolled");
+            } else {
+                header.classList.remove("scrolled");
+            }
+        });
+    });
     </script>
     <div class="separator"></div>
   <div id="Block">
