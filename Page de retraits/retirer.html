@@ -9,7 +9,17 @@
 </head>
 
 <body>
-  <div class="navigation" id="navigation">
+  <div id="disconnect">
+    <h1>Vous avez été déconnecté... 😭</h1>
+    <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
+    <a href="../page de connexion/index.html">Se connecter ?</a>
+  </div>
+  <div id="transition" class="fade-transition active">
+    <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+  <div id="body">
+    <div class="navigation" id="navigation">
   <div class="nav-panel" id="nav-panel">
     <div class="logo2" id="logo2">
         <img src="../img/Back.png" alt="Barres" id="barres2">
@@ -116,10 +126,6 @@
       <div class="template" id="transactions">aucun retrait effectué...</div>
     </section>
   </main>
-  <div id="transition" class="fade-transition active">
-    <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
-    <div class="text" id="text-chargement">Chargement...</div>
-  </div>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -178,5 +184,6 @@
   </div>
 <img src="../img/Bloxlogo.png" alt="BloxRobuxLogo" style="visibility: hidden;">
 </div>
+  </div>
 </body>
 </html>
