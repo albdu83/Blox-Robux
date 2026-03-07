@@ -464,7 +464,6 @@ app.get("/cpx", async (req, res) => {
 app.post("/CPXHASH", async (req, res) => {
   const { RobloxName } = req.body
   const user_id = RobloxName
-  console.log(RobloxName, user_id)
   // Génération du secure_hash
   const app_id = "26353"
   const secure_hash = crypto
