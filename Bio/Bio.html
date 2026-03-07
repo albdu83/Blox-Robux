@@ -169,7 +169,17 @@
 <script src="../Data.js" defer></script>
 <script src="../Server.js" defer></script>
 <script src="../Animation.js" defer></script>
+<script>
+  const header = document.querySelector("header");
 
+  window.addEventListener("scroll", () => {
+      if (window.scrollY > 50) {
+        header.classList.add("scrolled");
+      } else {
+        header.classList.remove("scrolled");
+      }
+  });
+</script>
 <div class="separator"></div>
 
 <div id="Block">
