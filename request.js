@@ -1057,8 +1057,8 @@ app.post("/api/getBalance", async (req, res) => {
 });
 
 app.post("/api/withdraw", async (req, res) => {
-    const { amount, RobloxName } = req.body;
-    const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
+    const { amount, userN } = req.body;
+    const snap = await db.ref("users").orderByChild("username").equalTo(userN).get();
     if (!snap.exists()) return null;
     const userId = Object.keys(snap.val())[0];
     // 1️⃣ Vérifier authentification (ex: Firebase token)
