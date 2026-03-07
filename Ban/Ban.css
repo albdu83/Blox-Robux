@@ -15,19 +15,66 @@ html {
 }
 
 body {
-  background-color: #1b1b22;
-  color: #ddd;
   min-height: 100vh;
+  line-height: 1.6;
+  letter-spacing: 0.2px;
+  margin: 0;
   overflow-x: hidden;
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #e5e7eb;
+  position: relative; /* pour superposer correctement les pseudo-éléments */
+
+  background:
+    radial-gradient(
+      1200px 600px at top center,
+      #1e1e3d 0%,
+      #16171d 40%,
+      #070707 85%
+    ),
+    linear-gradient(
+      to bottom,
+      #232430,
+      #0b0b0b
+    );
 }
 
-.header {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    padding: 15px 30px;
-    background-color: #153369;
-    gap: 20px;
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="white" fill-opacity="0.03"><path d="M20,30 C25,10 35,10 40,30 C35,25 25,25 20,30 Z"/><path d="M60,40 C65,20 75,20 80,40 C75,35 65,35 60,40 Z"/><path d="M40,70 C45,50 55,50 60,70 C55,65 45,65 40,70 Z"/></g></svg>') repeat;
+  background-size: 50px 50px; /* avant 100px → moins de pixels à calculer */
+  pointer-events: none;
+  z-index: -1;
+}
+
+header {
+  z-index: 1000;
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: linear-gradient(180deg, #0f172a, #020617);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+header.scrolled {
+  background: rgba(2, 6, 23, 0.85); /* plus sombre */
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.header-shadow {
+  height: 40px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.6),
+    transparent
+  );
+  position: relative;
+  z-index: 2;
 }
 
 .title {
@@ -56,82 +103,32 @@ body {
   margin-bottom: 20px;
 }
 
-.navigation {
-  opacity: 0;
-  overflow-x: hidden;
-  visibility: hidden;
-  position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: flex-end;
-  background: rgba(8, 12, 32, 0.6);
-  z-index: 9998;
-  transition: opacity 1s ease, visibility 1s ease;
-  pointer-events: none;
-}
-
-.nav-panel {
-  margin-left: 1%;
-  width: 260px;
-  height: 100vh;
-  background-color: #161638;
-  padding: 24px;
-
-  display: flex;
-  flex-direction: column;
-}
-
-.navigation > div {
-  background-color: #161638;
-  border: 2px solid #757463;
-  border-radius: 12px;
-  padding: clamp(20px, 6vw, 40px);
-  width: 90%;
-  max-width: 75px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  /* 👇 AJOUTE ÇA */
-  height: 100vh;        /* prend 80% de la hauteur de l'écran */
-  max-height: 100vh;    /* limite pour éviter le débordement */
-  
-  text-align: center;
-  box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
-  transition: max-width 1s ease;
-}
-
-.navigation > div.active {
-  max-width: 220px;
-}
-
-.navigation.active {
-  visibility: visible;
-  pointer-events: auto;
-  opacity: 1;
-}
-
-.nave {
-  list-style: none;   /* enlève les puces */
-  padding: 0;         /* enlève le padding par défaut */
-  margin: 0;
-
-  display: flex;
-  flex-direction: column; /* 👈 vertical */
-  gap: 16px;
-}
-
 .fade-transition {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: row;
-  gap: 10px;
   justify-content: center;
   align-items: center;
-
-  background: linear-gradient(#33279E, #7363ff);
-  transition: transform 0.5s ease-in-out;
+  gap: 20px;
+  background: linear-gradient(135deg, #1b1b2f 0%, #3b3bbf 25%, #7363ff 50%, #3b3bbf 75%, #0b0f1a 100%);
+  color: #fff;
+  transition: transform 0.8s ease, opacity 0.5s ease;
   z-index: 9999;
+  opacity: 1;
+}
+
+.fade-transition::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.1), transparent 70%);
+    animation: pulseBG 2s infinite alternate;
+}
+
+@keyframes pulseBG {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.1); opacity: 1; }
 }
 
 .fade-transition.active {
@@ -140,6 +137,7 @@ body {
 
 .fade-transition.slide-down {
   transform: translateY(100%);
+  opacity: 0;
   pointer-events: none;
 }
 
@@ -282,13 +280,6 @@ body {
   border-radius: 50%;
   background-color: #292929;
   border: 3px solid black;
-}
-
-.separator {
-  width: 100%;
-  height: 2px;
-  background-color: #ddd;
-  margin: 20px 0;
 }
 
 /* RESPONSIVE */
