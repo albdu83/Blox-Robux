@@ -121,13 +121,21 @@ body::before {
 
 /* ----- HEADER ----- */
 header {
-  position: relative;
+  z-index: 1000;
+  position: sticky;
+  top: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px;
-  background-color: #153369;
-  z-index: 2;
+  background: linear-gradient(180deg, #0f172a, #020617);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+header.scrolled {
+  background: rgba(2, 6, 23, 0.85); /* plus sombre */
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 .header-left {
