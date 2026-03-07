@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // BANNIR
     if (btn.classList.contains("ban")) {
-      const isBanned = tr.dataset.banned === "true"; // récupère l'état actuel
+      const isBanned = tr.dataset.isBanned === "true"; // récupère l'état actuel
 
       const confirmMsg = isBanned 
         ? "Voulez-vous débannir cet utilisateur ?" 
@@ -450,7 +450,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         username: users[uid].username ,
         balance: users[uid].balance || 0,
         role: (users[uid].role || "Utilisateur").toLowerCase(),
-        banned: users[uid].banned || false
+        isBanned: users[uid].isBanned || false
       }));
 
       renderUsers();
@@ -486,7 +486,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const tr = document.createElement("tr");
       tr.dataset.role = user.role;
       tr.dataset.uid = user.uid;
-      tr.dataset.banned = user.isBanned || false;
+      tr.dataset.isBanned = user.isBanned || false;
       const isAdmin = user.role === "admin";
       tr.innerHTML = `
         <td>${user.username ?? "—"}</td>
@@ -721,6 +721,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Charger les codes au démarrage
   loadPromocodes();
+  const header = document.querySelector("header");
+
+  window.addEventListener("scroll", () => {
+      if (window.scrollY > 50) {
+          header.classList.add("scrolled");
+      } else {
+          header.classList.remove("scrolled");
+      }
+  });
 });
 </script>
 <script src="../Data.js" defer></script>
