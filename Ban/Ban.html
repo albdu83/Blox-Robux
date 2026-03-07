@@ -17,16 +17,7 @@
         <img src="../img/Stop.png" alt="Barres" id="barres">
     </div>
 </header>
-<div class="navigation" id="navigation">
-  <div class="nav-panel" id="nav-panel">
-    <div class="logo2" id="logo2">
-        <img src="../img/Back.png" alt="Barres" id="barres2">
-    </div>
-    <ul class="nave">
-      <li><a id="btn-Retour" href="../index.html">Accueil</a></li>
-    </ul>
-  </div>
-</div>
+<div class="header-shadow"></div>
 <div style="display: flex; align-items: center; justify-content: center; height: 89vh; flex-direction: column;">
     <div class="logo2" id="logo2">
         <img src="../img/Stop.png" alt="Barres" id="barres2">
@@ -38,6 +29,17 @@
     <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
     <div class="text" id="text-chargement">Chargement...</div>
 </div>
+<script>
+    const header = document.querySelector("header");
+
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+            header.classList.add("scrolled");
+        } else {
+            header.classList.remove("scrolled");
+        }
+    });
+</script>
 <script src="../Animation.js" defer></script>
 </body>
 </html>
