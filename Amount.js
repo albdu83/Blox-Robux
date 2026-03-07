@@ -26,6 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const finalStep2 = document.getElementById("finalStep2");
     const helpbutton = document.getElementById("HELP");
     const btnretour = document.getElementById("btnretour");
+    const gainnotif = document.getElementById("gainnotif");
+    const notifbackgroundwin = document.getElementById("notifbackgroundwin");
+    const closenotif = document.getElementById("closenotif");
+    const closenotif2 = document.getElementById("closenotif2");
+    const sousnotifbackground = document.getElementById("sous-notifbackground")
 
     /* =====================================================
        3️⃣ ÉTAT LOCAL
@@ -34,12 +39,31 @@ document.addEventListener("DOMContentLoaded", () => {
         balance: 0,
         transactions: []
     };
-
+    let pendingNotifications = [];
     let userRef = null; // référence DB dynamique
+    let userIsActive = true;
 
     /* =====================================================
        4️⃣ UTILITAIRES
     ===================================================== */
+    document.addEventListener("visibilitychange", () => {
+        userIsActive = !document.hidden;
+        if (!document.hidden && pendingNotifications.length > 0) {
+            pendingNotifications.forEach(n => showGainNotification(n.data, n.delta));
+            pendingNotifications = [];
+        }
+    });
+
+    function showGainNotification(data, delta) {
+        gainnotif.innerText = `${delta > 0 ? 'Bravo ,' : 'Oh non... '}vous venez de ${delta > 0 ? 'gagner' : 'perdre'} ${Math.abs(delta)} R$ sur le site !`;
+        notifbackgroundwin.style.display = "flex";
+        // Forcer l'animation
+        setTimeout(() => {
+            notifbackgroundwin.classList.toggle("show"),
+            sousnotifbackground.classList.toggle("show")
+        }, 50);
+    }
+
     function formatMoney(num) {
         const n = (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
         return n.replace('.', ',') + ' R$';
@@ -140,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
        7️⃣ 🔥 AUTH FIREBASE — CORRECTION PRINCIPALE
     ===================================================== */
     auth.onAuthStateChanged(user => {
-
+        gainnotif.innerText = ""
         // ❌ Non connecté
         if (!user) {
             state.balance = 0;
@@ -151,56 +175,61 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ✅ Connecté
-        const uid = user.uid;
-        userRef = db.ref("users/" + uid);
-        if (withdrawBtn) withdrawBtn.disabled = false;
+        user.getIdToken().then(token => {
+            const evtSource = new EventSource(`${API_BASE_URL}/api/sse/balance?token=${token}`);
 
-        // 🔁 Écoute temps réel du user
-        userRef.on("value", snapshot => {
-            if (!snapshot.exists()) return;
+            // Réception des données temps réel
+            evtSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
 
-            const data = snapshot.val();
-            state.balance = data.balance || 0;
-            state.transactions = data.transactions || [];
-            render();
+                // Mise à jour de l'état local
+                const oldBalance = state.balance;
+                state.balance = data.balance || 0;
+                state.transactions = data.transactions || [];
+                render();
+
+                // Calcul du delta si le serveur ne l'envoie pas directement
+                const delta = data.delta ?? (state.balance - oldBalance);
+
+                // Notification de gain
+                if (delta && delta !== 0) {
+                    if (userIsActive) {
+                        showGainNotification(data, delta);
+                    } else {
+                        pendingNotifications.push({ data, delta });
+                    }
+                }
+            };
+
+            // Gestion déconnexion SSE
+            evtSource.onerror = () => {
+                console.error("SSE disconnected");
+            };
         });
     });
 
     /* =====================================================
        8️⃣ RETRAIT
     ===================================================== */
-    function addTransaction(value) {
-        const amount = Math.round(value * 100) / 100;
+    async function addTransaction(amount) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/withdraw`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount, RobloxP })
+            });
+                const data = await res.json();
 
-        if (amount <= 0) return showError("Montant invalide !");
-        if (amount < 25) return showError("Minimum 25 !");
-        if (amount > 375) return showError("Maximum 375 !");
-        if (amount > state.balance) return showError("Solde insuffisant !");
+            if (data.error) return showError(data.error);
 
-        showTemplate();
-
-        const taxe = Math.round(amount * 1.3);
-        const taxelabel = document.getElementById("robuxadd");
-        if (taxelabel) {
-            taxelabel.innerHTML =
-                `🛑 Vous indiquerez ${taxe} Robux dans l'encadré rouge de l'image !`;
+            // Mettre à jour le front avec la nouvelle balance
+            state.balance = data.balance;
+            //state.transactions.push(data.transaction);
+            render();
+        } catch (err) {
+            console.error(err);
+            showError("Erreur serveur, réessayez plus tard");
         }
-        //const tx = {
-            //id: Date.now(),
-            //type: "withdraw",
-            //amount: -amount,
-            //date: new Date().toISOString()
-        //};
-
-        //state.balance -= amount;
-        //state.transactions.push(tx);
-
-        //userRef.update({
-            //balance: state.balance,
-            //transactions: state.transactions
-        //}).catch(err => console.error(err));
-
-        //render(); // mise à jour immédiate
     }
 
     if (withdrawBtn) {
@@ -232,4 +261,18 @@ document.addEventListener("DOMContentLoaded", () => {
             ShowTemplate3();
         });
     }
+
+    function closeNotif() {
+        // 1️⃣ Lancer l’animation de sortie
+        notifbackgroundwin.classList.remove("show");
+        sousnotifbackground.classList.remove("show");
+
+        // 2️⃣ Attendre la fin de la transition avant de masquer complètement
+        setTimeout(() => {
+            notifbackgroundwin.style.display = "none";
+        }, 300); // doit correspondre à la durée de ta transition CSS
+    }
+
+    if (closenotif) closenotif.addEventListener("click", closeNotif);
+    if (closenotif2) closenotif2.addEventListener("click", closeNotif);
 });
