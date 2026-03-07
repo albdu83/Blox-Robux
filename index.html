@@ -80,6 +80,16 @@ document.getElementById('b').addEventListener('click', () => {
   const frame = document.getElementById('warn');
   frame.style.display = "none";
 });
+
+const header = document.querySelector("header");
+
+window.addEventListener("scroll", () => {
+    if (window.scrollY > 50) {
+        header.classList.add("scrolled");
+    } else {
+        header.classList.remove("scrolled");
+    }
+});
 </script>
 <img src="img/carte bancaire.png" alt="Image Retrait">
 <div>
@@ -106,6 +116,7 @@ document.getElementById('b').addEventListener('click', () => {
 <div class="separator"></div>
   </div>
 </div>
+<div class="separator"></div>
 <div id="Block">
  <img src="img/Bloxlogo.png" alt="BloxRobuxLogo">
   <div id="BlockBottom">
