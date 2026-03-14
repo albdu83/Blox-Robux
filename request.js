@@ -1161,7 +1161,7 @@ app.get("/api/sse/balance", authenticate, (req, res) => {
     req.on("close", () => clearInterval(keepAlive));
 });
 
-app.post("discord/annouce", async (req, res) =>{
+app.post("/discord/annouce", async (req, res) =>{
   const { title, content } = req.body;
   try {
     await fetch(DISCORD_WEBHOOK_ANNONCES, {
