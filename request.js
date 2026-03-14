@@ -25,6 +25,7 @@ const SECRET_KEY = process.env.SECRET_KEY || "21b4dc719da5c227745e9d1f23ab1cc0";
 const THEOREM_SECRET = process.env.THEOREM_SECRET || "6e5a9ccc2f7788d13bfce09e4c832c41ef6a97b3";
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK
 const DISCORD_WEBHOOK_TRACKER = process.env.DISCORD_WEBHOOK_TRACKER
+const DISCORD_WEBHOOK_ANNONCES = process.env.DISCORD_WEBHOOK_ANNONCES
 const CPX_SECRET = process.env.CPX_SECRET;
 if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
 if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY manquant");
@@ -32,6 +33,7 @@ if (!process.env.RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
 if (!process.env.THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
 if (!DISCORD_WEBHOOK) throw new Error("DISCORD_WEBHOOK manquant");
 if (!DISCORD_WEBHOOK_TRACKER) throw new Error("DISCORD_WEBHOOK_TRACKER manquant");
+if (!DISCORD_WEBHOOK_ANNONCES) throw new Error("DISCORD_WEBHOOK_ANNONCES manquant");
 
 const loginAttempts = {};
 
@@ -1157,6 +1159,24 @@ app.get("/api/sse/balance", authenticate, (req, res) => {
     }, 20000);
 
     req.on("close", () => clearInterval(keepAlive));
+});
+
+app.post("discord/annouce", async (req, res) =>{
+  const { title, content } = req.body;
+  try {
+    await fetch(DISCORD_WEBHOOK_ANNONCES, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        content: `${title}\n${content}`
+      })
+    });
+    res.status(200).json("OK")
+  } catch(err) {
+    res.status(500).json(err)
+  };
 });
 
 // --- Lancement serveur ---
