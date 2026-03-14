@@ -823,7 +823,7 @@ app.get("/reach", async (req, res) => {
   }
 
   // 💰 Conversion reward
-  const amount = Math.round(Number(reward));
+  let amount = Math.round(Number(reward));
   if (amount <= 0) {
     console.log("❌ reward invalide :", reward);
     return OK();
@@ -846,6 +846,23 @@ app.get("/reach", async (req, res) => {
     console.log("❌ utilisateur introuvable :", user_id);
     return OK();
   }
+
+  if (amount <= 0) {
+    console.log("❌ Amount invalide :", amount);
+    return res.status(200).send("OK");
+  }
+
+  const snap2 = await db.ref("settings").get();
+
+  if (!snap2.exists()) {
+    console.error("❌ Erreur fatale : settings manquant");
+    return res.status(500).send("Settings missing");
+  }
+
+  const settings = snap2.val();
+  const multiplier = Number(settings.gainMultiplier) || 1;
+
+  amount = Math.round(amount * multiplier);
 
   const uid = Object.keys(snap.val())[0];
   const data = snap.val()
