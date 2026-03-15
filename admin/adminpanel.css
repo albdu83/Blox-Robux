@@ -498,6 +498,7 @@ main {
 
 .apply { background: #ffea00; color: black; }
 .create-rain { background: #ffae00; }
+.create-announce { background: #b87d00; }
 
 /* STATUS */
 .status.active {
@@ -531,6 +532,19 @@ main {
 }
 
 /* FORMS */
+textarea {
+  min-height: 200px;
+  width: 100%;
+  padding: 10px;
+  background: #141421;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 10px;
+}
+
+
+.discord-news input,
 .multiplier-box input,
 .rain-form input {
   width: 100%;
