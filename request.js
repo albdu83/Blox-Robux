@@ -12,7 +12,6 @@ app.use(express.json());
 
 const jobs = {};
 
-let ROBLO_COOKIE = null;
 let lienavatar = null;
 let PROXY_HOST = process.env.PROXY_HOST;
 let PROXY_PASS = process.env.PROXY_PASS;
@@ -229,12 +228,6 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-
-// Charger le cookie en temps réel
-db.ref("roblox/cookies/cookies/0/value").on("value", snap => {
-  ROBLO_COOKIE = snap.val();
-  console.log("🍪 ROBLO_COOKIE chargé :", !!ROBLO_COOKIE);
-});
 
 app.get("/timewall", async (req, res) => {
   const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
@@ -777,7 +770,7 @@ app.post('/api/roblox-user/:username', async (req, res) => {
 
 app.get("/reach", async (req, res) => {
   console.log("🔥 /reach HIT", req.originalUrl);
-
+  res.status(200).send("OK");
   const {
     user_id,
     reward,
@@ -825,7 +818,7 @@ app.get("/reach", async (req, res) => {
   }
 
   // 💰 Conversion reward
-  let amount = Math.round(Number(reward));
+  let amount = Math.round(parseFloat(reward) || 0);
   if (amount <= 0) {
     console.log("❌ reward invalide :", reward);
     return OK();
@@ -849,11 +842,6 @@ app.get("/reach", async (req, res) => {
     return OK();
   }
 
-  if (amount <= 0) {
-    console.log("❌ Amount invalide :", amount);
-    return res.status(200).send("OK");
-  }
-
   const snap2 = await db.ref("settings").get();
 
   if (!snap2.exists()) {
@@ -867,7 +855,7 @@ app.get("/reach", async (req, res) => {
   amount = Math.round(amount * multiplier);
 
   const uid = Object.keys(snap.val())[0];
-  const data = snap.val()
+  const data = snap.val()[uid];
 
   // 💾 Enregistrement transaction
   await db.ref(`transactions/${tx_id}`).set({
@@ -884,7 +872,8 @@ app.get("/reach", async (req, res) => {
   await db.ref(`users/${uid}/robuxGagnes`)
     .transaction(v => (v || 0) + amount);
 
-  console.log(`✅ ${user_id} crédité +${amount}`);
+  console.log(`✅ ${user_id} crédité +${amount} | tx:${tx_id}`);
+  const avatarUrl = await getRobloxAvatar(user_id);
   await fetch(`${DISCORD_WEBHOOK}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -906,7 +895,8 @@ app.get("/reach", async (req, res) => {
         timestamp: new Date().toISOString()
       }]
     })
-  });
+  })
+  .catch(err => console.error("Webhook error:", err));
   return OK();
 });
 
