@@ -233,6 +233,17 @@
             </div>
         </section>
 
+        <section class="card">
+          <h2>Créer une annonce Discord</h2>
+          <div class="discord-news">
+            <input id="Titre" type="text" placeholder="Titre : (exemple : Sujet du jour...)">
+        
+            <textarea id="Contenu" placeholder="Contenu : (exemple : Bonjour...)"></textarea>
+        
+            <button class="btn create-announce">Publier l'annonce</button>
+          </div>
+        </section>
+
     </main>
 
     <!-- ===== FIREBASE ===== -->
@@ -730,6 +741,39 @@ document.addEventListener("DOMContentLoaded", async () => {
           header.classList.remove("scrolled");
       }
   });
+  
+  const announcebtn = document.querySelector(".btn.create-announce");
+
+  announcebtn.addEventListener("click", () => {
+    const title = document.getElementById("Titre").value;
+    const content = document.getElementById("Contenu").value;
+    if (!title || !content) return alert("Contenu et/ou titre manquant");
+    if (!confirm("Êtes-vous sûr de vouloir publier cette annonce ?")) return;
+    SendDiscordMessage(title, content);
+  });
+
+  async function SendDiscordMessage(title, content) {
+    if(title === null || title === null) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/discord/annouce`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ title, content })
+      });
+      const status = await res.status;
+      const json = res.json()
+      if (status !== 200) {
+        alert("❌ Echec de l'envoie", json.error);
+        return;
+      } else {
+        alert("✅ Message envoyé avec succès !")
+      }
+    } catch(err) {
+      console.error("Erreur d'envoie :", err);
+      alert("❌ Erreur lors de l'envoie de l'annonce");
+    }
+  }
 });
 </script>
 <script src="../Data.js" defer></script>
