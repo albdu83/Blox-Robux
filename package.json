@@ -15,7 +15,8 @@
     "helmet": "^7.0.0",
     "node-fetch": "^2.6.7",
     "dotenv": "^16.3.1",
-    "crypto": "^1.0.1"
+    "crypto": "^1.0.1",
+    "cookie-parser": "^1.4.6"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
