@@ -7,6 +7,8 @@ const helmet = require("helmet");
 const path = require("path");
 const fs = require("fs/promises");
 const { fileURLToPath } = require("url");
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 app.use(helmet());
 app.set("trust proxy", 1);
 app.use(cors({
