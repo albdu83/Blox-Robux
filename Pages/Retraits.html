@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blox R$ - Retirer</title>
+  <link rel="stylesheet" href="Retraits.css" />
+  <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon">
+</head>
+
+<body>
+  <div id="disconnect">
+    <h1>Vous avez été déconnecté... 😭</h1>
+    <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
+    <a href="../Authentification/connexion">Se connecter ?</a>
+  </div>
+  <div id="transition" class="fade-transition active">
+    <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+  <div id="body">
+    <div class="navigation" id="navigation">
+  <div class="nav-panel" id="nav-panel">
+    <div class="logo2" id="logo2">
+        <img src="../img/Back.png" alt="Barres" id="barres2">
+    </div>
+    <ul class="nave">
+      <li>
+        <div class="solde-box">
+          <span>💰 Solde</span>
+          <span id="balance2">0,00 R$</span>
+        </div>
+      </li>
+      <li><a id="btn-accueil" href="../">Accueil</a></li>
+      <li><a id="btn-win" href="Offres">Gagner des R$</a></li>
+      <li><a id="btn-retrait" href="#">Retirer</a></li>
+    </ul>
+  </div>
+</div>
+  <div class="background" id="background">
+    <div class="Interface" id="finalStep">
+      <p class="explain" id="explain">
+        Veuillez selectionner un de vos emplacements publiques pour effectuer votre transactions.
+        Si aucun serveur n'apparait, veuillez cliquer sur le bouton si dessous.
+      </p>
+      <button class="HELP" id="HELP">Besoin d'aide ?</button>
+        <div class="public-places">
+          <select id="public-places">
+            <option>séléctionner un jeu</option>
+          </select>
+      </div>
+      <div class="tutocontainer" id="tutocontainer">
+        <p id="paragraphe">1. Cliquez sur <a href="" id="href" target="_blank" rel="noopener noreferrer">ce lien</a>.</p>
+        <p>2. Une fois sur la page, veuillez paramétrer votre jeu roblox comme ceci.</p>
+        <img src="../img/Tuto1.png" alt="?!" id="Tuto1" style="width: 300px;height: 350px; pointer-events: none;">
+        <p id="robuxadd" style="color: yellow; text-align: center;">🛑 Vous indiquerez <strong>...</strong> Robux dans l'encadré rouge de l'image!</p>
+        <p>3. Une fois cela fait vous enregistrerez les modifications effectuer grâce à ce boutton.</p>
+        <img src="../img/Tuto2.png" alt="enregistrer modifications" style="width: 300px;height: 300px; pointer-events: none;">
+        <p id="paragraphe2">4. Cliquez sur <a href="" id="href2" target="_blank" rel="noopener noreferrer">ce lien</a>.</p>
+        <p>- Vous effectuerez le questionnaire de maturité comme affiché ci-dessous ,en allant sur "commencer", si cela n'a pas été fait.</p>
+        <img src="../img/Tuto3.png" alt="commencez questionnaire" style="width: 300px;height: 350px; pointer-events: none;">
+        <p>- Vous penserez à bien répondre à chaque question (de préfrérence par "non") et vous cliquerez sur "continuer".</p>
+        <img src="../img/Tuto4.png" alt="répondre aux questions" style="width: 300px;height: 350px; pointer-events: none;">
+        <p>- Pour finir, vous enverez vos réponses grâce au bouton d'envoie comme ci-dessous.</p>
+        <img src="../img/Tuto5.png" alt="envoyer réponses" style="width: 300px;height: 350px; pointer-events: none;">
+        <p style="text-align: center; color: darkseagreen;">Cliquez sur "Retirer !" une fois que vous avez terminé toutes les étapes.</p>
+        <button style="background-color: aqua; transition: transform 0.2s ease;" id="buttonretrait">Retirer !</button>
+      </div>
+    </div>
+    <div class="Interface2" id="finalStep2">
+      <img src="../img/return.png" alt="retour" id="btnretour">
+      <h2 style="text-decoration:underline; color: rgb(179, 179, 9);">⚠ Attention ! : il est possible que votre compte se déconnecte automatiquement ou que des problèmes surviennent lors du chargement de votre compte. Si c'est le cas, reconnectez-vous ou relancez la page dans le cas écéhant.</h2>
+      <h2>Si aucun jeu ne s’affiche et que vous êtes bien connecté, voici les étapes à suivre pour résoudre le problème :</h2>
+      <h3>Rendez-vous sur <a href="https://create.roblox.com/">https://create.roblox.com/</a></h3>
+      <h4>1 - Si aucune expérience ne s'affiche comme "Publique", vous devez impérativement en mettre au moins UNE en statue publique :</h4>
+      <h5>- Connectez-vous avec votre compte Roblox sur <a href="https://create.roblox.com/">https://create.roblox.com/</a></h5>
+      <h5>- Cliquez sur les 3 petits points à côté du nom de votre expérience</h5>
+      <h5>- Cliquez sur "Rendre Publique"</h5>
+      <h4 style="text-decoration:underline; color: rgb(179, 179, 9);">Toutefois, vous devez être éligible à <a href="https://create.roblox.com/settings/eligibility/public-publish" target="_blank" rel="noopener noreferrer">l'accès publique</a> et avoir une <a href="https://create.roblox.com/docs/fr-fr/production/promotion/content-maturity" target="_blank" rel="noopener noreferrer">étiquette de maturité</a> sur votre jeu pour pouvoir le mettre en publique !</h4>
+      <h4>2 - Si aucune expérience ne s'affiche (cas rare), vous devez impérativement en créer une !</h4>
+      <h5>- Connectez-vous avec votre compte Roblox sur https://create.roblox.com/ (si cela n'est pas déjà fait)</h5>
+      <h5>- Allez dans l'onglet Création</h5>
+      <h5>- Cliquez sur Créer une expérience</h5>
+      <h5>- Téléchargez Roblox Studio et connectez-vous à votre compte Roblox (si ce n’est pas déjà fait)</h5>
+      <h5>- Cliquez sur Nouvelle expérience dans la barre de gauche</h5>
+      <h5>- Une fois dans l’éditeur de votre jeu, allez dans l’onglet Fichier en haut à gauche</h5>
+      <h5>- Renseignez les informations de base, puis cliquez sur le bouton Créer tout en bas de la fenêtre</h5>
+      <h5>- Suivre les étapes de la partie 1 pour mettre l'expérience en "Publique"</h5>
+    </div>
+  </div>
+  <header>
+  <div class="header-left">
+    <a href="../">
+      <img src="../img/logo.png" alt="Logo Blox Robux">
+    </a>
+    <div class="solde-box" id="solde-box">
+      <span>💰 Solde :</span>
+      <span id="balance">0,00 R$</span>
+    </div>
+  </div>
+  <div class="title">Blox R$</div>
+  <ul id="btns">
+    <li><a href="../">Accueil</a></li>
+    <li><a href="Offres">Gagner des R$</a></li>
+    <li><a href="Retraits" class="active">Retirer</a></li>
+  </ul>
+  <div class="logo2" id="logo3">
+    <img src="../img/Barres.png" alt="Barres" id="barres">
+  </div>
+  </header>
+  <div class="header-shadow"></div>
+  <main>
+    <section class="retrait-container">
+      <h1>💸 Retirer des Robux</h1>
+      <p class="desc">
+        Entrez le montant de Robux à retirer depuis votre solde ci-dessus.
+      </p>
+      <div class="actions">
+        <input id="amount" type="number" placeholder="Montant à retirer (ex : 50)" />
+        <button id="withdrawBtn">Retirer</button>
+      </div>
+
+      <div id="error" class="error" style="display:none;"></div>
+
+      <h2>Historique des retraits</h2>
+      <div class="template" id="transactions">aucun retrait effectué...</div>
+    </section>
+  </main>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="../JS/Server.js" defer></script>
+  <script src="../JS/Animation.js" defer></script>
+  <script src="../JS/Amount.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const barres = document.getElementById("barres")
+      const logo2 = document.getElementById("logo3")
+      const btns = document.getElementById("btns")
+      const soldebox = document.getElementById("solde-box")
+      if (window.innerWidth >= 1024) {
+        barres.style.display = "none"
+        logo2.style.position = "absolute"
+      } else {
+        soldebox.style.display = "none"
+        btns.style.display = "none"
+      }
+      const header = document.querySelector("header");
+
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+            header.classList.add("scrolled");
+        } else {
+            header.classList.remove("scrolled");
+        }
+      });
+    });
+  </script>
+  <div class="separator" style="visibility: hidden;"></div>
+  <div class="separator" style="visibility: hidden;"></div>
+  <div class="separator"></div>
+  <div id="Block">
+ <img src="../img/BloxImg.png" alt="BloxRobuxLogo">
+<div id="BlockBottom">
+<div class="infos">
+  <div class="col">
+    <h2>A propos de nous</h2>
+    <ul>
+      <li><a href="Bio">Biographie du site</a></li>
+      <li><a href="">Paiements sécurisés</a></li>
+      <li><a href="">Support actif</a></li>
+    </ul>
+  </div>
+
+  <div class="col">
+    <h2>Mentions légales</h2>
+    <ul>
+      <li><a href="../Legal/C.G.U">Conditions d'utilisations</a></li>
+      <li><a href="../Legal/P.C.F">Politique de confidentialité</a></li>
+    </ul>
+  </div>
+
+    <div class="col">
+    <h2>Réseaux sociaux</h2>
+    <ul>
+      <li><a href="https://discord.gg/QQMRtfBXpq" target="_blank" rel="noopener noreferrer">Discord</a></li>
+      <li><a href="https://youtube.com/@bloxrbx00" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+      <li><a href="https://www.instagram.com/bloxrbx/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+      <li><a href="https://www.tiktok.com/@bloxrbx.fr" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+    </ul>
+  </div>
+</div>
+  </div>
+<img src="../img/BloxImg.png" alt="BloxRobuxLogo" style="visibility: hidden;">
+</div>
+  </div>
+</body>
+</html>

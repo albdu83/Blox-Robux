@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blox R$ - Admin</title>
+    <link rel="stylesheet" href="adminpanel.css">
+    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon">
+</head>
+<body>
+<div id="background">
+<div class="container">
+  <img src="../img/return.png" alt="retour" id="retour">
+  <div id="container">
+    <img src="../img/default-avatar.png" alt="avatar" id="roblox">
+    <h4 id="pseudoR">...</h4>
+    <div id="infos">
+  <div class="info-box">
+  <span class="label">Robux gagnés</span>
+  <span class="value" id="robuxGagnes">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Retraits</span>
+  <span class="value" id="retraits">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Balance</span>
+  <span class="value" id="balance">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Statut</span>
+  <span class="value" id="statut">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nom Roblox</span>
+  <span class="value" id="nomRoblox">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nom d'utilisateur</span>
+  <span class="value" id="username">...</span>
+</div>
+<div class="info-box">
+  <span class="label">date de céation</span>
+  <span class="value" id="motdepasse">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nombre de connexions</span>
+  <span class="value" id="nbConnexions">...</span>
+</div>
+  </div>
+</div>
+  </div>
+</div>
+    <!-- ===== RIDEAU CHARGEMENT ===== -->
+    <div id="transition" class="fade-transition active">
+        <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+        <div class="text" id="text-chargement">Chargement...</div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <a href="../index.html"><img src="../img/logo.png" alt="Logo De Blox Robux"></a>
+        <div class="text">Blox R$</div>
+        <img src="../img/Barres.png" alt="Barres" id="barres"> 
+    </header>
+    <div class="header-shadow"></div>
+  <div class="navigation" id="navigation">
+  <div class="nav-panel" id="nav-panel">
+    <div class="logo2" id="logo2">
+        <img src="../img/Back.png" alt="Barres" id="barres2">
+    </div>
+    <ul class="nave">
+        <li>
+        <a id="lien-profil" href="#">
+          <span>Aucun compte</span>
+          <img id="avatar-roblox" src="../img/default-avatar.png">
+        </a>
+      </li>
+      <li><a id="btn-Retour" href="../index.html">Retour</a></li>
+    </ul>
+  </div>
+</div>
+
+    <!-- ===== CONTENU ===== -->
+    <main>
+
+        <!-- ===== LISTE UTILISATEURS ===== -->
+        <section class="card">
+            <h2>Liste des Utilisateurs</h2>
+
+            <div class="search-bar">
+                <input type="text" id="search" placeholder="Rechercher un utilisateur...">
+                <select id="NBU">
+                    <option value="5">Nombre d'utilisateurs :</option>
+                    <option value="10">Par 10</option>
+                    <option value="30">Par 30</option>
+                    <option value="50">Par 50</option>
+                    <option value="none">Tous</option>
+                </select>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nom d'utilisateur</th>
+                        <th>Solde</th>
+                        <th>Rôle</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="list">
+                    <tr>
+                        <td colspan="4">Chargement des utilisateurs...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <!-- ===== PROMOCODES ===== -->
+        <section class="card">
+            <h2>Promocodes</h2>
+            <button class="btn create-promo" id="createPromo">Créer un promocode</button>
+            <div class="form-group">
+              <input type="text" id="promoName" placeholder="Nom du code (ex: START50)">
+              <input type="number" id="promoAmount" placeholder="Montant Robux">
+              <input type="number" id="promoUses" placeholder="Nombre d'utilisations">
+              <input type="date" id="promoExpiration" placeholder="Date d'expiration">
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Robux</th>
+                        <th>Utilisations restantes</th>
+                        <th>Expiration</th>
+                        <th>Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>START50</td>
+                        <td>50</td>
+                        <td>12</td>
+                        <td>25/02/2025</td>
+                        <td><span class="status active">Actif</span></td>
+                    </tr>
+                    <tr>
+                        <td>WIN200</td>
+                        <td>200</td>
+                        <td>0</td>
+                        <td>01/12/2024</td>
+                        <td><span class="status inactive">Inactif</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <div id="promo-drawer" class="drawer hidden">
+          <div class="drawer-header">
+            <h3>🎟 Gestion du code</h3>
+            <span id="drawer-code" class="code-badge">—</span>
+            <button id="closeDrawer">✕</button>
+          </div>
+
+          <div class="drawer-body">
+
+            <!-- STATUS -->
+            <div class="drawer-section">
+              <h4>Statue</h4>
+              <div class="switch-wrapper">
+                <label class="switch">
+                  <input type="checkbox" id="drawer-enabled">
+                  <span class="slider"></span>
+                </label>
+                <span class="switch-label">Code actif</span>
+              </div>
+            </div>
+
+            <!-- CONFIG -->
+            <div class="drawer-section">
+              <h4>Configuration</h4>
+
+              <label>
+                Nom du code
+                <input type="text" id="drawer-name">
+              </label>
+
+              <label>
+                Montant (R$)
+                <input type="number" id="drawer-amount">
+              </label>
+
+              <label>
+                Utilisations restantes
+                <input type="number" id="drawer-uses">
+              </label>
+
+              <label>
+                Expiration
+                <input type="date" id="drawer-expiration">
+              </label>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="drawer-actions">
+              <button id="saveDrawer" class="btn primary">💾 Sauvegarder</button>
+            </div>
+
+            <!-- DANGER -->
+            <div class="drawer-danger">
+              <h4>Zone dangereuse</h4>
+              <button id="deleteDrawer" class="btn danger">🗑 Supprimer le code</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ===== MULTIPLICATEUR ===== -->
+        <section class="card">
+            <h2>Multiplicateur des Gains</h2>
+            <div class="multiplier-box">
+                <p>Multiplication actuelle : <span class="current-multiplier">x1.20</span></p>
+                <input id="Multiplicator" type="number" placeholder="Nouveau pourcentage (ex: 50 pour x1.50)">
+                <button class="btn apply">Appliquer</button>
+            </div>
+        </section>
+
+        <!-- ===== PLUIE ===== -->
+        <section class="card">
+            <h2>Créer une Pluie de Robux</h2>
+            <div class="rain-form">
+                <input id="RainNumber" type="number" placeholder="Montant total de Robux">
+                <input id="RainTime" type="number" placeholder="Durée en secondes">
+                <button class="btn create-rain">Lancer la pluie</button>
+            </div>
+        </section>
+
+        <section class="card">
+          <h2>Créer une annonce</h2>
+          <div class="discord-news">
+            <label class="switch" style="margin-bottom: 10px;">
+              <input type="checkbox" id="drawer-disabled">
+              <span class="slider"></span>
+            </label>
+            <input id="Titre" type="text" placeholder="Titre : (exemple : Sujet du jour...)">
+        
+            <textarea id="Contenu" placeholder="Contenu : (exemple : Bonjour...)"></textarea>
+            
+             <button class="btn clear-input">Nettoyer les champs</button>
+
+            <button class="btn create-announce">Publier l'annonce</button>
+          </div>
+        </section>
+
+    </main>
+
+    <!-- ===== FIREBASE ===== -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdn.tiny.cloud/1/7685pqp1gvvr64gli2idwrco4wktgnhivtx8ot3odkzrelsv/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+
+<!-- Place the following <script> and <textarea> tags your HTML's <body> -->
+<script defer>
+  tinymce.init({
+    selector: '#Contenu',
+    language: 'fr-FR',
+    plugins: [
+      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'permanentpen', 'advtable', 'advcode', 'advtemplate', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown'
+    ],
+    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+    tinycomments_mode: 'embedded',
+    tinycomments_author: 'Author name',
+    mergetags_list: [
+      { value: 'First.Name', title: 'First Name' },
+      { value: 'Email', title: 'Email' },
+    ],
+    ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+    uploadcare_public_key: 'aba3c82e8b3d856d8dea',
+  });
+</script>
+
+<script src="../JS/Panel.js" defer></script>
+<script src="../JS/Server.js" defer></script>
+<script src="../JS/Animation.js" defer></script>
+</body>
+</html>

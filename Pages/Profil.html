@@ -1,0 +1,208 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blox R$ - Profil</title>
+    <link rel="stylesheet" href="Profil.css">
+    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon">
+</head>
+<body>
+    <div id="disconnect">
+        <h1>Vous avez été déconnecté... 😭</h1>
+        <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
+        <a href="../Authentification/connexion">Se connecter ?</a>
+    </div>
+    <div class="welcome">
+        <div class="présentation" id="acceuil">
+            <div id="transition" class="fade-transition active">
+                <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+                <div class="text" id="text-chargement">Chargement...</div>
+            </div>
+        </div>
+    </div>
+    <div id="body">
+        <header>
+            <a href="../" class="logo"><img src="../img/logo.png" alt="Logo De Blox Robux"></a>
+            <div class="text">Blox R$</div>
+            <div class="logo2">
+                <img src="../img/Barres.png" alt="Barres" id="barres">
+            </div>
+        </header>
+        <div class="header-shadow"></div>
+        <div class="navigation" id="navigation">
+            <div class="nav-panel" id="nav-panel">
+                <div class="logo2" id="logo2">
+                    <img src="../img/Back.png" alt="Barres" id="barres2">
+                </div>
+                <ul class="nave">
+                    <li>
+                        <a id="lien-profil" href="#">
+                            <span>Aucun compte</span>
+                            <img id="avatar-roblox" src="../img/default-avatar.png">
+                        </a>
+                    </li>
+                    <li><a id="btn-Retour" href="../">Retour</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="warn">
+            <div>
+                <span id="z">Veuillez vous reconnectez pour finaliser la procédure</span>
+                <h3>Nom d'utilisateur actuel</h3>
+                <input type="text" id="a" placeholder="Nom d'utilisateur actuel" required>
+                <h3>Mot de passe actuel</h3>
+                <input type="password" id="b" placeholder="••••••••" required>
+                <input type="submit" value="Confirmer" id="Confirm">
+                <img src="../img/loading.gif" alt="loading" id="loading">
+                <p id="profileMessage2" class="msg"></p>
+            </div>
+        </div>
+        <div id="background">
+        <div class="container">
+            <div id="container">
+                <h2 style="color: yellow; text-align: center;">👤 Informations du compte</h2>
+                <img src="../img/default-avatar.png" alt="avatar" id="roblox">
+    <h4 id="pseudoR">...</h4>
+    <div id="infos">
+  <div class="info-box">
+  <span class="label">Robux gagnés</span>
+  <span class="value" id="robuxGagnes">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Balance</span>
+  <span class="value" id="balance">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Retraits</span>
+  <span class="value" id="retraits">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Statut</span>
+  <span class="value" id="statut">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nom Roblox</span>
+  <span class="value" id="nomRoblox">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nom d'utilisateur</span>
+  <span class="value" id="Username">...</span>
+</div>
+<div class="info-box">
+  <span class="label">date de céation</span>
+  <span class="value" id="motdepasse">...</span>
+</div>
+<div class="info-box">
+  <span class="label">Nombre de connexions</span>
+  <span class="value" id="nbConnexions">...</span>
+</div>
+  </div>
+</div>
+  </div>
+</div>
+    <!-- ---------- PROFIL ---------- -->
+    <main>
+
+        <!-- SECTION 1 : MODIFIER PROFIL -->
+        <section class="card">
+            <h2>👤 Modification du profil</h2>
+            <h5 style="text-align: center;">(Si vous ne souhaitez pas modifier certaines informations, veuillez réécrire les informations actuels pour la modification du profil!)</h5>
+            <div class="form-group">
+                <label>Nouveau pseudo Roblox</label>
+                <input type="text" id="Roblox" placeholder="Votre nouveau pseudo Roblox">
+            </div>
+
+            <div class="form-group">
+                <label>Nouveau mot de passe</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+
+            <div class="form-group">
+                <label>Confirmez le mot de passe</label>
+                <input type="password" id="email" placeholder="••••••••" autocomplete="••••••••">
+            </div>
+
+            <div class="form-group">
+                <label>Nouveau nom d'utilisateur</label>
+                <input type="text" id="username" placeholder="Votre nouveau nom d'utilisateur" autocomplete="ex:1234">
+            </div>
+
+            <button id="saveProfile">Enregistrer les informations</button>
+
+            <p id="profileMessage" class="msg"></p>
+        </section>
+
+        <!-- SECTION 2 : PROMOCODE -->
+        <section class="card">
+            <h2>🎁 Entrer un promocode</h2>
+
+            <div class="form-group">
+                <label>Code</label>
+                <input type="text" id="promoInput" placeholder="Entrez votre code">
+            </div>
+
+            <button id="applyPromo">Valider le code</button>
+
+            <p id="promoMessage" class="msg"></p>
+        </section>
+
+        <!-- SECTION 3 : ADMIN -->
+        <section class="card">
+            <h2>🔐 Accès au panel admin</h2>
+
+            <div class="form-group" id="form-group">
+                <label>Code Administrateur</label>
+                <input type="password" id="adminCode" placeholder="Mot de passe admin">
+            </div>
+
+            <button id="adminEnter">Se connecter</button>
+            <p id="adminMessage" class="msg"></p>
+        </section>
+
+    </main>
+
+    <!-- ---------- SCRIPTS ---------- -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="../JS/Server.js" defer></script>
+    <script src="../JS/Animation.js" defer></script>
+    <script src="../JS/Profil.js"></script>
+    <div class="separator"></div>
+  <div id="Block">
+ <img src="../img/BloxImg.png" alt="BloxRobuxLogo">
+<div id="BlockBottom">
+<div class="infos">
+  <div class="col">
+    <h2>A propos de nous</h2>
+    <ul>
+      <li><a href="Bio">Biographie du site</a></li>
+      <li><a href="">Paiements sécurisés</a></li>
+      <li><a href="">Support actif</a></li>
+    </ul>
+  </div>
+
+  <div class="col">
+    <h2>Mentions légales</h2>
+    <ul>
+      <li><a href="../Legal/C.G.U">Conditions d'utilisations</a></li>
+      <li><a href="../Legal/P.C.F">Politique de confidentialité</a></li>
+    </ul>
+  </div>
+
+    <div class="col">
+    <h2>Réseaux sociaux</h2>
+    <ul>
+      <li><a href="https://discord.gg/QQMRtfBXpq" target="_blank" rel="noopener noreferrer">Discord</a></li>
+      <li><a href="https://youtube.com/@bloxrbx00" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+      <li><a href="https://www.instagram.com/bloxrbx/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+      <li><a href="https://www.tiktok.com/@bloxrbx.fr" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+    </ul>
+  </div>
+</div>
+  </div>
+<img src="../img/BloxImg.png" alt="BloxRobuxLogo" style="visibility: hidden;">
+</div>
+    </div>
+</body>
+</html>

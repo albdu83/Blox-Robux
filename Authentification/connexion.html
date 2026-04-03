@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Blox R$</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon">
+</head>
+<body>
+    <div id="transition" class="fade-transition active">
+        <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+        <div class="text" id="text-chargement">Chargement...</div>
+    </div>
+<form id="form-connexion">
+    <h4><span style="color: white;">Connexion</span></h4>
+    <h2><span style="color: #dec2c2">Se connecter à Blox R$ !</span></h2>
+    <hr>
+    <div class="user-field">
+        <label for="loginUsername"><span style="color: white;">Nom d'utilisateur :</span></label>
+        <input type="text" id="loginUsername" name="loginUsername" required autocomplete="Nom d'utilisateur" placeholder="Nom d'utilisateur">
+    </div>
+    <div class="password-field">
+        <label for="loginPassword"><span style="color: white;">Mot de passe :</span></label>
+        <input type="password" id="loginPassword" name="loginPassword" required autocomplete="current-password" placeholder="Mot de passe">
+        <span class="toggle-password">
+            <img src="../img/unchecked.png" alt="Afficher/Masquer" id="checkimg">
+        </span>
+    </div>
+    <div class="g-recaptcha" data-sitekey="6LfYrkUsAAAAAP1-Oe9wb5F3u5p67hNg_92-ug-W"></div>
+    <input type="submit" value="Connexion" id="inconnexion">
+    <img src="../img/loading.gif" alt="loading" id="loading">
+    <p><span style="color: white;">Pas encore inscrit ? <a href="inscription" style="color: #dec2c2;">Inscrivez-vous ici</a></span></p>
+</form>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="../JS/Server.js" defer></script>
+    <script src="../JS/Animation.js" defer></script>
+</body>
+</html>

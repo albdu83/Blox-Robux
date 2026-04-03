@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blox R$ - Gagner</title>
+  <link rel="stylesheet" href="Offres.css">
+  <link rel="icon" type="image/png" href="../img/Bloxlogo.png">
+</head>
+<body>
+  <div id="disconnect">
+    <h1>Vous avez été déconnecté... 😭</h1>
+    <h2>Pour accéder aux fonctions du site web, merci de bien vouloir vous (re)connecter.</h2>
+    <a href="../Authentification/connexion">Se connecter ?</a>
+  </div>
+  <div id="transition" class="fade-transition active">
+    <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+  <div class="notifbackground" id="notifbackgroundwin">
+    <div id="sous-notifbackground">
+      <img src="../img/close.png" alt="close" id="closenotif2">
+      <div class="notif" id="notifwin">
+        <img src="../img/Win.gif" alt="Win.gif">
+        <h2 id="gainnotif">Bravo, vous venez de gagner ..R$ sur le site !</h2>
+        <p>D'autres offres vous attendent ! Alors ne perdez pas de temps !</p>
+        <button id="closenotif">retourner aux enquêtes</button>
+      </div>
+    </div>
+  </div>
+<div id="body">
+  <header>
+    <!-- LEFT : logo + solde -->
+    <div class="header-left">
+      <a href="../">
+        <img src="../img/logo.png" alt="Logo Blox Robux" />
+      </a>
+      <div class="solde-box" id="solde-box">
+        <span>💰 Solde :</span>
+        <span id="balance">0,00 R$</span>
+      </div>
+    </div>
+
+    <!-- TITRE CENTRÉ DANS LE FLEX -->
+    <div class="header-title">Blox R$</div>
+
+    <!-- NAVIGATION -->
+    <nav>
+      <ul id="btns">
+        <li><a href="../">Accueil</a></li>
+        <li><a href="Offres">Gagner des R$</a></li>
+        <li><a href="#">Retirer</a></li>
+      </ul>
+    </nav>
+    <div class="logo2">
+      <img src="../img/Barres.png" alt="Barres" id="barres">
+    </div>
+  </header>
+<!-- Bandeau de boost -->
+<div id="boost-banner" style="display: none;">
+  🚀 Boost actif ! +<span id="boost-percent">0</span>% de gains sur toutes les offres !
+  <img src="../img/close.png" alt="close" id="boostclose">
+</div>
+
+<div class="header-shadow"></div>
+
+<div class="navigation" id="navigation">
+  <div class="nav-panel" id="nav-panel">
+    <div class="logo2" id="logo2">
+        <img src="../img/Back.png" alt="Barres" id="barres2">
+    </div>
+    <ul class="nave">
+      <li>
+        <div class="solde-box">
+          <span>💰 Solde :</span>
+          <span id="balance2">0,00 R$</span>
+        </div>
+      </li>
+      <li><a id="btn-accueil" href="../">Accueil</a></li>
+      <li><a id="btn-win" href="Offres">Gagner des R$</a></li>
+      <li><a id="btn-retrait" href="#">Retirer</a></li>
+    </ul>
+  </div>
+</div>
+<div id="message-dis-container">
+  <div id="MessgaeDis">
+    <h3 id="distitre">...</h3>
+    <span id="discontexte">...</span>
+  </div>
+</div>
+  <!-- INFORMATIONS -->
+  <div class="informations" id="info" style="text-align: center;">
+    <p>💳 Complétez des offres sur nos <strong>sites partenaires</strong> pour être récompensés ! Obtenez de l'aide sur <a href="https://discord.gg/QQMRtfBXpq" target="_blank" rel="noopener noreferrer">notre serveur Discord</a>.</p>
+  </div>
+
+  <!-- BITLABS -->
+  <ul id="pk">
+    <li class="active"><img src="../img/cpx.jpg" id="reload-bitlabs" alt="Reload Bitlabs"></li>
+    <li><img src="../img/Timewall.png" id="btnGagner" alt="Gagner des Robux"></li>
+    <li><img src="../img/theoremereach_logo.png" alt="theoremereach" id="theoreme" class="theoreme"></li>
+  </ul>
+
+  <p class="trust-text">
+    🔒 Offres sécurisées • Paiements vérifiés • Support actif
+  </p>
+  <div class="offers-wrapper">
+    <div id="sous-container-wrapper">
+      <img src="../img/loading-gif.gif" alt="loading" id="loading-gif">
+    </div>
+    <div class="bitLabs" id="bitlabs">
+      <div id="offerwall1"></div>
+    </div>
+
+    <div class="TimeWall" id="TimeWall">
+      <div id="timewall-container"></div>
+    </div>
+
+    <div class="theoremereach" id="theoremereach">
+      <div id="theoremecontainer"></div>
+    </div>
+  </div>
+
+  <!-- TRANSITION -->
+  <div class="separator"></div>
+  <div class="separator" style="visibility: hidden;"></div>
+  <!-- SCRIPT reach ET FIREBASE -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" defer></script>
+<script src="https://s3.us-east-1.amazonaws.com/cdn.theoremreach/v3/theorem_reach.min.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
+
+  <!-- Scripts déférés -->
+  <script src="../JS/Server.js" defer></script>
+  <script src="../JS/Animation.js" defer></script>
+  <script src="../JS/Amount.js" defer></script>
+  <!-- SCRIPT PRINCIPAL -->
+<script defer>
+document.addEventListener("DOMContentLoaded", () => {
+    const loadinggif = document.getElementById("sous-container-wrapper");
+    const balanceEl = document.getElementById("balance");
+    const balanceEl2 = document.getElementById("balance2");
+    const btnGagner = document.getElementById("btnGagner");
+    const reloadBtn = document.getElementById("reload-bitlabs");
+    const reachbtn = document.getElementById("theoreme");
+
+    loadinggif.style.display = "flex"
+
+    // --- Attendre que TimeWall soit chargé ---
+    function waitForTimeWall(callback) {
+        if (typeof TimeWall !== "undefined") {
+            callback();
+        } else {
+            setTimeout(() => waitForTimeWall(callback), 100);
+        }
+    }
+
+    // --- Gestion bouton Gagner ---
+    if (btnGagner) {
+      btnGagner.addEventListener("click", () => {
+        // Masquer BitLabs
+        const theoreme = document.getElementById("theoremecontainer");
+        const offerwall = document.getElementById("offerwall1");
+        if (offerwall, theoreme) {
+          offerwall.style.display = "none";
+          theoreme.style.display = "none";
+          loadinggif.style.display = "none"
+        }
+
+        // Afficher container TimeWall
+        const container = document.getElementById("timewall-container");
+        if (container) {
+          container.style.display = "flex";
+          container.src = container.src;
+        }
+      });
+    }
+
+    if (reachbtn) {
+      reachbtn.addEventListener("click", () => {
+        const container = document.getElementById("timewall-container");
+        const offerwall = document.getElementById("offerwall1");
+        if (offerwall, container) {
+          offerwall.style.display = "none";
+          container.style.display = "none";
+          loadinggif.style.display = "none"
+        }
+
+        // Afficher container TimeWall
+        const theoreme = document.getElementById("theoremecontainer");
+        if (theoreme) {
+          theoreme.style.display = "flex";
+        }
+      });
+    }
+
+    // --- Reload BitLabs iframe ---
+    if (reloadBtn) {
+        reloadBtn.addEventListener("click", () => {
+          const theoreme = document.getElementById("theoremecontainer");
+          const offerwall = document.getElementById("offerwall1");
+          if (offerwall, theoreme) {
+            offerwall.src = offerwall.src
+            offerwall.style.display = "flex";
+            theoreme.style.display = "none";
+            loadinggif.style.display = "none"
+          }
+
+          const container = document.getElementById("timewall-container");
+          if (container) container.style.display = "none";
+      });
+    }
+
+const barres = document.getElementById("barres")
+const btns = document.getElementById("btns")
+const soldebox = document.getElementById("solde-box")
+if (window.innerWidth >= 1024) {
+  barres.style.display = "none"
+} else {
+  soldebox.style.display = "none"
+  btns.style.display = "none"
+}
+
+document.querySelectorAll("#pk img").forEach(img => {
+  img.addEventListener("click", (e) => {
+    document.querySelectorAll("#pk li")
+      .forEach(li => li.classList.remove("active"));
+
+    const li = e.currentTarget.parentElement;
+    li.classList.add("active");
+  });
+});
+
+const header = document.querySelector("header");
+
+window.addEventListener("scroll", () => {
+    if (window.scrollY > 50) {
+        header.classList.add("scrolled");
+    } else {
+        header.classList.remove("scrolled");
+    }
+});
+});
+
+const boostBanner = document.getElementById("boost-banner");
+const boostPercentEl = document.getElementById("boost-percent");
+const boostclose = document.getElementById("boostclose");
+
+async function bandeau() {
+  try {
+// On récupère le settings depuis Firebase
+    const snap = await fetch("https://blox-robux.onrender.com/getmultiplier")
+    const multiplier = await snap.json()
+    if (multiplier > 1) {
+        const boostPercent = Math.round((multiplier - 1) * 100);
+        boostPercentEl.textContent = boostPercent;
+        boostBanner.style.display = "block"; // afficher le bandeau
+    } else {
+        boostBanner.style.display = "none"; // pas de boost → cacher
+    }
+  } catch (err) {
+    console.error("Erreur récupération settings pour boost :", err);
+  }
+}
+bandeau()
+
+boostclose.addEventListener("click", () => {
+  boostBanner.style.display = "none";
+});
+</script>
+
+<div id="Block">
+ <img src="../img/BloxImg.png" alt="BloxRobuxLogo">
+<div id="BlockBottom">
+<div class="infos">
+  <div class="col">
+    <h2>A propos de nous</h2>
+    <ul>
+      <li><a href="Bio">Biographie du site</a></li>
+      <li><a href="">Paiements sécurisés</a></li>
+      <li><a href="">Support actif</a></li>
+    </ul>
+  </div>
+
+  <div class="col">
+    <h2>Mentions légales</h2>
+    <ul>
+      <li><a href="../Legal/C.G.U">Conditions d'utilisations</a></li>
+      <li><a href="../Legal/P.C.F">Politique de confidentialité</a></li>
+    </ul>
+  </div>
+
+    <div class="col">
+    <h2>Réseaux sociaux</h2>
+    <ul>
+      <li><a href="https://discord.gg/QQMRtfBXpq" target="_blank" rel="noopener noreferrer">Discord</a></li>
+      <li><a href="https://youtube.com/@bloxrbx00" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+      <li><a href="https://www.instagram.com/bloxrbx/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+      <li><a href="https://www.tiktok.com/@bloxrbx.fr" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+    </ul>
+  </div>
+</div>
+  </div>
+<img src="../img/BloxImg.png" alt="BloxRobuxLogo" style="visibility: hidden;">
+</div>
+</div>
+</body>
+</html>

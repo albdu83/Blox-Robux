@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Blox R$</title>
+    <link rel="stylesheet" href="style2.css">
+    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon">
+</head>
+<body>
+  <div id="transition" class="fade-transition active">
+    <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+
+<form id="form-inscription">
+  <h4>Inscription</h4>
+  <h2>S'inscrire à Blox R$ !</h2>
+
+  <!-- Username -->
+  <div class="password-field">
+    <label for="username">Nom d'utilisateur</label>
+    <input type="text" id="username" name="username" required placeholder="Créez votre nom d'utilisateur BloxR$">
+  </div>
+
+  <!-- Password -->
+  <div class="password-field">
+    <label for="password">Mot de passe</label>
+    <input type="password" id="password" required placeholder="⚠ PAS VOTRE MOT DE PASSE ROBLOX !">
+    <span class="toggle-password">
+      <img src="../img/unchecked.png" alt="Afficher/Masquer" id="checkimg2">
+    </span>
+  </div>
+
+  <!-- Confirm -->
+  <div class="password-field">
+    <label for="confirmPassword">Confirmer le mot de passe</label>
+    <input type="password" id="confirmPassword" required placeholder="Réécire le mot de passe ci-dessus">
+    <span class="toggle-password">
+      <img src="../img/unchecked.png" alt="Afficher/Masquer" id="checkimg3">
+    </span>
+  </div>
+
+  <!-- Roblox -->
+  <div class="password-field">
+    <label for="RobloxName">Pseudo Roblox</label>
+    <input type="text" id="RobloxName" required placeholder="Votre nom d'utilisateur Roblox">
+  </div>
+  <div class="g-recaptcha" data-sitekey="6LfYrkUsAAAAAP1-Oe9wb5F3u5p67hNg_92-ug-W"></div>
+  <!-- Checkbox -->
+  <div class="checkbox-group">
+    <input type="checkbox" required id="checkbox">
+    <label for="checkbox">Vous acceptez <a href="../Legal/C.G.U.html" style="color: blueviolet;">Conditions d'utilisation</a></label>
+  </div>
+
+  <div class="checkbox-group">
+    <input type="checkbox" required id="checkbox2">
+    <label for="checkbox2">Vous avez lu nos <a href="../Legal/P.C.F.html" style="color: blueviolet;">Politique de confidentialité</a></label>
+  </div>
+
+  <input type="submit" value="Inscription" id="ininscription">
+  <img src="../img/loading.gif" alt="loading" id="loading">
+  <p><span style="color: white;">Déjà inscrit ? <a href="connexion" style="color: #dec2c2;">Connectez-vous ici</a></span></p>
+</form>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="../JS/Server.js" defer></script>
+<script src="../JS/Animation.js" defer></script>
+
+
+</body>
+</html>
