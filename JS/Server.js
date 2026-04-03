@@ -22,6 +22,14 @@ function initFirebase() {
   return window.firebaseReady; // toujours la même promesse
 }
 
+async function fetchCsrfToken() {
+  const res = await fetch(`${API_BASE_URL}/getCsrfToken`, {
+    credentials: "include" // important pour inclure les cookies
+  });
+  const data = await res.json();
+  return data.token;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const { auth, db } = await initFirebase();
 
@@ -292,10 +300,12 @@ if (formInscription) {
     }
 
     try {
+      const csrfToken = await fetchCsrfToken();
       const res = await fetch(`${API_BASE_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, RobloxName, captcha: token })
+        credentials: "include",
+        body: JSON.stringify({ username, password, RobloxName, captcha: token, csrf_token: csrfToken })
       });
 
       const data = await res.json();
@@ -366,10 +376,12 @@ if (formConnexion) {
     }
 
     try {
+      const csrfToken = await fetchCsrfToken();
       const res = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, captcha })
+        credentials: "include",
+        body: JSON.stringify({ username, password, captcha, csrf_token: csrfToken })
       });
 
       const data = await res.json();
