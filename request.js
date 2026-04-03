@@ -42,6 +42,10 @@ if (!DISCORD_WEBHOOK_TRACKER) throw new Error("DISCORD_WEBHOOK_TRACKER manquant"
 const queue = [];
 let processing = false;
 
+function generateCsrfToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
+
 function sendWebhook(payload, webhook = DISCORD_WEBHOOK) {
   queue.push({ payload, webhook, retries: 0 });
   console.log("📦 Queue size:", queue.length);
@@ -608,8 +612,21 @@ app.post("/CPXHASH", async (req, res) => {
 });
 
 //---------------------------------------------------------------------------------------------------------------------------//
+app.get("/getCsrfToken", (req, res) => {
+  const token = generateCsrfToken();
+  res.cookie("csrf_token", token, { httpOnly: true, sameSite: "Strict" });
+  res.json({ token });
+});
+
 app.post("/signup", async (req, res) => {
   const { username, password, RobloxName, captcha } = req.body;
+
+  const csrfTokenFromBody = req.body.csrf_token;
+  const csrfTokenFromCookie = req.cookies.csrf_token;
+
+  if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
+    return res.status(403).json({ error: "CSRF token invalide" });
+  }
 
   // 1️⃣ CAPTCHA côté serveur
   if (!captcha) {
@@ -704,6 +721,14 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { username, password, captcha } = req.body;
+
+  const csrfTokenFromBody = req.body.csrf_token;
+  const csrfTokenFromCookie = req.cookies.csrf_token;
+
+  if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
+    return res.status(403).json({ error: "CSRF token invalide" });
+  }
+
 
   /* ───────── 1️⃣ VALIDATIONS STRICTES ───────── */
   if (
