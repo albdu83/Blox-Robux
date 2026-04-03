@@ -617,7 +617,7 @@ app.post("/CPXHASH", async (req, res) => {
 //---------------------------------------------------------------------------------------------------------------------------//
 app.get("/getCsrfToken", (req, res) => {
   const token = generateCsrfToken();
-  res.cookie("csrf_token", token, { httpOnly: true, sameSite: "Strict" });
+  res.cookie("csrf_token", token, { httpOnly: true, sameSite: "None", secure: true });
   res.json({ token });
 });
 
