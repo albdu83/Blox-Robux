@@ -10,7 +10,8 @@ const { fileURLToPath } = require("url");
 app.use(helmet());
 app.set("trust proxy", 1);
 app.use(cors({
-    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr", "https://bloxrbx.fr",]
+    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr", "https://bloxrbx.fr"],
+    credentials: true
 }));
 app.use(express.json());
 
