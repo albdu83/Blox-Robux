@@ -56,76 +56,113 @@ function sendWebhook(payload, webhook = DISCORD_WEBHOOK) {
 }
 
 async function processQueue() {
-    if (processing || queue.length === 0) return;
-    processing = true;
+  if (processing || queue.length === 0) return;
+  processing = true;
 
-    while (queue.length > 0) {
-        const job = queue.shift();
-        console.log(`🚀 Traitement d'un job, queue restante: ${queue.length}`);
+  while (queue.length > 0) {
+    const job = queue.shift();
+    console.log(`🚀 Traitement d'un job, queue restante: ${queue.length}`);
+
+    try {
+      // petit délai anti-spam Discord
+      await new Promise(r => setTimeout(r, 300));
+
+      const res = await fetch(job.webhook, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "Mozilla/5.0 (Node.js Bot)"
+        },
+        body: JSON.stringify(job.payload)
+      });
+
+      const contentType = res.headers.get("content-type") || "";
+
+      /* ───────── 1️⃣ RATE LIMIT DISCORD / CLOUDFLARE ───────── */
+      if (res.status === 429 || res.status === 403) {
+        let waitTime = 5000; // fallback
 
         try {
-            const res = await fetch(job.webhook, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(job.payload),
-            });
+          if (contentType.includes("application/json")) {
+            const data = await res.json();
+            waitTime = data.retry_after || waitTime;
 
-            if (res.status === 429) {
-                const contentType = res.headers.get('content-type') || '';
-                if (contentType.includes('application/json')) {
-                  const data = await res.json();
-                  const waitTime = data.retry_after; // en ms
-                  console.log(`🔁 Rate limit reçu, attendre ${waitTime}ms avant retry`);
+            console.log(`🔁 Rate limit reçu → attendre ${waitTime}ms`);
+          } else {
+            const text = await res.text();
 
-                  job.retries = (job.retries || 0) + 1;
-
-                  if (job.retries <= 5) { // max 5 retries
-                    setTimeout(() => {
-                      queue.unshift(job); // remet le job en tête de queue
-                      processQueue();
-                    }, waitTime);
-                  } else {
-                    console.error(`❌ Job échoué après ${job.retries} retries`);
-                  }
-                } else {
-                  const text = await res.text();
-                  console.warn('⚠️ Réponse non JSON reçue:', text);
-                }
-            } else if (!res.ok) {
-                console.error(`❌ Webhook failed: ${res.status}`);
-                // Retry classique avec backoff exponentiel si nécessaire
-                job.retries = (job.retries || 0) + 1;
-                if (job.retries <= 5) {
-                    const delay = Math.min(1000 * 2 ** (job.retries - 1), 60000); // backoff
-                    console.log(`🔁 Retry ${job.retries}/5 après ${delay}ms`);
-                    setTimeout(() => {
-                        queue.unshift(job);
-                        processQueue();
-                    }, delay);
-                } else {
-                    console.error(`❌ Job échoué après ${job.retries} retries`);
-                }
+            if (
+              text.includes("1015") ||
+              text.toLowerCase().includes("rate limited")
+            ) {
+              console.warn("🚫 Cloudflare rate limit → attente 10s");
+              waitTime = 10000;
             } else {
-                console.log(`✅ Webhook envoyé avec succès`);
+              console.warn("⚠️ Réponse non JSON :", text.slice(0, 200));
             }
-
+          }
         } catch (err) {
-            console.error(`🔥 Error: ${err.message}`);
-            job.retries = (job.retries || 0) + 1;
-            if (job.retries <= 5) {
-                const delay = Math.min(1000 * 2 ** (job.retries - 1), 60000);
-                console.log(`🔁 Retry ${job.retries}/5 après ${delay}ms`);
-                setTimeout(() => {
-                    queue.unshift(job);
-                    processQueue();
-                }, delay);
-            } else {
-                console.error(`❌ Job échoué après ${job.retries} retries`);
-            }
+          console.warn("⚠️ Erreur parsing réponse :", err.message);
         }
-    }
 
-    processing = false;
+        job.retries = (job.retries || 0) + 1;
+
+        if (job.retries <= 5) {
+          setTimeout(() => {
+            queue.unshift(job);
+            processQueue();
+          }, waitTime);
+        } else {
+          console.error(`❌ Job abandonné après ${job.retries} retries`);
+        }
+
+        continue;
+      }
+
+      /* ───────── 2️⃣ AUTRES ERREURS HTTP ───────── */
+      if (!res.ok) {
+        console.error(`❌ Webhook failed: ${res.status}`);
+
+        job.retries = (job.retries || 0) + 1;
+
+        if (job.retries <= 5) {
+          const delay = Math.min(1000 * 2 ** (job.retries - 1), 60000);
+          console.log(`🔁 Retry ${job.retries}/5 après ${delay}ms`);
+
+          setTimeout(() => {
+            queue.unshift(job);
+            processQueue();
+          }, delay);
+        } else {
+          console.error(`❌ Job abandonné après ${job.retries} retries`);
+        }
+
+        continue;
+      }
+
+      /* ───────── 3️⃣ SUCCESS ───────── */
+      console.log("✅ Webhook envoyé avec succès");
+
+    } catch (err) {
+      console.error(`🔥 Error: ${err.message}`);
+
+      job.retries = (job.retries || 0) + 1;
+
+      if (job.retries <= 5) {
+        const delay = Math.min(1000 * 2 ** (job.retries - 1), 60000);
+        console.log(`🔁 Retry ${job.retries}/5 après ${delay}ms`);
+
+        setTimeout(() => {
+          queue.unshift(job);
+          processQueue();
+        }, delay);
+      } else {
+        console.error(`❌ Job échoué après ${job.retries} retries`);
+      }
+    }
+  }
+
+  processing = false;
 }
 
 // Ajouter un job à la queue
@@ -885,7 +922,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/getEmail", async (req, res) => {
+app.get("/getEmail", authenticate, async (req, res) => {
   const username = req.query.username;
   if (!username) return res.status(400).json({ error: "Username manquant" });
 
