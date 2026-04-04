@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Firebase n'est pas initialisé !");
         return;
     }
-
+    
     /* =====================================================
        2️⃣ ÉLÉMENTS DOM
     ===================================================== */
@@ -163,52 +163,58 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* =====================================================
        7️⃣ 🔥 AUTH FIREBASE — CORRECTION PRINCIPALE
     ===================================================== */
-    auth.onAuthStateChanged(user => {
-        if (gainnotif) gainnotif.innerText = "";
-        // ❌ Non connecté
-        if (!user) {
-            state.balance = 0;
-            state.transactions = [];
-            render();
-            if (withdrawBtn) withdrawBtn.disabled = true;
-            return;
-        }
+auth.onAuthStateChanged(async (user) => {
+    if (gainnotif) gainnotif.innerText = "";
 
-        // ✅ Connecté
-        user.getIdToken().then(token => {
-            const evtSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, {
-                withCredentials: true
-            });
+    if (!user) {
+        state.balance = 0;
+        state.transactions = [];
+        render();
+        if (withdrawBtn) withdrawBtn.disabled = true;
+        return;
+    }
 
-            // Réception des données temps réel
-            evtSource.onmessage = (event) => {
-                const data = JSON.parse(event.data);
+    try {
+        const token = await user.getIdToken(true); // true pour forcer le refresh si nécessaire
 
-                // Mise à jour de l'état local
-                const oldBalance = state.balance;
-                state.balance = data.balance || 0;
-                state.transactions = data.transactions || [];
-                render();
-
-                // Calcul du delta si le serveur ne l'envoie pas directement
-                const delta = data.delta ?? (state.balance - oldBalance);
-
-                // Notification de gain
-                if (delta && delta !== 0) {
-                    if (userIsActive) {
-                        showGainNotification(data, delta);
-                    } else {
-                        pendingNotifications.push({ data, delta });
-                    }
-                }
-            };
-
-            // Gestion déconnexion SSE
-            evtSource.onerror = () => {
-                console.error("SSE disconnected");
-            };
+        // Envoyer le token au serveur pour créer le cookie SSE
+        await fetch(`${API_BASE_URL}/setSseCookie`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token })
         });
-    });
+
+        const evtSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, {
+            withCredentials: true
+        });
+
+        evtSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            const oldBalance = state.balance;
+            state.balance = data.balance || 0;
+            state.transactions = data.transactions || [];
+            render();
+
+            const delta = data.delta ?? (state.balance - oldBalance);
+
+            if (delta && delta !== 0) {
+                if (userIsActive) {
+                    showGainNotification(data, delta);
+                } else {
+                    pendingNotifications.push({ data, delta });
+                }
+            }
+        };
+
+        evtSource.onerror = () => {
+            console.error("SSE disconnected");
+        };
+    } catch (err) {
+        console.error("Erreur lors de l'auth/SSE:", err);
+    }
+});
 
     /* =====================================================
        8️⃣ RETRAIT
