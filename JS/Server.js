@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               img.style.display = "none";
             });
           }
-          if (span) span.textContent = `${username} / ${RobloxName}`;
+          if (span) span.textContent = `${username}`;
         }
 
         /* ===== CPX REASEARCH ===== */
