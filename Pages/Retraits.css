@@ -405,7 +405,7 @@ button:hover {
   transition: opacity 0.25s ease;
 }
 
-.Interface.active {
+.Interface.show {
     opacity: 1;
     margin-bottom: 0;
 }
@@ -420,7 +420,7 @@ button:hover {
   overflow-x: hidden;
 }
 
-.Interface2.active3 {
+.Interface2.show {
     margin-top: 0;
     opacity: 1;
 }
