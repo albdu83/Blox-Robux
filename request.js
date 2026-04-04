@@ -1229,13 +1229,19 @@ app.get("/api/jobStatus", (req, res) => {
 });
 
 app.get("/getmultiplier", async (req, res) => {
-  const snap = await db.ref("settings").get();
-  if (!snap.exists()) return;
+  try {
+    const snap = await db.ref("settings").get();
+    if (!snap.exists()) return res.status(404).json({ error: "Settings introuvables" });
 
-  const settings = snap.val();
-  const multiplier = Number(settings.gainMultiplier) || 1;
-  res.json(multiplier)
-})
+    const settings = snap.val();
+    const multiplier = Number(settings.gainMultiplier) || 1;
+
+    res.json({ multiplier });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
 
 app.post("/api/getBalance", async (req, res) => {
   try {
