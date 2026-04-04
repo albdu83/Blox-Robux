@@ -115,6 +115,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* =========================
        CONFIRMATION (RÉAUTH)
     ========================== */
+    auth.onAuthStateChanged(async (user) => {
     confirmBtn.addEventListener("click", async () => {
         confirmBtn.style.display = "none";
         gif.style.display = "flex";
@@ -144,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-    auth.onAuthStateChanged(async (user) => {
+    
         if (!user) return console.error("Non connecté");
         const oldUsername = document.getElementById("a").value.trim();
         const oldPassword = document.getElementById("b").value.trim();
