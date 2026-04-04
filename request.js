@@ -576,7 +576,7 @@ app.get("/cpx", async (req, res) => {
 
     // 🔎 Récupération UID Firebase via RobloxName
     const snap = await db.ref("users")
-      .orderByChild("RobloxName")
+      .orderByChild("firstUsername")
       .equalTo(user_id)
       .get();
 
@@ -639,8 +639,8 @@ app.get("/cpx", async (req, res) => {
 //---------------------------------------------------------------------------------------------------------------------------//
 
 app.post("/CPXHASH", async (req, res) => {
-  const { RobloxName } = req.body
-  const user_id = RobloxName
+  const { firstUsername } = req.body
+  const user_id = firstUsername
   // Génération du secure_hash
   const app_id = "26353"
   const secure_hash = crypto
@@ -1029,7 +1029,7 @@ app.get("/reach", async (req, res) => {
 
   // 🔎 Récupération utilisateur (exemple RobloxName)
   const snap = await db.ref("users")
-    .orderByChild("RobloxName")
+    .orderByChild("firstUsername")
     .equalTo(user_id)
     .get();
 
