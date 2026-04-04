@@ -177,10 +177,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // ✅ Connecté
         user.getIdToken().then(token => {
             const evtSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
+                withCredentials: true
             });
 
             // Réception des données temps réel
