@@ -176,17 +176,19 @@ module.exports = { addJob, processQueue };
 const loginAttempts = {};
 
 async function authenticate(req, res, next) {
-    // Token depuis query string pour EventSource
-    const token = req.query.token;
-    if (!token) return res.status(401).send("Token manquant");
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 
-    try {
-        const decoded = await admin.auth().verifyIdToken(token);
-        req.user = { uid: decoded.uid };
-        next();
-    } catch (err) {
-        res.status(401).send("Token invalide");
-    }
+  if (!token) return res.status(401).send("Token manquant");
+
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = { uid: decoded.uid };
+    next();
+  } catch (err) {
+    console.error("Erreur verifyIdToken:", err.message);
+    res.status(401).send("Token invalide");
+  }
 }
 
 function logFailedAttempt(ip, username) {
