@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           return;
         }
 
-        const { username, RobloxName } = data;
+        const { username, RobloxName, firstUsername } = data;
         RobloxP = RobloxName
         userN = username
 
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ RobloxName })
+            body: JSON.stringify({ firstUsername })
           });
           if (!res) return console.error("Erreur lors du postback CPXHASH")
           const data = await res.json()
@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (container) {
           container.innerHTML = "";
           const iframe = document.createElement("iframe");
-          iframe.src = `https://timewall.io/users/login?oid=2578908b35321055&uid=${RobloxName}`;
+          iframe.src = `https://timewall.io/users/login?oid=2578908b35321055&uid=${firstUsername}`;
           iframe.width = "100%";
           iframe.height = "1000";
           iframe.frameBorder = "0";
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           iframe2.src =
             "https://theoremreach.com/respondent_entry/direct" +
             "?api_key=36131d298e73a7a2bc9bc433de51" +
-            "&user_id=" + encodeURIComponent(RobloxName) +
+            "&user_id=" + encodeURIComponent(firstUsername) +
             "&transaction_id=" + transactionId;
 
             iframe2.width = "100%";
