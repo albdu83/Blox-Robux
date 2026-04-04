@@ -145,6 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const lienprofil = document.getElementById("lien-profil");
         if (lienprofil) {
           lienprofil.href = "Pages/Profil"
+          lienprofil.style.justifyContent = "center"
           const span = lienprofil.querySelector("span");
           if (elements && btnInscription && btnConnexion) {
             elements.style.display = "flex";
