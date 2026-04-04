@@ -451,7 +451,7 @@ app.get("/timewall", async (req, res) => {
     await db.ref(`users/${uid}/robuxGagnes`)
       .transaction(v => (v || 0) + amount);  
     const avatarUrl = await getRobloxAvatar(userID);
-    /*sendWebhook({
+    sendWebhook({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
         description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
@@ -468,7 +468,7 @@ app.get("/timewall", async (req, res) => {
         },
         timestamp: new Date().toISOString()
       }]
-    });*/
+    });
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
 
@@ -569,7 +569,7 @@ app.get("/cpx", async (req, res) => {
     console.log(user_id)
     console.log(avatarUrl)
     console.log(data.username)
-    /*sendWebhook({
+    sendWebhook({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
         description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
@@ -586,7 +586,7 @@ app.get("/cpx", async (req, res) => {
         },
         timestamp: new Date().toISOString()
       }]
-    });*/
+    });
 
     console.log(`✅ Crédité ${user_id} (${uid}) +${amount}`);
     return res.status(200).send("OK");
@@ -1031,7 +1031,7 @@ app.get("/reach", async (req, res) => {
 
   console.log(`✅ ${user_id} crédité +${amount} | tx:${tx_id}`);
   const avatarUrl = await getRobloxAvatar(user_id);
-  /*sendWebhook({
+  sendWebhook({
     embeds: [{
       title: `**${data.username}** a gagné **${amount} R$** !`,
       description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur Theoreme Reach`,
@@ -1048,7 +1048,7 @@ app.get("/reach", async (req, res) => {
       },
       timestamp: new Date().toISOString()
     }]
-  });*/
+  });
   return OK();
 });
 
