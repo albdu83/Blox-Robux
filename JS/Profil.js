@@ -156,7 +156,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         /* --- Récupération de l'email via backend --- */
         let email;
         try {
-            const emailRes = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(oldUsername)}`);
+            const token = await user.getIdToken();
+            const emailRes = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(oldUsername)}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
             if (!emailRes.ok) {
                 gif.style.display = "none";
                 confirmBtn.style.display = "block";
