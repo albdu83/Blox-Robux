@@ -138,15 +138,19 @@ header.scrolled {
 
 /* solde */
 .solde-box {
-  background-color: #0e1f44;
-  padding: 8px 14px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #052e16;
+  padding: clamp(4px, 1.5vw, 8px) clamp(8px, 2vw, 14px);
   border-radius: 10px;
+  border: #3dff5d31 2px solid;
   color: #ffea00;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 5px;
-  box-shadow: 0 0 6px rgba(0, 255, 106, 0.4);
+  box-shadow:
+  0 10px 30px rgba(0, 255, 106, 0.4),
+  inset 0 1px rgba(2, 23, 139, 0.03);
 }
 
 /* titre DANS le flex */
