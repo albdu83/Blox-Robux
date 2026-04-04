@@ -182,7 +182,7 @@ auth.onAuthStateChanged(async (user) => {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token })
+            body: JSON.stringify({ refreshToken: token })
         });
 
         const evtSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, {
