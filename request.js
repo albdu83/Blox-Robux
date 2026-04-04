@@ -19,7 +19,7 @@ app.use(express.json());
 
 
 const jobs = {};
-
+let sseTokens = {};
 
 let lienavatar = null;
 let PROXY_HOST = process.env.PROXY_HOST;
@@ -1297,11 +1297,13 @@ app.post("/api/withdraw", async (req, res) => {
 });
 
 app.get("/api/sse/balance", async (req, res) => {
-  
-  const token = req.cookies.token; // JWT envoyé via cookie
-  if (!token) return res.status(401).end();
 
-  const uid = req.user.uid;
+  const sseToken = req.cookies.sse_token;
+  if (!sseToken || !sseTokens[sseToken]) {
+    return res.status(403).send("Forbidden");
+  }
+
+  const { uid } = sseTokens[sseToken];
   const userRef = admin.database().ref(`users/${uid}`);
 
   res.set({
@@ -1400,6 +1402,37 @@ app.get("/discord/getannounce", (req, res) => {
     res.end();
   });
 });
+
+app.post("/setSseCookie", async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(400).send("Missing refresh token");
+
+  try {
+    // Vérifier le refresh token Firebase
+    const user = await admin.auth().verifyIdToken(refreshToken); // ou custom verification
+    const sseToken = crypto.randomBytes(32).toString("hex");
+
+    // Stocker en mémoire ou DB temporaire
+    sseTokens[sseToken] = {
+      uid: user.uid,
+      expires: Date.now() + 24*60*60*1000 // 24h
+    };
+
+    // Créer le cookie HTTP Only + Secure
+    res.cookie("sse_token", sseToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 24*60*60*1000
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ error: "Invalid refresh token" });
+  }
+});
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
