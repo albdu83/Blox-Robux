@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const user = auth.currentUser;
+    auth.onAuthStateChanged(async (user) => {
         const oldUsername = document.getElementById("a").value.trim();
         const oldPassword = document.getElementById("b").value.trim();
         if (!oldUsername || !oldPassword) {
@@ -232,6 +232,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error(err);
             showMsg(msg2, "❌ Erreur lors de la mise à jour");
         }
+    })
     });
 
     /* =========================
