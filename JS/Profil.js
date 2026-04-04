@@ -145,6 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
     auth.onAuthStateChanged(async (user) => {
+        if (!user) return console.error("Non connecté");
         const oldUsername = document.getElementById("a").value.trim();
         const oldPassword = document.getElementById("b").value.trim();
         if (!oldUsername || !oldPassword) {
