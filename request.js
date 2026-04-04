@@ -462,7 +462,7 @@ app.get("/timewall", async (req, res) => {
 
     // 🔎 Récupération UID Firebase via RobloxName
     const snap = await db.ref("users")
-      .orderByChild("RobloxName")
+      .orderByChild("firstUsername")
       .equalTo(userID)
       .get();
 
