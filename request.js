@@ -1296,7 +1296,11 @@ app.post("/api/withdraw", async (req, res) => {
   res.json({ balance });
 });
 
-app.get("/api/sse/balance", authenticate, async (req, res) => {
+app.get("/api/sse/balance", async (req, res) => {
+  
+  const token = req.cookies.token; // JWT envoyé via cookie
+  if (!token) return res.status(401).end();
+
   const uid = req.user.uid;
   const userRef = admin.database().ref(`users/${uid}`);
 
