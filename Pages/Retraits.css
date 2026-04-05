@@ -270,7 +270,7 @@ button:hover {
 }
 
 .background {
-  position: absolute;
+  position: fixed;
   height: 100%;       /* Prend toute la hauteur de la fenêtre */
   width: 100%;
   background-color: rgba(0, 0, 0, 0);
