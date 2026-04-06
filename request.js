@@ -22,10 +22,6 @@ const jobs = {};
 let sseTokens = {};
 
 let lienavatar = null;
-let PROXY_HOST = process.env.PROXY_HOST;
-let PROXY_PASS = process.env.PROXY_PASS;
-let PROXY_USER = process.env.PROXY_USER;
-let PROXY_PORT = process.env.PROXY_PORT;
 
 // --- SECRET_KEYS ---
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
@@ -1170,7 +1166,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     jobs[job_id] = { status: "pending" };
     setTimeout(() => delete jobs[job_id], 24*60*60*1000);
     // Préparer payload pour GitHub
-    const response = await fetch("http://87.106.245.156:5000/run_job", {
+    const response = await fetch("http://127.0.0.1:5000/run_job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1178,11 +1174,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
         username: process.env.ROBLOX_USERNAME,
         password: process.env.ROBLOX_PASSWORD,
         server_name: name,
-        job_id,
-        PROXY_HOST: PROXY_HOST,
-        PROXY_PORT: PROXY_PORT,
-        PROXY_USER: PROXY_USER,
-        PROXY_PASS: PROXY_PASS
+        job_id
       })
     });
 
