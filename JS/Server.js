@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         const sign = document.getElementById('signup-image')
         if (sign) {
-          sign.addEventListener('click', () => {window.location.href = "../authentification/inscription"});
+          sign.addEventListener('click', () => {window.location.href = "../Authentification/inscription"});
         }
         return;
       } else {
