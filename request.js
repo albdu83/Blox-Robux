@@ -1087,12 +1087,11 @@ app.get("/reach", async (req, res) => {
   return OK();
 });
 
-// --- Endpoint Admin ---
-const ADMIN_CODE = process.env.ADMIN_CODE;
-
-app.post("/checkAdminCode", (req, res) => {
-    const { code } = req.body;
-    res.json({ valid: code === ADMIN_CODE });
+app.post("/checkAdminCode", authenticate, async (req, res) => {
+    const snap = await db.ref("admin").get()
+    const admin = snap.val()
+    const code = admin.code
+    res.status(200).json({ code: code })
 });
 
 app.get("/api/places", async (req, res) => {
@@ -1166,7 +1165,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     jobs[job_id] = { status: "pending" };
     setTimeout(() => delete jobs[job_id], 24*60*60*1000);
     // Préparer payload pour GitHub
-    const response = await fetch("http://127.0.0.1:5000/run_job", {
+    const response = await fetch("http://87.106.245.156:5000/run_job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
