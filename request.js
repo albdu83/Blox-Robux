@@ -1088,16 +1088,28 @@ app.get("/reach", async (req, res) => {
 });
 
 app.post("/checkAdminCode", async (req, res) => {
-    const csrfTokenFromBody = req.body.csrf_token;
-    const csrfTokenFromCookie = req.cookies.csrf_token;
+  const csrfTokenFromBody = req.body.csrf_token;
+  const csrfTokenFromCookie = req.cookies.csrf_token;
+  const userCode = req.body.code;
 
-    if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
-      return res.status(403).json({ error: "CSRF token invalide" });
+  if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
+    return res.status(403).json({ error: "CSRF token invalide" });
+  }
+
+  try {
+    const snap = await db.ref("admin/code").get();
+    const correctCode = snap.val();
+
+    if (userCode === correctCode) {
+      return res.status(200).json({ success: true });
+    } else {
+      return res.status(401).json({ success: false });
     }
-    const snap = await db.ref("admin").get()
-    const admin = snap.val()
-    const code = admin.code
-    res.status(200).json({ code: code })
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
 });
 
 app.get("/api/places", async (req, res) => {
