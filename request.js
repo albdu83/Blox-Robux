@@ -1092,9 +1092,7 @@ app.get("/reach", async (req, res) => {
   return OK();
 });
 
-app.post("/checkAdminCode", async (req, res) => {
-  const csrfTokenFromBody = req.body.csrf_token;
-  const csrfTokenFromCookie = req.cookies.csrf_token;
+app.post("/checkAdminCode", verifyCsrf, async (req, res) => {
   const userCode = req.body.code;
 
   if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
