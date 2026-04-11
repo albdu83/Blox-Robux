@@ -1530,13 +1530,14 @@ app.post("/update-profile", authenticate, async (req, res) => {
 
     const currentUser = currentUserSnap.val();
 
-    // ✅ Si username inchangé → skip check
-    if (currentUser.username !== username) {
-      const snapshot = await db
+     const snapshot = await db
         .ref("users")
         .orderByChild("username")
         .equalTo(username)
         .once("value");
+
+    // ✅ Si username inchangé → skip check
+    if (currentUser.username !== username) {
 
       if (snapshot.exists()) {
         const users = snapshot.val();
@@ -1551,6 +1552,17 @@ app.post("/update-profile", authenticate, async (req, res) => {
       }
     }
 
+    if (!snapshot.exists()) {
+      return null;
+    }
+
+    const data = snapshot.val();
+    const user = data[currentUid];
+
+    const firstUsername = user.firstUsername;
+
+    const email = `${firstUsername}@bloxrobux.local`
+
     await db.ref(`users/${currentUid}`).update({
       username,
       RobloxName: robloxName,
@@ -1560,12 +1572,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
       password: newPassword,
     });
 
-    const email = `${username}@bloxrobux.local`;
-
-    await firebase.auth().signInWithEmailAndPassword(email, newPassword);
-
-    res.json({ success: true });
-
+    res.json({ success: true, Email: email });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
