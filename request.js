@@ -1523,47 +1523,45 @@ app.post("/update-profile", authenticate, async (req, res) => {
       return res.status(400).json({ error: "Missing fields" });
     }
 
-    // 🔍 Vérifier si le username existe déjà
-    const snapshot = await db
-      .ref("users")
-      .orderByChild("username")
-      .equalTo(username)
-      .once("value");
+    const currentUserSnap = await db.ref(`users/${currentUid}`).get();
+    if (!currentUserSnap.exists()) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-    if (snapshot.exists()) {
-      const users = snapshot.val();
-      const existingUid = Object.keys(users)[0];
+    const currentUser = currentUserSnap.val();
 
-      // ❌ Si le username appartient à quelqu’un d’autre
+    // ✅ Si username inchangé → skip check
+    if (currentUser.username !== username) {
+      const snapshot = await db
+        .ref("users")
+        .orderByChild("username")
+        .equalTo(username)
+        .once("value");
 
-      for (const uid in users) {
-        if (uid !== currentUid) {
-          return res.status(409).json({
-            error: "Nom d'utilisateur déjà utilisé",
-          });
+      if (snapshot.exists()) {
+        const users = snapshot.val();
+
+        for (const uid in users) {
+          if (uid !== currentUid) {
+            return res.status(409).json({
+              error: "Nom d'utilisateur déjà utilisé",
+            });
+          }
         }
       }
     }
 
-    // ✅ Update DB avec TON uid (sécurisé)
     await db.ref(`users/${currentUid}`).update({
       username,
       RobloxName: robloxName,
     });
 
-    // 🔐 Vérifier que l'utilisateur existe dans Auth
-    try {
-      await admin.auth().getUser(currentUid);
-    } catch {
-      return res.status(404).json({ error: "Utilisateur Auth introuvable" });
-    }
-
-    // 🔑 Update password
     await admin.auth().updateUser(currentUid, {
       password: newPassword,
     });
 
     res.json({ success: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
