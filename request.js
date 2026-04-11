@@ -629,7 +629,19 @@ app.post("/CPXHASH", async (req, res) => {
 //---------------------------------------------------------------------------------------------------------------------------//
 app.get("/getCsrfToken", (req, res) => {
   const token = generateCsrfToken();
-  res.cookie("csrf_token", token, { httpOnly: true, sameSite: "Lax", secure: true, domain: ".bloxrbx.fr" });
+
+  // 🔥 supprime les anciens cookies (IMPORTANT)
+  res.clearCookie("csrf_token", { domain: "il.bloxrbx.fr" });
+  res.clearCookie("csrf_token", { domain: ".bloxrbx.fr" });
+
+  // ✅ recrée proprement
+  res.cookie("csrf_token", token, {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: true,
+    domain: ".bloxrbx.fr"
+  });
+
   res.json({ token });
 });
 
