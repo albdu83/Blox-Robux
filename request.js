@@ -41,8 +41,21 @@ if (!DISCORD_WEBHOOK_TRACKER) throw new Error("DISCORD_WEBHOOK_TRACKER manquant"
 const queue = [];
 let processing = false;
 
-function generateCsrfToken() {
-  return crypto.randomBytes(32).toString("hex");
+function verifyCsrf(req, res, next) {
+  const token = req.headers["x-csrf-token"];
+
+  if (!token) {
+    return res.status(403).json({ error: "CSRF manquant" });
+  }
+
+  if (!global.csrfTokens || !global.csrfTokens.has(token)) {
+    return res.status(403).json({ error: "CSRF invalide" });
+  }
+
+  // option sécurité extra: one-time use
+  global.csrfTokens.delete(token);
+
+  next();
 }
 
 function sendWebhook(payload, webhook = DISCORD_WEBHOOK) {
@@ -628,33 +641,19 @@ app.post("/CPXHASH", async (req, res) => {
 
 //---------------------------------------------------------------------------------------------------------------------------//
 app.get("/getCsrfToken", (req, res) => {
-  const token = generateCsrfToken();
+  const token = crypto.randomBytes(32).toString("hex");
 
-  // 🔥 supprime les anciens cookies (IMPORTANT)
-  res.clearCookie("csrf_token", { domain: "il.bloxrbx.fr", path: "/" });
-  res.clearCookie("csrf_token", { domain: ".bloxrbx.fr", path: "/" });
+  // optionnel : stockage mémoire court terme (anti-replay léger)
+  if (!global.csrfTokens) global.csrfTokens = new Set();
+  global.csrfTokens.add(token);
 
-  // ✅ recrée proprement
-  res.cookie("csrf_token", token, {
-    httpOnly: true,
-    sameSite: "Lax",
-    secure: true,
-    domain: ".bloxrbx.fr",
-    path: "/"
-  });
+  setTimeout(() => global.csrfTokens.delete(token), 10 * 60 * 1000); // 10 min
 
   res.json({ token });
 });
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", verifyCsrf, async (req, res) => {
   const { username, password, RobloxName, captcha } = req.body;
-
-  const csrfTokenFromBody = req.body.csrf_token;
-  const csrfTokenFromCookie = req.cookies.csrf_token;
-
-  if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
-    return res.status(403).json({ error: "CSRF token invalide" });
-  }
 
   // 1️⃣ CAPTCHA côté serveur
   if (!captcha) {
@@ -747,16 +746,8 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", verifyCsrf, async (req, res) => {
   const { username, password, captcha } = req.body;
-
-  const csrfTokenFromBody = req.body.csrf_token;
-  const csrfTokenFromCookie = req.cookies.csrf_token;
-
-  if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
-    return res.status(403).json({ error: "CSRF token invalide" });
-  }
-
 
   /* ───────── 1️⃣ VALIDATIONS STRICTES ───────── */
   if (
