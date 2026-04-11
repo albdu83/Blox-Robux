@@ -11,12 +11,18 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 app.use(helmet());
 app.set("trust proxy", 1);
-app.use(cors({
-    origin: ["http://127.0.0.1:5500", "https://www.bloxrbx.fr", "https://bloxrbx.fr", "https://il.bloxrbx.fr"],
-    credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://127.0.0.1:5500",
+      "https://www.bloxrbx.fr",
+      "https://bloxrbx.fr",
+      "https://il.bloxrbx.fr",
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.json());
-
 
 const jobs = {};
 let sseTokens = {};
@@ -30,13 +36,14 @@ const THEOREM_SECRET = process.env.THEOREM_SECRET;
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
 const DISCORD_WEBHOOK_TRACKER = process.env.DISCORD_WEBHOOK_TRACKER;
 const CPX_SECRET = process.env.CPX_SECRET;
-console.log(DISCORD_WEBHOOK)
+console.log(DISCORD_WEBHOOK);
 if (!SECRET_KEY) throw new Error("SECRET_KEY manquant");
 if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
 if (!RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
 if (!THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
 if (!DISCORD_WEBHOOK) throw new Error("DISCORD_WEBHOOK manquant");
-if (!DISCORD_WEBHOOK_TRACKER) throw new Error("DISCORD_WEBHOOK_TRACKER manquant");
+if (!DISCORD_WEBHOOK_TRACKER)
+  throw new Error("DISCORD_WEBHOOK_TRACKER manquant");
 
 const queue = [];
 let processing = false;
@@ -74,15 +81,15 @@ async function processQueue() {
 
     try {
       // petit délai anti-spam Discord
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 300));
 
       const res = await fetch(job.webhook, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "User-Agent": "Mozilla/5.0 (Node.js Bot)"
+          "User-Agent": "Mozilla/5.0 (Node.js Bot)",
         },
-        body: JSON.stringify(job.payload)
+        body: JSON.stringify(job.payload),
       });
 
       const contentType = res.headers.get("content-type") || "";
@@ -151,7 +158,6 @@ async function processQueue() {
 
       /* ───────── 3️⃣ SUCCESS ───────── */
       console.log("✅ Webhook envoyé avec succès");
-
     } catch (err) {
       console.error(`🔥 Error: ${err.message}`);
 
@@ -176,8 +182,8 @@ async function processQueue() {
 
 // Ajouter un job à la queue
 function addJob(job) {
-    queue.push(job);
-    processQueue();
+  queue.push(job);
+  processQueue();
 }
 
 module.exports = { addJob, processQueue };
@@ -186,7 +192,9 @@ const loginAttempts = {};
 
 async function authenticate(req, res, next) {
   const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
 
   if (!token) return res.status(401).send("Token manquant");
 
@@ -212,9 +220,9 @@ const trackerCooldown = new Map();
 const delayMap = new Map();
 
 function getLoginDelay(ip) {
-    const attempts = delayMap.get(ip) || 0;
-    delayMap.set(ip, attempts + 1);
-    return Math.min(5000 * attempts, 30000); // max 30s
+  const attempts = delayMap.get(ip) || 0;
+  delayMap.set(ip, attempts + 1);
+  return Math.min(5000 * attempts, 30000); // max 30s
 }
 
 async function StatList(message, key = "Erreur fatale ou iconnue") {
@@ -228,34 +236,36 @@ async function StatList(message, key = "Erreur fatale ou iconnue") {
     trackerCooldown.set(key, now);
 
     // 🧼 Nettoyage anti-mention Discord
-    const safeMessage = message
-      .replace(/@/g, "@\u200b")
-      .slice(0, 1800); // limite Discord
+    const safeMessage = message.replace(/@/g, "@\u200b").slice(0, 1800); // limite Discord
 
-    sendWebhook({
-      embeds: [{
-        title: "🚨 Tentative de connexion échouée ou bloquée",
-        description: safeMessage,
-        color: 0x992d22,
-        footer: {
-          text: "BloxRobux Security",
-          icon_url: "https://i.imgur.com/PjcK6QD.png"
-        },
-        timestamp: new Date().toISOString()
-      }]
-    }, DISCORD_WEBHOOK_TRACKER)
+    sendWebhook(
+      {
+        embeds: [
+          {
+            title: "🚨 Tentative de connexion échouée ou bloquée",
+            description: safeMessage,
+            color: 0x992d22,
+            footer: {
+              text: "BloxRobux Security",
+              icon_url: "https://i.imgur.com/PjcK6QD.png",
+            },
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      },
+      DISCORD_WEBHOOK_TRACKER,
+    );
   } catch (err) {
     console.error("Tracker Discord erreur :", err.message);
   }
 }
-
 
 const attempts = new Map();
 
 setInterval(() => {
   const now = Date.now();
   for (const [key, data] of attempts) {
-    if (now - data.first > 5*60_000) attempts.delete(key);
+    if (now - data.first > 5 * 60_000) attempts.delete(key);
   }
 }, 60_000);
 
@@ -266,43 +276,45 @@ setInterval(() => {
  * @returns {boolean} true si limité, false sinon
  */
 function isRateLimited(ip, username) {
-    const now = Date.now();
+  const now = Date.now();
 
-    // --- Limite globale par IP ---
-    const ipKey = `ip:${ip}`;
-    let ipData = attempts.get(ipKey) || { count: 0, first: now };
+  // --- Limite globale par IP ---
+  const ipKey = `ip:${ip}`;
+  let ipData = attempts.get(ipKey) || { count: 0, first: now };
 
-    // Reset après 5 minutes
-    if (now - ipData.first > 5 * 60_000) {
-        ipData.count = 0;
-        ipData.first = now;
-    }
+  // Reset après 5 minutes
+  if (now - ipData.first > 5 * 60_000) {
+    ipData.count = 0;
+    ipData.first = now;
+  }
 
-    ipData.count++;
-    attempts.set(ipKey, ipData);
+  ipData.count++;
+  attempts.set(ipKey, ipData);
 
-    if (ipData.count > 10) { // max 10 tentatives / 5 min par IP
-        return true;
-    }
+  if (ipData.count > 10) {
+    // max 10 tentatives / 5 min par IP
+    return true;
+  }
 
-    // --- Limite spécifique IP + username ---
-    const ipUserKey = `ip-user:${ip}:${username}`;
-    let ipUserData = attempts.get(ipUserKey) || { count: 0, first: now };
+  // --- Limite spécifique IP + username ---
+  const ipUserKey = `ip-user:${ip}:${username}`;
+  let ipUserData = attempts.get(ipUserKey) || { count: 0, first: now };
 
-    if (now - ipUserData.first > 5 * 60_000) {
-        ipUserData.count = 0;
-        ipUserData.first = now;
-    }
+  if (now - ipUserData.first > 5 * 60_000) {
+    ipUserData.count = 0;
+    ipUserData.first = now;
+  }
 
-    ipUserData.count++;
-    attempts.set(ipUserKey, ipUserData);
+  ipUserData.count++;
+  attempts.set(ipUserKey, ipUserData);
 
-    if (ipUserData.count > 5) { // max 5 tentatives / 5 min par IP+username
-        return true;
-    }
+  if (ipUserData.count > 5) {
+    // max 5 tentatives / 5 min par IP+username
+    return true;
+  }
 
-    // --- Tout est OK ---
-    return false;
+  // --- Tout est OK ---
+  return false;
 }
 
 function verifyTheoremReachHash(req, secret) {
@@ -329,7 +341,7 @@ function verifyTheoremReachHash(req, secret) {
     valid: computedHash === receivedHash,
     urlToSign,
     computedHash,
-    receivedHash
+    receivedHash,
   };
 }
 
@@ -337,7 +349,7 @@ async function getRobloxAvatar(username) {
   const res = await fetch("https://users.roblox.com/v1/usernames/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
+    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
   });
   const data = await res.json();
   if (!data.data || !data.data.length) return null;
@@ -345,7 +357,7 @@ async function getRobloxAvatar(username) {
   const userId = data.data[0].id;
 
   const avatarRes = await fetch(
-    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`
+    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`,
   );
   const avatarData = await avatarRes.json();
 
@@ -354,36 +366,43 @@ async function getRobloxAvatar(username) {
 
 // --- Endpoint Roblox avatar ---
 app.get("/api/avatar/:username", async (req, res) => {
-    const username = req.params.username;
+  const username = req.params.username;
 
-    try {
-        const response = await fetch("https://users.roblox.com/v1/usernames/users", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
-        });
+  try {
+    const response = await fetch(
+      "https://users.roblox.com/v1/usernames/users",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usernames: [username],
+          excludeBannedUsers: true,
+        }),
+      },
+    );
 
-        const data = await response.json();
-        if (!data.data || data.data.length === 0) return res.status(404).json({ error: "Utilisateur introuvable" });
+    const data = await response.json();
+    if (!data.data || data.data.length === 0)
+      return res.status(404).json({ error: "Utilisateur introuvable" });
 
-        const userId = data.data[0].id;
+    const userId = data.data[0].id;
 
-        const avatarRes = await fetch(
-            `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`
-        );
+    const avatarRes = await fetch(
+      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`,
+    );
 
-        const avatarData = await avatarRes.json();
-        if (!avatarData.data || avatarData.data.length === 0) return res.status(500).json({ error: "Erreur avatar Roblox" });
-        lienavatar = avatarData.data[0].imageUrl,
-        res.json({
-            avatarUrl: avatarData.data[0].imageUrl,
-            targetId: userId
-        });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Erreur serveur" });
-    }
+    const avatarData = await avatarRes.json();
+    if (!avatarData.data || avatarData.data.length === 0)
+      return res.status(500).json({ error: "Erreur avatar Roblox" });
+    ((lienavatar = avatarData.data[0].imageUrl),
+      res.json({
+        avatarUrl: avatarData.data[0].imageUrl,
+        targetId: userId,
+      }));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
 });
 
 // --- Endpoint TimeWall ---
@@ -392,16 +411,18 @@ const admin = require("firebase-admin");
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(
-      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT),
     ),
-    databaseURL: "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app"
+    databaseURL:
+      "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
   });
 }
 
 const db = admin.database();
 
 app.get("/timewall", async (req, res) => {
-  const { userID, transactionID, currencyAmount, revenue, hash, type } = req.query;
+  const { userID, transactionID, currencyAmount, revenue, hash, type } =
+    req.query;
   console.log("🔥 /timewall HIT", req.query);
 
   try {
@@ -421,7 +442,7 @@ app.get("/timewall", async (req, res) => {
         userID,
         revenue,
         received: hash,
-        expected: computedHash
+        expected: computedHash,
       });
       return res.status(200).send("OK");
     }
@@ -447,7 +468,8 @@ app.get("/timewall", async (req, res) => {
     amount = Math.round(amount * multiplier);
 
     // 🔎 Récupération UID Firebase via RobloxName
-    const snap = await db.ref("users")
+    const snap = await db
+      .ref("users")
       .orderByChild("firstUsername")
       .equalTo(userID)
       .get();
@@ -467,14 +489,14 @@ app.get("/timewall", async (req, res) => {
     }
 
     const snapshot = await db.ref("users/" + uid).get();
-    const data = snapshot.val()
+    const data = snapshot.val();
     await txRef.set({ uid, amount, type, date: Date.now() });
 
-    await db.ref(`users/${uid}/balance`)
-      .transaction(v => (v || 0) + amount);
+    await db.ref(`users/${uid}/balance`).transaction((v) => (v || 0) + amount);
 
-    await db.ref(`users/${uid}/robuxGagnes`)
-      .transaction(v => (v || 0) + amount);  
+    await db
+      .ref(`users/${uid}/robuxGagnes`)
+      .transaction((v) => (v || 0) + amount);
     const avatarUrl = await getRobloxAvatar(userID);
     /*sendWebhook({
       embeds: [{
@@ -496,7 +518,6 @@ app.get("/timewall", async (req, res) => {
     });*/
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
-
   } catch (err) {
     console.error("🔥 TimeWall error:", err);
     return res.status(200).send("OK");
@@ -504,18 +525,12 @@ app.get("/timewall", async (req, res) => {
 });
 //---------------------------------------------------------------------------------------------------------------------------//
 app.get("/cpx", async (req, res) => {
-  const {
-    status,
-    trans_id,
-    user_id,
-    amount_local,
-    amount_usd,
-    hash
-  } = req.query;
+  const { status, trans_id, user_id, amount_local, amount_usd, hash } =
+    req.query;
   console.log("🔥 /CPX HIT", req.query);
 
   try {
-    if (!status || !trans_id || !user_id || !amount_usd || !hash ) {
+    if (!status || !trans_id || !user_id || !amount_usd || !hash) {
       console.log("❌ Paramètres manquants");
       return res.status(200).send("OK");
     }
@@ -530,12 +545,12 @@ app.get("/cpx", async (req, res) => {
       .update(`${trans_id}-${CPX_SECRET}`)
       .digest("hex");
 
-    if (expectedHash !== hash ) {
+    if (expectedHash !== hash) {
       console.log("❌ Hash invalide", {
         user_id,
         amount_usd,
         received: hash,
-        expected: expectedHash
+        expected: expectedHash,
       });
       return res.status(200).send("OK");
     }
@@ -561,7 +576,8 @@ app.get("/cpx", async (req, res) => {
     amount = Math.round(amount * multiplier);
 
     // 🔎 Récupération UID Firebase via RobloxName
-    const snap = await db.ref("users")
+    const snap = await db
+      .ref("users")
       .orderByChild("firstUsername")
       .equalTo(user_id)
       .get();
@@ -581,19 +597,19 @@ app.get("/cpx", async (req, res) => {
     }
     const source = "cpx";
     const snapshot = await db.ref("users/" + uid).get();
-    const data = snapshot.val()
+    const data = snapshot.val();
     await txRef.set({ uid, amount, source, date: Date.now() });
 
-    await db.ref(`users/${uid}/balance`)
-      .transaction(v => (v || 0) + amount);
+    await db.ref(`users/${uid}/balance`).transaction((v) => (v || 0) + amount);
 
-    await db.ref(`users/${uid}/robuxGagnes`)
-      .transaction(v => (v || 0) + amount);  
+    await db
+      .ref(`users/${uid}/robuxGagnes`)
+      .transaction((v) => (v || 0) + amount);
     const avatarUrl = await getRobloxAvatar(user_id);
-    console.log(amount)
-    console.log(user_id)
-    console.log(avatarUrl)
-    console.log(data.username)
+    console.log(amount);
+    console.log(user_id);
+    console.log(avatarUrl);
+    console.log(data.username);
     /*sendWebhook({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
@@ -615,7 +631,6 @@ app.get("/cpx", async (req, res) => {
 
     console.log(`✅ Crédité ${user_id} (${uid}) +${amount}`);
     return res.status(200).send("OK");
-
   } catch (err) {
     console.error("🔥 TimeWall error:", err);
     return res.status(200).send("OK");
@@ -625,10 +640,10 @@ app.get("/cpx", async (req, res) => {
 //---------------------------------------------------------------------------------------------------------------------------//
 
 app.post("/CPXHASH", async (req, res) => {
-  const { firstUsername } = req.body
-  const user_id = firstUsername
+  const { firstUsername } = req.body;
+  const user_id = firstUsername;
   // Génération du secure_hash
-  const app_id = "26353"
+  const app_id = "26353";
   const secure_hash = crypto
     .createHash("sha256")
     .update(app_id + user_id + CPX_SECRET)
@@ -636,7 +651,7 @@ app.post("/CPXHASH", async (req, res) => {
 
   // URL iframe à envoyer au front
   const iframeUrl = `https://offers.cpx-research.com/index.php?app_id=${app_id}&ext_user_id=${user_id}&secure_hash=${secure_hash}`;
-  return res.status(200).json({ iframeUrl })
+  return res.status(200).json({ iframeUrl });
 });
 
 //---------------------------------------------------------------------------------------------------------------------------//
@@ -663,7 +678,7 @@ app.post("/signup", verifyCsrf, async (req, res) => {
   try {
     const captchaRes = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
-      { method: "POST" }
+      { method: "POST" },
     );
     const captchaData = await captchaRes.json();
 
@@ -680,7 +695,9 @@ app.post("/signup", verifyCsrf, async (req, res) => {
   }
 
   if (!password || password.length < 8) {
-    return res.status(400).json({ error: "Mot de passe trop court (au moins 8 caractères)" });
+    return res
+      .status(400)
+      .json({ error: "Mot de passe trop court (au moins 8 caractères)" });
   }
 
   if (!RobloxName) {
@@ -689,11 +706,17 @@ app.post("/signup", verifyCsrf, async (req, res) => {
 
   // 3️⃣ Vérification de l'existence du pseudo Roblox
   try {
-    const response = await fetch("https://users.roblox.com/v1/usernames/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ usernames: [RobloxName], excludeBannedUsers: true })
-    });
+    const response = await fetch(
+      "https://users.roblox.com/v1/usernames/users",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usernames: [RobloxName],
+          excludeBannedUsers: true,
+        }),
+      },
+    );
     const data = await response.json();
 
     if (!data?.data?.length) {
@@ -717,7 +740,7 @@ app.post("/signup", verifyCsrf, async (req, res) => {
   try {
     const userRecord = await admin.auth().createUser({
       email,
-      password
+      password,
     });
     const uid = userRecord.uid;
 
@@ -732,7 +755,7 @@ app.post("/signup", verifyCsrf, async (req, res) => {
       createdAt: Date.now(), // timestamp serveur
       nbConnexions: 1,
       robuxGagnes: 0,
-      isBanned: false
+      isBanned: false,
     });
 
     return res.status(201).json({ success: true, uid, customToken });
@@ -756,8 +779,8 @@ app.post("/login", verifyCsrf, async (req, res) => {
     typeof captcha !== "string"
   ) {
     StatList(
-      `Erreur lors du saisie des informations\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`
-    ); 
+      `Erreur lors du saisie des informations\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+    );
     return res.status(400).json({ error: "Requête invalide" });
   }
 
@@ -769,21 +792,21 @@ app.post("/login", verifyCsrf, async (req, res) => {
   try {
     const captchaRes = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
-      { method: "POST" }
+      { method: "POST" },
     );
     const captchaData = await captchaRes.json();
 
     if (!captchaData.success) {
       StatList(
         `Captcha invalide\n\n👤 Username : ${username}\n🌍 IP: : ${req.ip}`,
-        `IP:${req.ip}`
+        `IP:${req.ip}`,
       );
       return res.status(403).json({ error: "Captcha invalide" });
     }
   } catch {
     StatList(
-      `Erreur Captcha inconnue\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`
-    ); 
+      `Erreur Captcha inconnue\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
+    );
     return res.status(500).json({ error: "Erreur captcha" });
   }
 
@@ -791,16 +814,16 @@ app.post("/login", verifyCsrf, async (req, res) => {
   if (isRateLimited(req.ip, username)) {
     StatList(
       `@🛡️ Propriétaire Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-      `ratelimit:${req.ip}`
+      `ratelimit:${req.ip}`,
     );
     return res.status(429).json({
-      error: "Trop de tentatives, réessaie plus tard"
+      error: "Trop de tentatives, réessaie plus tard",
     });
   }
 
   try {
     const delay = getLoginDelay(req.ip);
-    await new Promise(r => setTimeout(r, delay));
+    await new Promise((r) => setTimeout(r, delay));
     /* ───────── 4️⃣ RÉCUPÉRATION UTILISATEUR ───────── */
     const snap = await db
       .ref("users")
@@ -812,7 +835,7 @@ app.post("/login", verifyCsrf, async (req, res) => {
       logFailedAttempt(req.ip, username);
       StatList(
         `Un utilisateur a tenté de se connecter à un **compte inexistant**\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-        `IP:${req.ip}`
+        `IP:${req.ip}`,
       );
       return res.status(401).json({ error: "Identifiants invalides" });
     }
@@ -824,7 +847,7 @@ app.post("/login", verifyCsrf, async (req, res) => {
     if (user.isBanned === true) {
       StatList(
         `Un utilisateur a tenté de se connecter à un **compte banni**\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-        `banned:${username}`
+        `banned:${username}`,
       );
       return res.status(403).json({ error: "Compte suspendu" });
     }
@@ -832,7 +855,7 @@ app.post("/login", verifyCsrf, async (req, res) => {
     if (!user.email) {
       StatList(
         `Compte corrompu\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-        `Compte:${username}`
+        `Compte:${username}`,
       );
       return res.status(500).json({ error: "Compte corrompu" });
     }
@@ -846,15 +869,15 @@ app.post("/login", verifyCsrf, async (req, res) => {
         body: JSON.stringify({
           email: user.email,
           password,
-          returnSecureToken: false
-        })
-      }
+          returnSecureToken: false,
+        }),
+      },
     );
 
     if (!fbRes.ok) {
       logFailedAttempt(req.ip, username);
       StatList(
-        `Erreur fatale lors de la connexion\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`
+        `Erreur fatale lors de la connexion\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
       );
       return res.status(401).json({ error: "Identifiants invalides" });
     }
@@ -864,27 +887,30 @@ app.post("/login", verifyCsrf, async (req, res) => {
 
     /* ───────── 8️⃣ STATS & CLEANUP ───────── */
     await db.ref(`users/${uid}`).update({
-      lastLoginAt: Date.now()
+      lastLoginAt: Date.now(),
     });
 
-    await db
-      .ref(`users/${uid}/nbConnexions`)
-      .transaction(v => (v || 0) + 1);
+    await db.ref(`users/${uid}/nbConnexions`).transaction((v) => (v || 0) + 1);
 
     /* ───────── 9️⃣ WEBHOOK ───────── */
     try {
-      sendWebhook({
-        embeds: [{
-          title: "✅ Tentative de connexion réussi",
-          description: `Connexion réussi pour le compte ${username}`,
-          color: 0xc27c0e,
-          footer: {
-            text: "BloxRobux Security",
-            icon_url: "https://i.imgur.com/PjcK6QD.png"
-          },
-          timestamp: new Date().toISOString()
-        }]
-      }, DISCORD_WEBHOOK_TRACKER)
+      sendWebhook(
+        {
+          embeds: [
+            {
+              title: "✅ Tentative de connexion réussi",
+              description: `Connexion réussi pour le compte ${username}`,
+              color: 0xc27c0e,
+              footer: {
+                text: "BloxRobux Security",
+                icon_url: "https://i.imgur.com/PjcK6QD.png",
+              },
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        },
+        DISCORD_WEBHOOK_TRACKER,
+      );
     } catch (err) {
       console.error("Tracker Discord erreur :", err.message);
     }
@@ -892,9 +918,8 @@ app.post("/login", verifyCsrf, async (req, res) => {
     /* ───────── 🔟 RÉPONSE ───────── */
     return res.json({
       success: true,
-      token: customToken
+      token: customToken,
     });
-
   } catch (err) {
     console.error("🔥 Erreur login:", err);
     return res.status(500).json({ error: "Erreur serveur" });
@@ -907,8 +932,13 @@ app.get("/getEmail", authenticate, verifyCsrf, async (req, res) => {
 
   try {
     // On récupère l'utilisateur par son username actuel
-    const snapshot = await db.ref("users").orderByChild("username").equalTo(username).once("value");
-    if (!snapshot.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
+    const snapshot = await db
+      .ref("users")
+      .orderByChild("username")
+      .equalTo(username)
+      .once("value");
+    if (!snapshot.exists())
+      return res.status(404).json({ error: "Utilisateur introuvable" });
 
     const uid = Object.keys(snapshot.val())[0];
     const user = snapshot.val()[uid];
@@ -921,36 +951,32 @@ app.get("/getEmail", authenticate, verifyCsrf, async (req, res) => {
       await db.ref("users/" + uid).update({ email });
     }
 
-    if (!email) return res.status(404).json({ error: "Email non défini pour cet utilisateur" });
+    if (!email)
+      return res
+        .status(404)
+        .json({ error: "Email non défini pour cet utilisateur" });
 
     res.json({ email });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
-app.post('/api/roblox-user/:username', async (req, res) => {
-    const username = req.params.username
-    const response = await fetch("https://users.roblox.com/v1/usernames/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernames: [username], excludeBannedUsers: true })
-    });
-    const data = await response.json();
-    res.json(data);
+app.post("/api/roblox-user/:username", async (req, res) => {
+  const username = req.params.username;
+  const response = await fetch("https://users.roblox.com/v1/usernames/users", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
+  });
+  const data = await response.json();
+  res.json(data);
 });
 
 app.get("/reach", async (req, res) => {
   console.log("🔥 /reach HIT", req.originalUrl);
-  const {
-    user_id,
-    reward,
-    tx_id,
-    debug,
-    reversal
-  } = req.query;
+  const { user_id, reward, tx_id, debug, reversal } = req.query;
 
   // Toujours répondre 200 à Reach
   const OK = () => res.status(200).send("OK");
@@ -962,10 +988,7 @@ app.get("/reach", async (req, res) => {
   }
 
   // 🔐 Vérification du hash AVANT TOUT
-  const result = verifyTheoremReachHash(
-    req,
-    THEOREM_SECRET
-  );
+  const result = verifyTheoremReachHash(req, THEOREM_SECRET);
 
   console.log("RAW QUERY :", result.queryString);
   console.log("HASH CALCULÉ :", result.computedHash);
@@ -1005,7 +1028,8 @@ app.get("/reach", async (req, res) => {
   }
 
   // 🔎 Récupération utilisateur (exemple RobloxName)
-  const snap = await db.ref("users")
+  const snap = await db
+    .ref("users")
     .orderByChild("firstUsername")
     .equalTo(user_id)
     .get();
@@ -1035,15 +1059,15 @@ app.get("/reach", async (req, res) => {
     uid,
     amount,
     source: "theoremreach",
-    date: Date.now()
+    date: Date.now(),
   });
 
   // 💸 Crédit utilisateur
-  await db.ref(`users/${uid}/balance`)
-    .transaction(v => (v || 0) + amount);
+  await db.ref(`users/${uid}/balance`).transaction((v) => (v || 0) + amount);
 
-  await db.ref(`users/${uid}/robuxGagnes`)
-    .transaction(v => (v || 0) + amount);
+  await db
+    .ref(`users/${uid}/robuxGagnes`)
+    .transaction((v) => (v || 0) + amount);
 
   console.log(`✅ ${user_id} crédité +${amount} | tx:${tx_id}`);
   const avatarUrl = await getRobloxAvatar(user_id);
@@ -1076,7 +1100,7 @@ app.post("/checkAdminCode", async (req, res) => {
   if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
     return res.status(403).json({ error: "CSRF token invalide" });
   }
-  
+
   try {
     const snap = await db.ref("admin/code").get();
     const correctCode = snap.val();
@@ -1086,7 +1110,6 @@ app.post("/checkAdminCode", async (req, res) => {
     } else {
       return res.status(401).json({ success: false });
     }
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Erreur serveur" });
@@ -1094,44 +1117,50 @@ app.post("/checkAdminCode", async (req, res) => {
 });
 
 app.get("/api/places", async (req, res) => {
-    const { targetId } = req.query;
+  const { targetId } = req.query;
 
-    try {
-        if (!targetId ) {
-            return res.status(400).json({ error: "userId manquant" });
-        }
-
-        const placesRes = await fetch(
-            `https://games.roblox.com/v2/users/${targetId}/games?accessFilter=Public`
-        );
-
-        if (!placesRes.ok) {
-            return res.status(placesRes.status).json({
-                error: "Erreur API Roblox"
-            });
-        }
-
-        const data = await placesRes.json();
-
-        // On renvoie uniquement ce qui est utile au front
-        const formatted = {
-            data: data.data.map(game => ({
-                name: game.name,
-                ID: game.id || null,
-                RootID: game.rootPlace?.id || null
-            })).filter(game => game.RootID !== null).filter(game => game.ID !== null)
-        };
-
-        res.json(formatted);
-
-    } catch (err) {
-        console.error("Erreur récupération places :", err);
-        res.status(500).json({ error: "Impossible de récupérer les emplacements" });
+  try {
+    if (!targetId) {
+      return res.status(400).json({ error: "userId manquant" });
     }
+
+    const placesRes = await fetch(
+      `https://games.roblox.com/v2/users/${targetId}/games?accessFilter=Public`,
+    );
+
+    if (!placesRes.ok) {
+      return res.status(placesRes.status).json({
+        error: "Erreur API Roblox",
+      });
+    }
+
+    const data = await placesRes.json();
+
+    // On renvoie uniquement ce qui est utile au front
+    const formatted = {
+      data: data.data
+        .map((game) => ({
+          name: game.name,
+          ID: game.id || null,
+          RootID: game.rootPlace?.id || null,
+        }))
+        .filter((game) => game.RootID !== null)
+        .filter((game) => game.ID !== null),
+    };
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("Erreur récupération places :", err);
+    res.status(500).json({ error: "Impossible de récupérer les emplacements" });
+  }
 });
 
 async function getUserBalance(RobloxName) {
-  const snap = await db.ref("users").orderByChild("RobloxName").equalTo(RobloxName).get();
+  const snap = await db
+    .ref("users")
+    .orderByChild("RobloxName")
+    .equalTo(RobloxName)
+    .get();
   if (!snap.exists()) return null;
   const uid = Object.keys(snap.val())[0];
   return { uid, balance: snap.val()[uid].balance || 0 };
@@ -1139,22 +1168,27 @@ async function getUserBalance(RobloxName) {
 
 app.post("/api/payServer", authenticate, async (req, res) => {
   // Récupération des jeux Roblox publics pour ce pseudo côté serveur
-  console.log("requete ok")
+  console.log("requete ok");
 
   try {
     const { name, ID, gameId } = req.body;
 
-    const userGamesRes = await fetch(`https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`);
+    const userGamesRes = await fetch(
+      `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`,
+    );
     const userGames = await userGamesRes.json();
-    const validGameIds = userGames.data.map(game => game.rootPlace?.id);
+    const validGameIds = userGames.data.map((game) => game.rootPlace?.id);
 
     if (!validGameIds.includes(gameId)) {
-        return res.status(400).json({ success: false, error: "Game ID invalide" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Game ID invalide" });
     }
 
-
     if (!name || !gameId) {
-      return res.status(400).json({ success: false, error: "Paramètres manquants" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Paramètres manquants" });
     }
 
     // Générer un job_id unique
@@ -1162,7 +1196,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
 
     // Initialiser le job à pending
     jobs[job_id] = { status: "pending" };
-    setTimeout(() => delete jobs[job_id], 24*60*60*1000);
+    setTimeout(() => delete jobs[job_id], 24 * 60 * 60 * 1000);
     // Préparer payload pour GitHub
     const response = await fetch("http://87.106.245.156:5000/run_job", {
       method: "POST",
@@ -1172,8 +1206,8 @@ app.post("/api/payServer", authenticate, async (req, res) => {
         username: process.env.ROBLOX_USERNAME,
         password: process.env.ROBLOX_PASSWORD,
         server_name: name,
-        job_id
-      })
+        job_id,
+      }),
     });
 
     const data = await response.json();
@@ -1182,9 +1216,8 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     res.json({
       success: true,
       message: "Job lancé",
-      job_id
+      job_id,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
@@ -1221,7 +1254,8 @@ app.get("/api/jobStatus", (req, res) => {
 app.get("/getmultiplier", async (req, res) => {
   try {
     const snap = await db.ref("settings").get();
-    if (!snap.exists()) return res.status(404).json({ error: "Settings introuvables" });
+    if (!snap.exists())
+      return res.status(404).json({ error: "Settings introuvables" });
 
     const settings = snap.val();
     const multiplier = Number(settings.gainMultiplier) || 1;
@@ -1236,11 +1270,14 @@ app.get("/getmultiplier", async (req, res) => {
 app.post("/api/getBalance", async (req, res) => {
   try {
     const { name, Montant } = req.body;
-    if (!name) return res.status(400).json({ error: "Paramètre manquant : name" });
+    if (!name)
+      return res.status(400).json({ error: "Paramètre manquant : name" });
 
     const user = await getUserBalance(name);
-    if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
-    if (user.balance < Montant) return res.status(400).json({ error: "Solde insuffisant" })
+    if (!user)
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    if (user.balance < Montant)
+      return res.status(400).json({ error: "Solde insuffisant" });
     res.json({ robux: user.balance });
   } catch (err) {
     console.error("Erreur /api/getBalance :", err);
@@ -1261,33 +1298,34 @@ app.post("/api/withdraw", async (req, res) => {
 
   const { amount } = req.body;
   if (!amount) return res.status(400).json({ error: "Paramètres manquants" });
-  if (amount < 25 || amount > 375) return res.status(400).json({ error: "Montant invalide" });
-  if (amount > balance) return res.status(400).json({ error: "Solde insuffisant" });
+  if (amount < 25 || amount > 375)
+    return res.status(400).json({ error: "Montant invalide" });
+  if (amount > balance)
+    return res.status(400).json({ error: "Solde insuffisant" });
 
-    // 4️⃣ Calculer la nouvelle balance et ajouter transaction
-    //const newBalance = balance - amount;
-    //const transaction = {
-        //id: Date.now(),
-        //type: "withdraw",
-        //amount: -amount,
-        //date: new Date().toISOString()
-    //};
+  // 4️⃣ Calculer la nouvelle balance et ajouter transaction
+  //const newBalance = balance - amount;
+  //const transaction = {
+  //id: Date.now(),
+  //type: "withdraw",
+  //amount: -amount,
+  //date: new Date().toISOString()
+  //};
 
-    //await fetch(dbUrl, {
-        //method: "PATCH",
-        //headers: { "Content-Type": "application/json" },
-        //body: JSON.stringify({
-            //balance: newBalance,
-            //transactions: [...(userData.transactions || []), transaction]
-        //})
-    //});
+  //await fetch(dbUrl, {
+  //method: "PATCH",
+  //headers: { "Content-Type": "application/json" },
+  //body: JSON.stringify({
+  //balance: newBalance,
+  //transactions: [...(userData.transactions || []), transaction]
+  //})
+  //});
 
   // Juste pour info : renvoyer le solde actuel
   res.json({ balance });
 });
 
 app.get("/api/sse/balance", async (req, res) => {
-
   const sseToken = req.cookies.sse_token;
   if (!sseToken || !sseTokens[sseToken]) {
     return res.status(403).send("Forbidden");
@@ -1299,7 +1337,7 @@ app.get("/api/sse/balance", async (req, res) => {
   res.set({
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
-    "Connection": "keep-alive"
+    Connection: "keep-alive",
   });
   res.flushHeaders();
 
@@ -1312,7 +1350,7 @@ app.get("/api/sse/balance", async (req, res) => {
   res.write(`data: ${JSON.stringify({ ...data, delta: 0 })}\n\n`);
 
   // 🔹 Listener Firebase en temps réel
-  const listener = userRef.on("value", snapshot => {
+  const listener = userRef.on("value", (snapshot) => {
     const data = snapshot.val() || { balance: 0 };
     const balance = data.balance || 0;
     const delta = balance - lastBalance;
@@ -1331,38 +1369,38 @@ app.get("/api/sse/balance", async (req, res) => {
   });
 });
 
-app.post("/discord/statuemessage", async (req, res) =>{
+app.post("/discord/statuemessage", async (req, res) => {
   const { statue } = req.body;
   try {
     await db.ref("settings/MessageContext").update({
-      messageEnabled: statue
+      messageEnabled: statue,
     });
 
-    res.status(200).json("OK")
-  } catch(err) {
-    res.status(500).json(err)
-  };
+    res.status(200).json("OK");
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
-app.post("/discord/annouce", async (req, res) =>{
+app.post("/discord/annouce", async (req, res) => {
   const { title, content } = req.body;
   try {
     await db.ref("settings/MessageContext").update({
       Titre: title,
-      Contexte: content
+      Contexte: content,
     });
 
-    res.status(200).json("OK")
-  } catch(err) {
-    res.status(500).json(err)
-  };
+    res.status(200).json("OK");
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 app.get("/discord/getannounce", (req, res) => {
   res.set({
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
-    "Connection": "keep-alive"
+    Connection: "keep-alive",
   });
 
   res.flushHeaders();
@@ -1370,14 +1408,22 @@ app.get("/discord/getannounce", (req, res) => {
   const settingsref = admin.database().ref("settings/MessageContext");
 
   // 🔹 Envoi initial immédiat
-  settingsref.once("value").then(snapshot => {
-    const data = snapshot.val() || { Titre: null, Contexte: null, messageEnabled: false };
+  settingsref.once("value").then((snapshot) => {
+    const data = snapshot.val() || {
+      Titre: null,
+      Contexte: null,
+      messageEnabled: false,
+    };
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   });
 
   // 🔹 Listener pour les changements suivants
-  const listener = settingsref.on("value", snapshot => {
-    const data = snapshot.val() || { Titre: null, Contexte: null, messageEnabled: false };
+  const listener = settingsref.on("value", (snapshot) => {
+    const data = snapshot.val() || {
+      Titre: null,
+      Contexte: null,
+      messageEnabled: false,
+    };
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   });
 
@@ -1405,7 +1451,7 @@ app.post("/setSseCookie", async (req, res) => {
     // Stocker en mémoire ou DB temporaire
     sseTokens[sseToken] = {
       uid: user.uid,
-      expires: Date.now() + 24*60*60*1000 // 24h
+      expires: Date.now() + 24 * 60 * 60 * 1000, // 24h
     };
 
     // Créer le cookie HTTP Only + Secure
@@ -1413,8 +1459,8 @@ app.post("/setSseCookie", async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "Lax",
-      maxAge: 24*60*60*1000,
-      domain: ".bloxrbx.fr"
+      maxAge: 24 * 60 * 60 * 1000,
+      domain: ".bloxrbx.fr",
     });
 
     res.json({ success: true });
@@ -1426,7 +1472,15 @@ app.post("/setSseCookie", async (req, res) => {
 
 app.post("/apply-promo", authenticate, async (req, res) => {
   try {
-    const uid = req.uid;
+    const snapshot = await db
+      .ref("users")
+      .orderByChild("username")
+      .equalTo(username)
+      .once("value");
+    if (!snapshot.exists())
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+
+    const uid = Object.keys(snapshot.val())[0];
     const { code } = req.body;
 
     const ref = admin.database().ref(`promocodes/${code}`);
@@ -1445,16 +1499,15 @@ app.post("/apply-promo", authenticate, async (req, res) => {
     const balance = userSnap.val()?.balance || 0;
 
     await userRef.update({
-      balance: balance + promo.amount
+      balance: balance + promo.amount,
     });
 
     await ref.update({
       usesLeft: (promo.usesLeft ?? 1) - 1,
-      [`usedBy/${uid}`]: true
+      [`usedBy/${uid}`]: true,
     });
 
     res.json({ success: true, added: promo.amount });
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error");
@@ -1463,7 +1516,15 @@ app.post("/apply-promo", authenticate, async (req, res) => {
 
 app.post("/update-profile", authenticate, async (req, res) => {
   try {
-    const uid = req.uid;
+    const snapshot = await db
+      .ref("users")
+      .orderByChild("username")
+      .equalTo(username)
+      .once("value");
+    if (!snapshot.exists())
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+
+    const uid = Object.keys(snapshot.val())[0];
     const { username, robloxName, newPassword } = req.body;
 
     if (!username || !robloxName || !newPassword) {
@@ -1473,12 +1534,12 @@ app.post("/update-profile", authenticate, async (req, res) => {
     // 1. Update database
     await admin.database().ref(`users/${uid}`).update({
       username,
-      RobloxName: robloxName
+      RobloxName: robloxName,
     });
 
     // 2. Update password (SECURE - admin SDK)
     await admin.auth().updateUser(uid, {
-      password: newPassword
+      password: newPassword,
     });
 
     res.json({ success: true });
@@ -1492,5 +1553,5 @@ app.post("/update-profile", authenticate, async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`✅ Serveur en ligne sur le port ${PORT}`);
+  console.log(`✅ Serveur en ligne sur le port ${PORT}`);
 });
