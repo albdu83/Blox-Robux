@@ -631,15 +631,16 @@ app.get("/getCsrfToken", (req, res) => {
   const token = generateCsrfToken();
 
   // 🔥 supprime les anciens cookies (IMPORTANT)
-  res.clearCookie("csrf_token", { domain: "il.bloxrbx.fr" });
-  res.clearCookie("csrf_token", { domain: ".bloxrbx.fr" });
+  res.clearCookie("csrf_token", { domain: "il.bloxrbx.fr", path: "/" });
+  res.clearCookie("csrf_token", { domain: ".bloxrbx.fr", path: "/" });
 
   // ✅ recrée proprement
   res.cookie("csrf_token", token, {
     httpOnly: true,
     sameSite: "Lax",
     secure: true,
-    domain: ".bloxrbx.fr"
+    domain: ".bloxrbx.fr",
+    path: "/"
   });
 
   res.json({ token });
