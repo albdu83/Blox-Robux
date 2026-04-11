@@ -1516,11 +1516,45 @@ app.post("/apply-promo", authenticate, async (req, res) => {
 
 app.post("/update-profile", authenticate, async (req, res) => {
   try {
-    const { username, robloxName, newPassword } = req.body;
+    const { username, robloxName, newPassword, oldUsername, oldPassword } =
+      req.body;
     const uid = req.user.uid;
 
     if (!username || !robloxName || !newPassword) {
       return res.status(400).json({ error: "Missing fields" });
+    }
+
+    const snap = await db
+      .ref("users")
+      .orderByChild("username")
+      .equalTo(oldUsername)
+      .get();
+
+    if (!snap.exists()) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    const data = snap.val();
+    const uid2 = Object.keys(data)[0];
+    const user = data[uid2];
+
+    const email = user.email;
+
+    const res = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          oldPassword,
+          returnSecureToken: false,
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      return res.status(401).json({ error: "identifiants incorrectes" });
     }
 
     // 1. récupérer user actuel
@@ -1542,7 +1576,9 @@ app.post("/update-profile", authenticate, async (req, res) => {
         .get();
 
       if (snapshot.exists()) {
-        return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
+        return res
+          .status(409)
+          .json({ error: "Nom d'utilisateur déjà utilisé" });
       }
     }
 
@@ -1561,7 +1597,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
       success: true,
       Email: `${currentUser.firstUsername}@bloxrobux.local`,
     });
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
