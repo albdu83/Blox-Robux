@@ -291,7 +291,7 @@
             try {
               // On récupère le settings depuis Firebase
               const snap = await fetch(
-                "https://blox-robux.onrender.com/getmultiplier",
+                `${API_BASE_URL}/getmultiplier`,
               );
               const multiplier = await snap.json();
               if (multiplier.multiplier > 1) {
