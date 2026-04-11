@@ -14,7 +14,7 @@ html {
 
 
 body {
-  min-height: 100vh;
+  min-height: 96.75vh;
   line-height: 1.6;
   letter-spacing: 0.2px;
   margin: 0;
@@ -115,6 +115,13 @@ body::before {
   color: #ffffff;
 }
 
+label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #cfcfcf;
+}
+
 /* ------------------------------------------------ */
 /*                    STYLE PAGE                     */
 /* ------------------------------------------------ */
@@ -206,6 +213,31 @@ main {
   color: #ffea00;
   margin-bottom: 15px;
   text-align: center;
+}
+
+#adminEnter {
+  width: 100%;
+  padding: 10px;
+  background-color: #ffea00;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1b1b22;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #ffea00;
+}
+
+/* Messages */
+.msg {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 15px;
+  height: 18px;
 }
 
 /* TABLE */
@@ -522,7 +554,7 @@ main {
   margin-bottom: 10px;
 }
 
-.form-group input{
+.form-group input {
   width: 22.5%;
   padding: 10px;
   background: #141421;
@@ -530,6 +562,16 @@ main {
   border-radius: 8px;
   color: white;
   margin-bottom: 10px;
+}
+
+#adminCode {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background-color: #1a1b28;
+  color: white;
+  font-size: 15px;
 }
 
 /* FORMS */
@@ -809,6 +851,10 @@ textarea {
 }
 .drawer-danger .btn.danger:hover {
   background-color: #b91c1c;
+}
+
+.form-group {
+  margin-bottom: 15px;
 }
 
 @media (max-width: 900px) {
