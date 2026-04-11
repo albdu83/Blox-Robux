@@ -115,7 +115,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* =========================
        CONFIRMATION (RÉAUTH)
     ========================== */
-    auth.onAuthStateChanged(async (user) => {
     confirmBtn.addEventListener("click", async () => {
         confirmBtn.style.display = "none";
         gif.style.display = "flex";
@@ -145,8 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-    
-        if (!user) return console.error("Non connecté");
+        const user = auth.currentUser;
         const oldUsername = document.getElementById("a").value.trim();
         const oldPassword = document.getElementById("b").value.trim();
         if (!oldUsername || !oldPassword) {
@@ -234,7 +232,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error(err);
             showMsg(msg2, "❌ Erreur lors de la mise à jour");
         }
-    })
     });
 
     /* =========================
@@ -304,29 +301,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             inputEl.value = ""
             showMsg(msg, "❌ Une erreur est survenue.");
         }
-    });
-
-    /* ----- ADMIN ----- */
-    document.getElementById("adminEnter").addEventListener("click", () => {
-        const codeInput = document.getElementById("adminCode").value;
-        const msg = document.getElementById("adminMessage");
-        db.ref("admin/code").once("value").then(snapshot => {
-            const correctCode = snapshot.val();
-
-            if (codeInput === correctCode) {
-                msg.style.color = "#00ff6a";
-                msg.textContent = "✅ Code correct.";
-                setTimeout(() => {
-                    window.location.href = "../admin/adminpanel.html";
-                }, 1000);
-            } else {
-                msg.style.color = "#ff5555";
-                msg.textContent = "❌ Code invalide.";
-                setTimeout(() => {
-                    msg.textContent = ""
-                }, 3000);
-            }
-        });
     });
 
     const header = document.querySelector("header");
