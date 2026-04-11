@@ -1516,6 +1516,7 @@ app.post("/apply-promo", authenticate, async (req, res) => {
 
 app.post("/update-profile", authenticate, async (req, res) => {
   try {
+    const { username, robloxName, newPassword } = req.body;
     const snapshot = await db
       .ref("users")
       .orderByChild("username")
@@ -1525,7 +1526,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
       return res.status(404).json({ error: "Utilisateur introuvable" });
 
     const uid = Object.keys(snapshot.val())[0];
-    const { username, robloxName, newPassword } = req.body;
 
     if (!username || !robloxName || !newPassword) {
       return res.status(400).send("Missing fields");
