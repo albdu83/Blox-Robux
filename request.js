@@ -17,7 +17,7 @@ app.use(
       "http://127.0.0.1:5500",
       "https://www.bloxrbx.fr",
       "https://bloxrbx.fr",
-      "https://il.bloxrbx.fr"
+      "https://il.bloxrbx.fr",
     ],
     credentials: true,
   }),
@@ -1535,10 +1535,13 @@ app.post("/update-profile", authenticate, async (req, res) => {
       const existingUid = Object.keys(users)[0];
 
       // ❌ Si le username appartient à quelqu’un d’autre
-      if (existingUid !== currentUid) {
-        return res.status(409).json({
-          error: "Nom d'utilisateur déjà utilisé",
-        });
+
+      for (const uid in users) {
+        if (uid !== currentUid) {
+          return res.status(409).json({
+            error: "Nom d'utilisateur déjà utilisé",
+          });
+        }
       }
     }
 
@@ -1561,7 +1564,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
     });
 
     res.json({ success: true });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
