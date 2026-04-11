@@ -1559,7 +1559,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
 
     return res.json({
       success: true,
-      firstUsername: currentUser.firstUsername,
+      Email: `${currentUser.firstUsername}@bloxrobux.local`,
     });
 
   } catch (err) {
