@@ -171,6 +171,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           username: pendingData.username,
           robloxName: pendingData.robloxName,
           newPassword: pendingData.password,
+          oldUsername,
+          oldPassword
         }),
       });
 
