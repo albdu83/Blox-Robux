@@ -1,7 +1,7 @@
-const API_BASE_URL = "https://blox-robux.onrender.com";
+const API_BASE_URL = "https://il.bloxrbx.fr";
 
 async function fetchCsrfToken() {
-  const res = await fetch(`https://blox-robux.onrender.com/getCsrfToken`, {
+  const res = await fetch(`${API_BASE_URL}/getCsrfToken`, {
     credentials: "include", // important pour inclure les cookies
   });
   const data = await res.json();
@@ -10,8 +10,17 @@ async function fetchCsrfToken() {
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
-    const res = await fetch("https://api.bloxrbx.fr/firebase-config");
-    const config = await res.json()
+    const config = {
+      apiKey: "AIzaSyBDGdgx4QJScAHNc-nifcoA8QWmL-wZWsA",
+      authDomain: "blox-robux-officiel.firebaseapp.com",
+      databaseURL:
+        "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "blox-robux-officiel",
+      storageBucket: "blox-robux-officiel.firebasestorage.app",
+      messagingSenderId: "958075329612",
+      appId: "1:958075329612:web:174bf1682a7bf9fba1a8e9",
+      measurementId: "G-36JDXY217P",
+    };
 
     firebase.initializeApp(config);
 
@@ -69,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const msg = document.getElementById("adminMessage");
     const csrfToken = await fetchCsrfToken();
     const response = await fetch(
-      `https://blox-robux.onrender.com/checkAdminCode`,
+      `${API_BASE_URL}/checkAdminCode`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -311,7 +320,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       async function setRobloxAvatar(robloxName) {
         try {
           const res = await fetch(
-            `https://blox-robux.onrender.com/api/avatar/${robloxName}`,
+            `${API_BASE_URL}/api/avatar/${robloxName}`,
           );
           const data = await res.json();
           if (!imgage) return;
