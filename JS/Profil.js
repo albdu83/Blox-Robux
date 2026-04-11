@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function setRobloxAvatar(robloxName) {
         pseudoR.innerHTML = `@${robloxName}`;
         try {
-            const res = await fetch(`https://blox-robux.onrender.com/api/avatar/${robloxName}`);
+            const res = await fetch(`https://il.bloxrbx.fr/api/avatar/${robloxName}`);
             const data = await res.json();
             if (!imgage) return;
 
@@ -157,10 +157,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         let email;
         try {
             const token = await user.getIdToken();
+            const csrfToken = await fetchCsrfToken();
             const emailRes = await fetch(`${API_BASE_URL}/getEmail?username=${encodeURIComponent(oldUsername)}`, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${token}`,
+                    "X-CSRF-Token": csrfToken
                 }
             });
             if (!emailRes.ok) {
