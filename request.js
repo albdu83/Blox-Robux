@@ -1424,6 +1424,70 @@ app.post("/setSseCookie", async (req, res) => {
   }
 });
 
+app.post("/apply-promo", authenticate, async (req, res) => {
+  try {
+    const uid = req.uid;
+    const { code } = req.body;
+
+    const ref = admin.database().ref(`promocodes/${code}`);
+    const snap = await ref.get();
+
+    if (!snap.exists()) return res.status(400).send("Invalid code");
+
+    const promo = snap.val();
+
+    if (promo.usesLeft === 0) {
+      return res.status(400).send("Code expired");
+    }
+
+    const userRef = admin.database().ref(`users/${uid}`);
+    const userSnap = await userRef.get();
+    const balance = userSnap.val()?.balance || 0;
+
+    await userRef.update({
+      balance: balance + promo.amount
+    });
+
+    await ref.update({
+      usesLeft: (promo.usesLeft ?? 1) - 1,
+      [`usedBy/${uid}`]: true
+    });
+
+    res.json({ success: true, added: promo.amount });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error");
+  }
+});
+
+app.post("/update-profile", authenticate, async (req, res) => {
+  try {
+    const uid = req.uid;
+    const { username, robloxName, newPassword } = req.body;
+
+    if (!username || !robloxName || !newPassword) {
+      return res.status(400).send("Missing fields");
+    }
+
+    // 1. Update database
+    await admin.database().ref(`users/${uid}`).update({
+      username,
+      RobloxName: robloxName
+    });
+
+    // 2. Update password (SECURE - admin SDK)
+    await admin.auth().updateUser(uid, {
+      password: newPassword
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
