@@ -1524,22 +1524,23 @@ app.post("/update-profile", authenticate, async (req, res) => {
       return res.status(400).json({ error: "Missing fields" });
     }
 
-    const snap = await db
-      .ref("users")
-      .orderByChild("username")
-      .equalTo(oldUsername)
-      .get();
-
-    if (!snap.exists()) {
-      return res.status(404).json({ error: "Utilisateur introuvable" });
+    // 1. récupérer utilisateur actuel (sécurisé)
+    const currentSnap = await db.ref(`users/${uid}`).get();
+    if (!currentSnap.exists()) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    const data = snap.val();
-    const uid2 = Object.keys(data)[0];
-    const user = data[uid2];
+    const currentUser = currentSnap.val();
 
-    const email = user.email;
+    // 2. check ancien username appartient bien à ce user
+    if (currentUser.username !== oldUsername) {
+      return res.status(403).json({ error: "Username invalide" });
+    }
 
+    // 3. récupérer email via current user (PAS via search)
+    const email = currentUser.email;
+
+    // 4. vérifier password Firebase
     const response = await fetch(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
       {
@@ -1547,7 +1548,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          oldPassword,
+          password: oldPassword,
           returnSecureToken: false,
         }),
       },
@@ -1564,8 +1565,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
     if (!userSnap.exists()) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    const currentUser = userSnap.val();
 
     // 2. check username si changé
     if (username !== currentUser.username) {
