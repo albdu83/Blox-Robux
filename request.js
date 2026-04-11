@@ -339,26 +339,6 @@ async function getRobloxAvatar(username) {
   return avatarData?.data?.[0]?.imageUrl || null;
 }
 
-function sanitize(page) {
-  return page.replace(/[^a-z0-9_\-/]/gi, "");
-}
-
-
-// Route API pour récupérer une page HTML
-app.get("/page", async (req, res) => {
-  let page = req.query.name || "accueil";
-  page = sanitize(page);
-
-  const filePath = path.join(__dirname, "pages", `${page}.html`);
-
-  try {
-    const html = await fs.readFile(filePath, "utf8");
-    res.send(html);
-  } catch {
-    res.status(404).send("<h2>Page non trouvée</h2>");
-  }
-});
-
 // --- Endpoint Roblox avatar ---
 app.get("/api/avatar/:username", async (req, res) => {
     const username = req.params.username;
@@ -395,9 +375,6 @@ app.get("/api/avatar/:username", async (req, res) => {
 
 // --- Endpoint TimeWall ---
 const admin = require("firebase-admin");
-const { text } = require("stream/consumers");
-const { error } = require("console");
-
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -652,7 +629,7 @@ app.post("/CPXHASH", async (req, res) => {
 //---------------------------------------------------------------------------------------------------------------------------//
 app.get("/getCsrfToken", (req, res) => {
   const token = generateCsrfToken();
-  res.cookie("csrf_token", token, { httpOnly: true, sameSite: "None", secure: true });
+  res.cookie("csrf_token", token, { httpOnly: true, sameSite: "Lax", secure: true, domain: ".bloxrbx.fr" });
   res.json({ token });
 });
 
@@ -1095,7 +1072,7 @@ app.post("/checkAdminCode", async (req, res) => {
   if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
     return res.status(403).json({ error: "CSRF token invalide" });
   }
-
+  
   try {
     const snap = await db.ref("admin/code").get();
     const correctCode = snap.val();
@@ -1431,8 +1408,9 @@ app.post("/setSseCookie", async (req, res) => {
     res.cookie("sse_token", sseToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "None",
-      maxAge: 24*60*60*1000
+      sameSite: "Lax",
+      maxAge: 24*60*60*1000,
+      domain: ".bloxrbx.fr"
     });
 
     res.json({ success: true });
