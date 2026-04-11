@@ -1560,6 +1560,10 @@ app.post("/update-profile", authenticate, async (req, res) => {
       password: newPassword,
     });
 
+    const email = `${username}@bloxrobux.local`;
+
+    await firebase.auth().signInWithEmailAndPassword(email, newPassword);
+
     res.json({ success: true });
 
   } catch (err) {
