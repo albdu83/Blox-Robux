@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           username: pendingData.username,
@@ -177,13 +177,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Erreur backend");
+        throw new Error(data.error || data.message || "Erreur backend");
       }
 
       if (!data.success) {
-        throw new Error(data.message || "Erreur backend");
+        throw new Error(data.error || data.message || "Erreur backend");
       }
 
+      const password = document.getElementById("password").value.trim();
+      const email = data.Email
+
+      await firebase.auth().signInWithEmailAndPassword(email, password);
+    
       warn.classList.remove("active");
 
       warn.addEventListener("transitionend", function handleEnd() {
