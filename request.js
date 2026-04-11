@@ -17,7 +17,7 @@ app.use(
       "http://127.0.0.1:5500",
       "https://www.bloxrbx.fr",
       "https://bloxrbx.fr",
-      "https://il.bloxrbx.fr",
+      "https://il.bloxrbx.fr"
     ],
     credentials: true,
   }),
@@ -1517,35 +1517,54 @@ app.post("/apply-promo", authenticate, async (req, res) => {
 app.post("/update-profile", authenticate, async (req, res) => {
   try {
     const { username, robloxName, newPassword } = req.body;
+    const currentUid = req.user.uid;
+
+    if (!username || !robloxName || !newPassword) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    // 🔍 Vérifier si le username existe déjà
     const snapshot = await db
       .ref("users")
       .orderByChild("username")
       .equalTo(username)
       .once("value");
-    if (!snapshot.exists())
-      return res.status(404).json({ error: "Utilisateur introuvable" });
 
-    const uid = Object.keys(snapshot.val())[0];
+    if (snapshot.exists()) {
+      const users = snapshot.val();
+      const existingUid = Object.keys(users)[0];
 
-    if (!username || !robloxName || !newPassword) {
-      return res.status(400).send("Missing fields");
+      // ❌ Si le username appartient à quelqu’un d’autre
+      if (existingUid !== currentUid) {
+        return res.status(409).json({
+          error: "Nom d'utilisateur déjà utilisé",
+        });
+      }
     }
 
-    // 1. Update database
-    await admin.database().ref(`users/${uid}`).update({
+    // ✅ Update DB avec TON uid (sécurisé)
+    await db.ref(`users/${currentUid}`).update({
       username,
       RobloxName: robloxName,
     });
 
-    // 2. Update password (SECURE - admin SDK)
-    await admin.auth().updateUser(uid, {
+    // 🔐 Vérifier que l'utilisateur existe dans Auth
+    try {
+      await admin.auth().getUser(currentUid);
+    } catch {
+      return res.status(404).json({ error: "Utilisateur Auth introuvable" });
+    }
+
+    // 🔑 Update password
+    await admin.auth().updateUser(currentUid, {
       password: newPassword,
     });
 
     res.json({ success: true });
+
   } catch (err) {
     console.error(err);
-    res.status(500).send("Server error");
+    res.status(500).json({ error: "Server error" });
   }
 });
 
