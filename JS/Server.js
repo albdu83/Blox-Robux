@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://blox-robux.onrender.com";
+const API_BASE_URL = "https://il.bloxrbx.fr";
 
 let RobloxP = null
 let ID = null
