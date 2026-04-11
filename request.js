@@ -1517,65 +1517,54 @@ app.post("/apply-promo", authenticate, async (req, res) => {
 app.post("/update-profile", authenticate, async (req, res) => {
   try {
     const { username, robloxName, newPassword } = req.body;
-    const currentUid = req.user.uid;
+    const uid = req.user.uid;
 
     if (!username || !robloxName || !newPassword) {
       return res.status(400).json({ error: "Missing fields" });
     }
 
-    const currentUserSnap = await db.ref(`users/${currentUid}`).get();
-    if (!currentUserSnap.exists()) {
+    // 1. récupérer user actuel
+    const userRef = db.ref(`users/${uid}`);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists()) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const currentUser = currentUserSnap.val();
+    const currentUser = userSnap.val();
 
-     const snapshot = await db
+    // 2. check username si changé
+    if (username !== currentUser.username) {
+      const snapshot = await db
         .ref("users")
         .orderByChild("username")
         .equalTo(username)
-        .once("value");
-
-    // ✅ Si username inchangé → skip check
-    if (currentUser.username !== username) {
+        .get();
 
       if (snapshot.exists()) {
-        const users = snapshot.val();
-
-        for (const uid in users) {
-          if (uid !== currentUid) {
-            return res.status(409).json({
-              error: "Nom d'utilisateur déjà utilisé",
-            });
-          }
-        }
+        return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
       }
     }
 
-    if (!snapshot.exists()) {
-      return null;
-    }
-
-    const data = snapshot.val();
-    const user = data[currentUid];
-
-    const firstUsername = user.firstUsername;
-
-    const email = `${firstUsername}@bloxrobux.local`
-
-    await db.ref(`users/${currentUid}`).update({
+    // 3. update DB
+    await userRef.update({
       username,
       RobloxName: robloxName,
     });
 
-    await admin.auth().updateUser(currentUid, {
+    // 4. update auth password
+    await admin.auth().updateUser(uid, {
       password: newPassword,
     });
 
-    res.json({ success: true, Email: email });
+    return res.json({
+      success: true,
+      firstUsername: currentUser.firstUsername,
+    });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
