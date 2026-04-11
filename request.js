@@ -1540,7 +1540,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
 
     const email = user.email;
 
-    const res = await fetch(
+    const response = await fetch(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
       {
         method: "POST",
@@ -1553,7 +1553,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
       },
     );
 
-    if (!res.ok) {
+    if (!response.ok) {
       return res.status(401).json({ error: "identifiants incorrectes" });
     }
 
