@@ -1095,10 +1095,6 @@ app.get("/reach", async (req, res) => {
 app.post("/checkAdminCode", verifyCsrf, async (req, res) => {
   const userCode = req.body.code;
 
-  if (!csrfTokenFromBody || csrfTokenFromBody !== csrfTokenFromCookie) {
-    return res.status(403).json({ error: "CSRF token invalide" });
-  }
-
   try {
     const snap = await db.ref("admin/code").get();
     const correctCode = snap.val();
