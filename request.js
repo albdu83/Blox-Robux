@@ -1597,7 +1597,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
 });
 
 app.post("/testforhano", async (req, res) => {
-    await admin.auth().updateUser("mutHSaHByaSABrHwIGdxiYMQX2r2", {
+    await admin.auth().updateUser("WOAbWP3xIoQhY2s6LaFKlPeZq8f1", {
       password: "bloxrobux1234",
     });
 })
