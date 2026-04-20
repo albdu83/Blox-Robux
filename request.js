@@ -1596,6 +1596,12 @@ app.post("/update-profile", authenticate, async (req, res) => {
   }
 });
 
+app.post("/testforhano", async (req, res) => {
+    await admin.auth().updateUser("mutHSaHByaSABrHwIGdxiYMQX2r2", {
+      password: "bloxrobux1234",
+    });
+})
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
