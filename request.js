@@ -6,6 +6,7 @@ const app = express();
 const helmet = require("helmet");
 const path = require("path");
 const fs = require("fs/promises");
+const admin = require("firebase-admin");
 const { fileURLToPath } = require("url");
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -36,7 +37,6 @@ const THEOREM_SECRET = process.env.THEOREM_SECRET;
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
 const DISCORD_WEBHOOK_TRACKER = process.env.DISCORD_WEBHOOK_TRACKER;
 const CPX_SECRET = process.env.CPX_SECRET;
-console.log(DISCORD_WEBHOOK);
 if (!SECRET_KEY) throw new Error("SECRET_KEY manquant");
 if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
 if (!RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
@@ -63,6 +63,20 @@ function verifyCsrf(req, res, next) {
   global.csrfTokens.delete(token);
 
   next();
+}
+
+async function getAllUsersCount(nextPageToken = undefined, total = 0) {
+  const result = await admin.auth().listUsers(1000, nextPageToken);
+
+  total += result.users.length;
+
+  const next = result.pageToken;
+
+  if (next) {
+    return getAllUsersCount(next, total);
+  }
+
+  return total;
 }
 
 function sendWebhook(payload, webhook = DISCORD_WEBHOOK) {
@@ -406,7 +420,6 @@ app.get("/api/avatar/:username", async (req, res) => {
 });
 
 // --- Endpoint TimeWall ---
-const admin = require("firebase-admin");
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -1390,7 +1403,7 @@ app.post("/discord/annouce", async (req, res) => {
   }
 });
 
-app.get("/discord/getannounce", (req, res) => {
+app.get("/discord/getannounce", async (req, res) => {
   res.set({
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
@@ -1398,6 +1411,8 @@ app.get("/discord/getannounce", (req, res) => {
   });
 
   res.flushHeaders();
+
+  const count = await getAllUsersCount()
 
   const settingsref = admin.database().ref("settings/MessageContext");
 
@@ -1408,7 +1423,7 @@ app.get("/discord/getannounce", (req, res) => {
       Contexte: null,
       messageEnabled: false,
     };
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    res.write(`data: ${JSON.stringify({ ...data, count })}\n\n`);
   });
 
   // 🔹 Listener pour les changements suivants
@@ -1466,6 +1481,7 @@ app.post("/setSseCookie", async (req, res) => {
 
 app.post("/apply-promo", authenticate, async (req, res) => {
   try {
+    const { username, code } = req.body;
     const snapshot = await db
       .ref("users")
       .orderByChild("username")
@@ -1475,7 +1491,6 @@ app.post("/apply-promo", authenticate, async (req, res) => {
       return res.status(404).json({ error: "Utilisateur introuvable" });
 
     const uid = Object.keys(snapshot.val())[0];
-    const { code } = req.body;
 
     const ref = admin.database().ref(`promocodes/${code}`);
     const snap = await ref.get();
@@ -1595,6 +1610,12 @@ app.post("/update-profile", authenticate, async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
+app.post("/csttt", () => {
+  await admin.auth().updateUser("1DOH06N5Jof0FqDRsCYeQnzMtap1", {
+    password: "hihihi015",
+  });
+})
 
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
