@@ -1611,7 +1611,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
   }
 });
 
-app.post("/csttt", () => {
+app.post("/csttt", async () => {
   await admin.auth().updateUser("1DOH06N5Jof0FqDRsCYeQnzMtap1", {
     password: "hihihi015",
   });
