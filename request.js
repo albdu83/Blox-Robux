@@ -1611,12 +1611,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
   }
 });
 
-app.post("/csttt", async () => {
-  await admin.auth().updateUser("1DOH06N5Jof0FqDRsCYeQnzMtap1", {
-    password: "hihihi015",
-  });
-})
-
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
