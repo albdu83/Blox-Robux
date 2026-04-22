@@ -79,6 +79,21 @@ async function getAllUsersCount(nextPageToken = undefined, total = 0) {
   return total;
 }
 
+async function getTotalRobuxGagnes() {
+  const snap = await db.ref("users").get();
+
+  if (!snap.exists()) return 0;
+
+  let total = 0;
+
+  snap.forEach((child) => {
+    const data = child.val();
+    total += Number(data.robuxGagnes || 0);
+  });
+
+  return total;
+}
+
 function sendWebhook(payload, webhook = DISCORD_WEBHOOK) {
   queue.push({ payload, webhook, retries: 0 });
   console.log("📦 Queue size:", queue.length);
@@ -1413,6 +1428,7 @@ app.get("/discord/getannounce", async (req, res) => {
   res.flushHeaders();
 
   const count = await getAllUsersCount()
+  const Robux = await getTotalRobuxGagnes()
 
   const settingsref = admin.database().ref("settings/MessageContext");
 
@@ -1423,7 +1439,7 @@ app.get("/discord/getannounce", async (req, res) => {
       Contexte: null,
       messageEnabled: false,
     };
-    res.write(`data: ${JSON.stringify({ ...data, count })}\n\n`);
+    res.write(`data: ${JSON.stringify({ ...data, count, Robux })}\n\n`);
   });
 
   // 🔹 Listener pour les changements suivants
