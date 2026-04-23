@@ -58,49 +58,149 @@ document.addEventListener("DOMContentLoaded", async () => {
   const distitre = document.getElementById("distitre");
   const discontexte = document.getElementById("discontexte");
   const messageContainer = document.getElementById("message-dis-container");
+  const start = document.getElementById("start");
+  const countmember = document.getElementById("countmember");
+  const robuxnumber = document.getElementById("robuxnumber");
+
+  function scrambleText(el, finalText, duration = 1000) {
+    const chars = "0123456789";
+    const start = performance.now();
+
+    function update(now) {
+      const progress = (now - start) / duration;
+
+      let output = "";
+
+      for (let i = 0; i < finalText.length; i++) {
+        const revealPoint = (i + 1) / finalText.length;
+
+        if (progress >= revealPoint) {
+          output += finalText[i];
+        } else {
+          output += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+
+      el.textContent = output;
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        el.textContent = finalText;
+      }
+    }
+
+    requestAnimationFrame(update);
+  }
+
+  let evtSource;
 
   function LoadMessage() {
-    if (MessgaeDis || switch2) {
-      const evtSource = new EventSource(`${API_BASE_URL}/discord/getannounce`);
+    if (evtSource) evtSource.close();
+
+    if (MessgaeDis || switch2 || countmember) {
+      evtSource = new EventSource(`${API_BASE_URL}/discord/getannounce`);
 
       evtSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        if (data.messageEnabled === false) {
-          if (messageContainer) messageContainer.style.display = "none";
-          if (switch2) {
-            switch2.checked = !!data.messageEnabled;
-            title.value = data.Titre;
-            content.innerHTML = data.Contexte;
+        // COUNT animation
+        if (data.count && countmember) {
+          countmember.dataset.value = data.count;
+          robuxnumber.dataset.value = data.Robux;
+          const rect = countmember.getBoundingClientRect();
+          const inView = rect.top < window.innerHeight && rect.bottom > 0;
+          const rect2 = countmember.getBoundingClientRect();
+          const inView2 = rect2.top < window.innerHeight && rect2.bottom > 0;
+
+          if (inView) {
+            scrambleText(countmember, data.count);
           }
-        } else {
-          if (messageContainer) messageContainer.style.display = "flex";
-          if (switch2) {
-            switch2.checked = !!data.messageEnabled;
-            title.value = data.Titre;
-            content.innerHTML = data.Contexte;
+          if (inView2) {
+            scrambleText(robuxnumber, data.Robux);
           }
         }
 
-        if (distitre) distitre.textContent = data.Titre;
-        if (discontexte) discontexte.innerHTML = data.Contexte;
+        // MESSAGE ON/OFF
+        if (messageContainer) {
+          messageContainer.style.display = data.messageEnabled
+            ? "flex"
+            : "none";
+        }
+
+        // SWITCH SAFE
+        if (switch2) {
+          switch2.checked = !!data.messageEnabled;
+        }
+
+        // TITRE / CONTENU SAFE
+        if (title) title.value = data.Titre || "";
+        if (content) content.innerHTML = data.Contexte || "";
+
+        if (distitre) distitre.textContent = data.Titre || "";
+        if (discontexte) discontexte.innerHTML = data.Contexte || "";
+      };
+
+      evtSource.onerror = () => {
+        console.warn("SSE reconnecting...");
       };
     }
   }
 
-  LoadMessage();
+  await LoadMessage();
+
+  const el = document.querySelectorAll(".fade-in");
+
+  const observer2 = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+        } else {
+          // hors écran → disparition
+          entry.target.classList.remove("show");
+        }
+      });
+    },
+    {
+      threshold: 0.2, // déclenche quand 20% visible
+    },
+  );
+
+  el.forEach((el) => observer2.observe(el));
+
+  const observer = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          scrambleText(entry.target, entry.target.dataset.value);
+          obs.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.5 },
+  );
+
+  if (countmember) {
+    robuxnumber.dataset.value = robuxnumber.textContent;
+    countmember.dataset.value = countmember.textContent;
+    observer.observe(robuxnumber);
+    observer.observe(countmember);
+  }
 
   auth.onAuthStateChanged(async (user) => {
+    const sign = document.querySelectorAll(".start");
     if (!user) {
       console.log("Aucun utilisateur connecté");
       if (disco && body) {
         disco.style.display = "flex";
         body.innerHTML = "";
       }
-      const sign = document.getElementById("signup-image");
       if (sign) {
-        sign.addEventListener("click", () => {
-          window.location.href = "../Authentification/inscription";
+        sign.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            navigate("../Authentification/inscription")
+          });
         });
       }
       return;
@@ -109,6 +209,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         elements.style.display = "none";
         btnInscription.style.display = "none";
         btnConnexion.style.display = "none";
+      }
+
+      if (sign) {
+        sign.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            navigate("../Pages/Offres")
+          });
+        });
       }
 
       if (loadimg) {
@@ -311,13 +419,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         const csrfToken = await fetchCsrfToken();
         const res = await fetch(`${API_BASE_URL}/signup`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
           credentials: "include",
           body: JSON.stringify({
             username,
             password,
             RobloxName,
-            captcha: token
+            captcha: token,
           }),
         });
 
@@ -392,12 +503,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         const csrfToken = await fetchCsrfToken();
         const res = await fetch(`${API_BASE_URL}/login`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
           credentials: "include",
           body: JSON.stringify({
             username,
             password,
-            captcha
+            captcha,
           }),
         });
 
