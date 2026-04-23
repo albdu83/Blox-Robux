@@ -1225,7 +1225,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
       updatedAt: Date.now(),
     };
     setTimeout(() => delete jobs[job_id], 24 * 60 * 60 * 1000);
-    // Préparer payload pour GitHub
+    // Préparer payload pour le VPS
     fetch("http://87.106.245.156:5000/run_job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1233,7 +1233,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
         secret: process.env.SELENIUM_SECRET,
         username: process.env.ROBLOX_USERNAME,
         password: process.env.ROBLOX_PASSWORD,
-        server_name: name,
+        server_url: `https://www.roblox.com/games/${gameId}`,
         job_id,
       }),
     })
