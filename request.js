@@ -1199,9 +1199,11 @@ app.post("/api/payServer", authenticate, async (req, res) => {
       `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`,
     );
     const userGames = await userGamesRes.json();
-    const validGameIds = userGames.data.map((game) => game.rootPlace?.id);
+    const validGameIds = (userGames.data || [])
+      .map((game) => game.rootPlace?.id)
+      .filter(Boolean);
 
-    if (!validGameIds.includes(gameId)) {
+    if (!validGameIds.includes(Number(gameId))) {
       return res
         .status(400)
         .json({ success: false, error: "Game ID invalide" });
@@ -1217,10 +1219,14 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     const job_id = crypto.randomUUID();
 
     // Initialiser le job à pending
-    jobs[job_id] = { status: "pending" };
+    jobs[job_id] = {
+      status: "pending",
+      error: null,
+      updatedAt: Date.now(),
+    };
     setTimeout(() => delete jobs[job_id], 24 * 60 * 60 * 1000);
     // Préparer payload pour GitHub
-    const response = await fetch("http://87.106.245.156:5000/run_job", {
+    fetch("http://87.106.245.156:5000/run_job", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1230,10 +1236,20 @@ app.post("/api/payServer", authenticate, async (req, res) => {
         server_name: name,
         job_id,
       }),
-    });
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Job envoyé", data);
+      })
+      .catch((err) => {
+        console.error("VPS error", err);
 
-    const data = await response.json();
-    console.log("Job envoyé au VPS:", data);
+        // 🔥 important : mark job failed
+        if (jobs[job_id]) {
+          jobs[job_id].status = "failed";
+          jobs[job_id].error = "VPS unreachable";
+        }
+      });
 
     res.json({
       success: true,
@@ -1257,6 +1273,9 @@ app.post("/callback", (req, res) => {
   if (jobs[job_id]) {
     jobs[job_id].status = status;
     if (error) jobs[job_id].error = error;
+  } else {
+    console.log("Job inconnu:", job_id);
+    return res.sendStatus(404);
   }
 
   console.log(`Job ${job_id} terminé avec status: ${status}`);
@@ -1298,7 +1317,7 @@ app.post("/api/getBalance", async (req, res) => {
     const user = await getUserBalance(name);
     if (!user)
       return res.status(404).json({ error: "Utilisateur introuvable" });
-    if (user.balance < Montant)
+    if (user.balance < Number(Montant))
       return res.status(400).json({ error: "Solde insuffisant" });
     res.json({ robux: user.balance });
   } catch (err) {
@@ -1427,8 +1446,8 @@ app.get("/discord/getannounce", async (req, res) => {
 
   res.flushHeaders();
 
-  const count = await getAllUsersCount()
-  const Robux = await getTotalRobuxGagnes()
+  const count = await getAllUsersCount();
+  const Robux = await getTotalRobuxGagnes();
 
   const settingsref = admin.database().ref("settings/MessageContext");
 
