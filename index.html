@@ -67,22 +67,21 @@
       </div>
     </div>
     <div class="Bienvenue">
-      <h1 class="titrebienvenue fade-in">Bienvenue sur BloxR$</h1>
+      <h1 class="titrebienvenue fade-in">Bienvenue sur Blox R$</h1>
       <div
         style="
-          width: 60%;
+          min-width: 60%;
           height: 30vh;
           display: flex;
           justify-content: center;
           align-items: center;
         "
       >
-        <h3 style="text-align: center; max-width: 100%" class="fade-in">
-          Bienvenue sur BloxR$, un site où vous pouvez gagner des Rbx
-          gratuitement en complétant des offres, remplissant des sondages,
-          jouant à des jeux en ligne ! Créez un compte gratuitement pour
-          Commencer dès maintenant. Rejoignez notre serveur Discord pour toute
-          question !
+        <h3 style="text-align: center; max-width: 100%; font-size: clamp(0.75rem, 2vw, 1.2rem);" class="fade-in">
+          Bienvenue sur Blox R$, un site où vous pouvez gagner des R$
+          gratuitement en complétant des offres, en répondant à des sondages et
+          en jouant à des jeux ! Créez un compte gratuitement pour commencer dès
+          maintenant. Rejoignez notre serveur Discord pour toute question !
         </h3>
       </div>
       <div class="cards fade-in">
@@ -117,9 +116,11 @@
           <button class="cta notallowed">En savoir plus</button>
         </div>
       </div>
-      <h1 style="text-align: center; opacity: 0;">.</h1>
-      <h1 style="text-align: center; opacity: 0;">.</h1>
-      <h1 style="text-align: center" class="fade-in" id="nextbutton">suite ⬇</h1>
+      <h1 style="text-align: center; opacity: 0">.</h1>
+      <h1 style="text-align: center; opacity: 0">.</h1>
+      <h1 style="text-align: center" class="fade-in" id="nextbutton">
+        Suite ⬇
+      </h1>
     </div>
     <div class="hero-wrapper fade-in">
       <div class="hero">
@@ -139,14 +140,18 @@
                 d'utilisateur Roblox.
               </p>
             </div>
-            <img src="img/pièces.png" alt="Image Pièces" id="pièce-image"/>
+            <img src="img/pièces.png" alt="Image Pièces" id="pièce-image" />
             <div>
               <p>
                 2. Complétez des offres rapides et simples sur les sites
                 partenaires.
               </p>
             </div>
-            <img src="img/carte_bancaire.png" alt="Image Retrait" id="carte-image"/>
+            <img
+              src="img/carte_bancaire.png"
+              alt="Image Retrait"
+              id="carte-image"
+            />
             <div>
               <p>3. Retirez vos R$ directement sur votre compte Roblox !</p>
             </div>
@@ -237,7 +242,8 @@
         <div class="separator" style="width: 75%"></div>
       </div>
       <div
-        class="container fade-in" id="Retraitcontainer"
+        class="container fade-in"
+        id="Retraitcontainer"
         style="grid-template-columns: repeat(3, 1fr)"
       >
         <div
@@ -425,10 +431,12 @@
           block: "center",
         });
       });
-      const notallowed = document.querySelectorAll(".notallowed")
-        notallowed.forEach(element => {
-          element.addEventListener("click", () => {
-            alert("Page indisponible pour le moment. Le site WEB est encore en cours de développement. Merci pour votre compréhension !")
+      const notallowed = document.querySelectorAll(".notallowed");
+      notallowed.forEach((element) => {
+        element.addEventListener("click", () => {
+          alert(
+            "Page indisponible pour le moment. Le site WEB est encore en cours de développement. Merci pour votre compréhension !",
+          );
         });
       });
     </script>
