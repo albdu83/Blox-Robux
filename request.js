@@ -525,7 +525,7 @@ app.get("/timewall", async (req, res) => {
     await db
       .ref(`users/${uid}/robuxGagnes`)
       .transaction((v) => (v || 0) + amount);
-    const avatarUrl = await getRobloxAvatar(userID);
+    const avatarUrl = await getRobloxAvatar(data.RobloxName);
     sendWebhook({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
@@ -633,11 +633,7 @@ app.get("/cpx", async (req, res) => {
     await db
       .ref(`users/${uid}/robuxGagnes`)
       .transaction((v) => (v || 0) + amount);
-    const avatarUrl = await getRobloxAvatar(user_id);
-    console.log(amount);
-    console.log(user_id);
-    console.log(avatarUrl);
-    console.log(data.username);
+    const avatarUrl = await getRobloxAvatar(data.RobloxName);
     sendWebhook({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
@@ -1098,7 +1094,7 @@ app.get("/reach", async (req, res) => {
     .transaction((v) => (v || 0) + amount);
 
   console.log(`✅ ${user_id} crédité +${amount} | tx:${tx_id}`);
-  const avatarUrl = await getRobloxAvatar(user_id);
+  const avatarUrl = await getRobloxAvatar(data.RobloxName);
   sendWebhook({
     embeds: [{
       title: `**${data.username}** a gagné **${amount} R$** !`,
