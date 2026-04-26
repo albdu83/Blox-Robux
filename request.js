@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
-const fetch = require("node-fetch"); // si Node < 18
 const app = express();
 const helmet = require("helmet");
 const path = require("path");
