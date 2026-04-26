@@ -525,8 +525,8 @@ app.get("/timewall", async (req, res) => {
     await db
       .ref(`users/${uid}/robuxGagnes`)
       .transaction((v) => (v || 0) + amount);
-    const avatarUrl = await getRobloxAvatar(data.RobloxName);
-    sendWebhook({
+    const avatarUrl = await getRobloxAvatar(userID);
+    /*sendWebhook({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
         description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
@@ -543,7 +543,7 @@ app.get("/timewall", async (req, res) => {
         },
         timestamp: new Date().toISOString()
       }]
-    });
+    });*/
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
   } catch (err) {
@@ -633,8 +633,12 @@ app.get("/cpx", async (req, res) => {
     await db
       .ref(`users/${uid}/robuxGagnes`)
       .transaction((v) => (v || 0) + amount);
-    const avatarUrl = await getRobloxAvatar(data.RobloxName);
-    sendWebhook({
+    const avatarUrl = await getRobloxAvatar(user_id);
+    console.log(amount);
+    console.log(user_id);
+    console.log(avatarUrl);
+    console.log(data.username);
+    /*sendWebhook({
       embeds: [{
         title: `**${data.username}** a gagné **${amount} R$** !`,
         description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
@@ -651,7 +655,7 @@ app.get("/cpx", async (req, res) => {
         },
         timestamp: new Date().toISOString()
       }]
-    });
+    });*/
 
     console.log(`✅ Crédité ${user_id} (${uid}) +${amount}`);
     return res.status(200).send("OK");
@@ -1094,8 +1098,8 @@ app.get("/reach", async (req, res) => {
     .transaction((v) => (v || 0) + amount);
 
   console.log(`✅ ${user_id} crédité +${amount} | tx:${tx_id}`);
-  const avatarUrl = await getRobloxAvatar(data.RobloxName);
-  sendWebhook({
+  const avatarUrl = await getRobloxAvatar(user_id);
+  /*sendWebhook({
     embeds: [{
       title: `**${data.username}** a gagné **${amount} R$** !`,
       description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur Theoreme Reach`,
@@ -1112,7 +1116,7 @@ app.get("/reach", async (req, res) => {
       },
       timestamp: new Date().toISOString()
     }]
-  });
+  });*/
   return OK();
 });
 
@@ -1185,11 +1189,8 @@ async function getUserBalance(RobloxName) {
 }
 
 app.post("/api/payServer", authenticate, async (req, res) => {
-  // Récupération des jeux Roblox publics pour ce pseudo côté serveur
-  console.log("requete ok");
-
   try {
-    const { name, ID, gameId } = req.body;
+    const { name, ID, gameId, amount } = req.body;
 
     const userGamesRes = await fetch(
       `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`,
@@ -1230,6 +1231,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
         username: process.env.ROBLOX_USERNAME,
         password: process.env.ROBLOX_PASSWORD,
         server_url: `https://www.roblox.com/games/${gameId}`,
+        Receive_price: amount,
         job_id,
       }),
     })
