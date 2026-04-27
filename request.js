@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const crypto = require("crypto");
 const app = express();
 const helmet = require("helmet");
 const path = require("path");
@@ -525,22 +526,24 @@ app.get("/timewall", async (req, res) => {
       .transaction((v) => (v || 0) + amount);
     const avatarUrl = await getRobloxAvatar(data.RobloxName);
     sendWebhook({
-      embeds: [{
-        title: `**${data.username}** a gagné **${amount} R$** !`,
-        description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
-        color: 0x5865F2,
-        thumbnail: {
-          url: avatarUrl
+      embeds: [
+        {
+          title: `**${data.username}** a gagné **${amount} R$** !`,
+          description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
+          color: 0x5865f2,
+          thumbnail: {
+            url: avatarUrl,
+          },
+          image: {
+            url: "https://i.imgur.com/1t5wioe.png",
+          },
+          footer: {
+            text: "BloxRobux",
+            icon_url: "https://i.imgur.com/PjcK6QD.png",
+          },
+          timestamp: new Date().toISOString(),
         },
-        image: {
-          url: "https://i.imgur.com/1t5wioe.png"
-        },
-        footer: {
-          text: "BloxRobux",
-          icon_url: "https://i.imgur.com/PjcK6QD.png"
-        },
-        timestamp: new Date().toISOString()
-      }]
+      ],
     });
     console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
     return res.status(200).send("OK");
@@ -633,22 +636,24 @@ app.get("/cpx", async (req, res) => {
       .transaction((v) => (v || 0) + amount);
     const avatarUrl = await getRobloxAvatar(data.RobloxName);
     sendWebhook({
-      embeds: [{
-        title: `**${data.username}** a gagné **${amount} R$** !`,
-        description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
-        color: 0x5865F2,
-        thumbnail: {
-          url: avatarUrl
+      embeds: [
+        {
+          title: `**${data.username}** a gagné **${amount} R$** !`,
+          description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
+          color: 0x5865f2,
+          thumbnail: {
+            url: avatarUrl,
+          },
+          image: {
+            url: "https://i.imgur.com/qT78ezf.png",
+          },
+          footer: {
+            text: "BloxRobux",
+            icon_url: "https://i.imgur.com/PjcK6QD.png",
+          },
+          timestamp: new Date().toISOString(),
         },
-        image: {
-          url: "https://i.imgur.com/qT78ezf.png"
-        },
-        footer: {
-          text: "BloxRobux",
-          icon_url: "https://i.imgur.com/PjcK6QD.png"
-        },
-        timestamp: new Date().toISOString()
-      }]
+      ],
     });
 
     console.log(`✅ Crédité ${user_id} (${uid}) +${amount}`);
@@ -1094,22 +1099,24 @@ app.get("/reach", async (req, res) => {
   console.log(`✅ ${user_id} crédité +${amount} | tx:${tx_id}`);
   const avatarUrl = await getRobloxAvatar(data.RobloxName);
   sendWebhook({
-    embeds: [{
-      title: `**${data.username}** a gagné **${amount} R$** !`,
-      description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur Theoreme Reach`,
-      color: 0x5865F2,
-      thumbnail: {
-        url: avatarUrl
+    embeds: [
+      {
+        title: `**${data.username}** a gagné **${amount} R$** !`,
+        description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur Theoreme Reach`,
+        color: 0x5865f2,
+        thumbnail: {
+          url: avatarUrl,
+        },
+        image: {
+          url: "https://i.imgur.com/RuBfCsu.png",
+        },
+        footer: {
+          text: "BloxRobux",
+          icon_url: "https://i.imgur.com/PjcK6QD.png",
+        },
+        timestamp: new Date().toISOString(),
       },
-      image: {
-        url: "https://i.imgur.com/RuBfCsu.png"
-      },
-      footer: {
-        text: "BloxRobux",
-        icon_url: "https://i.imgur.com/PjcK6QD.png"
-      },
-      timestamp: new Date().toISOString()
-    }]
+    ],
   });
   return OK();
 });
@@ -1205,6 +1212,14 @@ app.post("/api/payServer", authenticate, async (req, res) => {
         .status(400)
         .json({ success: false, error: "Paramètres manquants" });
     }
+
+    const num = Number(amount);
+
+    if (isNaN(num)) {
+      throw new Error("Amount invalide");
+    }
+
+    const Price = Math.round(num / 0.7);
 
     // Générer un job_id unique
     const job_id = crypto.randomUUID();
@@ -1318,12 +1333,8 @@ app.post("/api/getBalance", async (req, res) => {
   }
 });
 
-app.post("/api/withdraw", async (req, res) => {
-  const token = req.headers.authorization?.split("Bearer ")[1];
-  if (!token) return res.status(401).json({ error: "Non authentifié" });
-
-  const decoded = await admin.auth().verifyIdToken(token);
-  const uid = decoded.uid;
+app.post("/api/withdraw", authenticate, async (req, res) => {
+  const uid = req.user.uid;
 
   const snap = await db.ref("users/" + uid).get();
   const userData = snap.val();
@@ -1336,26 +1347,25 @@ app.post("/api/withdraw", async (req, res) => {
   if (amount > balance)
     return res.status(400).json({ error: "Solde insuffisant" });
 
-  // 4️⃣ Calculer la nouvelle balance et ajouter transaction
-  //const newBalance = balance - amount;
-  //const transaction = {
-  //id: Date.now(),
-  //type: "withdraw",
-  //amount: -amount,
-  //date: new Date().toISOString()
-  //};
+  const newBalance = balance - amount;
+  await db.ref("users/" + uid).transaction((user) => {
+    if (!user) return user;
 
-  //await fetch(dbUrl, {
-  //method: "PATCH",
-  //headers: { "Content-Type": "application/json" },
-  //body: JSON.stringify({
-  //balance: newBalance,
-  //transactions: [...(userData.transactions || []), transaction]
-  //})
-  //});
+    const newTransaction = {
+      id: Date.now(),
+      type: "withdraw",
+      amount: -amount,
+      date: new Date().toISOString(),
+    };
+
+    user.balance = (user.balance || 0) - amount;
+    user.transactions = [...(user.transactions || []), newTransaction];
+
+    return user;
+  });
 
   // Juste pour info : renvoyer le solde actuel
-  res.json({ balance });
+  res.json({ newTransaction });
 });
 
 app.get("/api/sse/balance", async (req, res) => {
