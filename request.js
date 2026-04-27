@@ -1323,8 +1323,8 @@ app.post("/callback", (req, res) => {
   // PARSE SIGNATURE HEADER
   // =========================
   const parts = sigHeader.split(",");
-  const timestamp = parts.find(p => p.startsWith("t="))?.slice(2);
-  const signature = parts.find(p => p.startsWith("v1="))?.slice(3);
+  const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
+  const signature = parts.find((p) => p.startsWith("v1="))?.slice(3);
 
   if (!timestamp || !signature) {
     return res.status(400).json({ error: "Invalid signature format" });
@@ -1343,7 +1343,7 @@ app.post("/callback", (req, res) => {
   // =========================
   const signedPayload = Buffer.concat([
     Buffer.from(timestamp + ".", "utf8"),
-    raw
+    raw,
   ]);
 
   // =========================
@@ -1357,12 +1357,24 @@ app.post("/callback", (req, res) => {
   const sigBuf = Buffer.from(signature, "hex");
   const expBuf = Buffer.from(expected, "hex");
 
-  if (sigBuf.length !== expBuf.length ||
-      !crypto.timingSafeEqual(sigBuf, expBuf)) {
+  if (
+    sigBuf.length !== expBuf.length ||
+    !crypto.timingSafeEqual(sigBuf, expBuf)
+  ) {
     console.log("❌ SIGNATURE FAIL");
     console.log("RAW:", raw.toString());
     console.log("EXPECTED:", expected);
     console.log("GOT:", signature);
+    const secret = process.env.SELENIUM_SECRET;
+
+    console.log("NODE SECRET LEN =", secret?.length);
+    console.log(
+      "NODE SECRET SHA256 =",
+      require("crypto")
+        .createHash("sha256")
+        .update(secret, "utf8")
+        .digest("hex"),
+    );
 
     return res.status(403).json({ error: "Invalid signature" });
   }
