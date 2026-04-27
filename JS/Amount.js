@@ -1,146 +1,146 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    
-    /* =====================================================
+  /* =====================================================
        1️⃣ RÉCUPÉRATION FIREBASE
     ===================================================== */
-    const { auth, db } = await initFirebase();
+  const { auth, db } = await initFirebase();
 
-    if (!db || !auth) {
-        console.error("Firebase n'est pas initialisé !");
-        return;
-    }
-    
-    /* =====================================================
+  if (!db || !auth) {
+    console.error("Firebase n'est pas initialisé !");
+    return;
+  }
+
+  /* =====================================================
        2️⃣ ÉLÉMENTS DOM
     ===================================================== */
-    const balanceEl = document.getElementById("balance");
-    const balanceEl2 = document.getElementById("balance2");
-    const amountEl = document.getElementById("amount");
-    const withdrawBtn = document.getElementById("withdrawBtn");
-    const transactionsEl = document.getElementById("transactions");
-    const errorEl = document.getElementById("error");
+  const balanceEl = document.getElementById("balance");
+  const balanceEl2 = document.getElementById("balance2");
+  const amountEl = document.getElementById("amount");
+  const withdrawBtn = document.getElementById("withdrawBtn");
+  const transactionsEl = document.getElementById("transactions");
+  const errorEl = document.getElementById("error");
 
-    const template = document.getElementById("background");
-    const finalStep = document.getElementById("finalStep");
-    const finalStep2 = document.getElementById("finalStep2");
-    const helpbutton = document.getElementById("HELP");
-    const btnretour = document.getElementById("btnretour");
-    const gainnotif = document.getElementById("gainnotif");
-    const notifbackgroundwin = document.getElementById("notifbackgroundwin");
-    const closenotif = document.getElementById("closenotif");
-    const closenotif2 = document.getElementById("closenotif2");
-    const sousnotifbackground = document.getElementById("sous-notifbackground")
+  const template = document.getElementById("background");
+  const finalStep = document.getElementById("finalStep");
+  const finalStep2 = document.getElementById("finalStep2");
+  const helpbutton = document.getElementById("HELP");
+  const btnretour = document.getElementById("btnretour");
+  const gainnotif = document.getElementById("gainnotif");
+  const notifbackgroundwin = document.getElementById("notifbackgroundwin");
+  const closenotif = document.getElementById("closenotif");
+  const closenotif2 = document.getElementById("closenotif2");
+  const sousnotifbackground = document.getElementById("sous-notifbackground");
 
-    /* =====================================================
+  /* =====================================================
        3️⃣ ÉTAT LOCAL
     ===================================================== */
-    let state = {
-        balance: 0,
-        transactions: []
-    };
-    let pendingNotifications = [];
-    let userRef = null; // référence DB dynamique
-    let userIsActive = true;
+  let state = {
+    balance: 0,
+    transactions: [],
+  };
+  let pendingNotifications = [];
+  let userRef = null; // référence DB dynamique
+  let userIsActive = true;
 
-    /* =====================================================
+  /* =====================================================
        4️⃣ UTILITAIRES
     ===================================================== */
-    document.addEventListener("visibilitychange", () => {
-        userIsActive = !document.hidden;
-        if (!document.hidden && pendingNotifications.length > 0) {
-            pendingNotifications.forEach(n => showGainNotification(n.data, n.delta));
-            pendingNotifications = [];
-        }
-    });
-
-    function showGainNotification(data, delta) {
-        gainnotif.innerText = `${delta > 0 ? 'Bravo ,' : 'Oh non... '}vous venez de ${delta > 0 ? 'gagner' : 'perdre'} ${Math.abs(delta)} R$ sur le site !`;
-        notifbackgroundwin.style.display = "flex";
-        // Forcer l'animation
-        setTimeout(() => {
-            notifbackgroundwin.classList.toggle("show"),
-            sousnotifbackground.classList.toggle("show")
-        }, 50);
+  document.addEventListener("visibilitychange", () => {
+    userIsActive = !document.hidden;
+    if (!document.hidden && pendingNotifications.length > 0) {
+      pendingNotifications.forEach((n) =>
+        showGainNotification(n.data, n.delta),
+      );
+      pendingNotifications = [];
     }
+  });
 
-    function formatMoney(num) {
-        const n = (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
-        return n.replace('.', ',') + ' R$';
-    }
+  function showGainNotification(data, delta) {
+    gainnotif.innerText = `${delta > 0 ? "Bravo ," : "Oh non... "}vous venez de ${delta > 0 ? "gagner" : "perdre"} ${Math.abs(delta)} R$ sur le site !`;
+    notifbackgroundwin.style.display = "flex";
+    // Forcer l'animation
+    setTimeout(() => {
+      (notifbackgroundwin.classList.toggle("show"),
+        sousnotifbackground.classList.toggle("show"));
+    }, 50);
+  }
 
-    function showError(msg) {
-        if (!errorEl) return;
-        errorEl.textContent = msg;
-        errorEl.style.display = "block";
-        setTimeout(() => errorEl.style.display = "none", 3000);
-    }
+  function formatMoney(num) {
+    const n = (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
+    return n.replace(".", ",") + " R$";
+  }
 
-    /* =====================================================
+  function showError(msg) {
+    if (!errorEl) return;
+    errorEl.textContent = msg;
+    errorEl.style.display = "block";
+    setTimeout(() => (errorEl.style.display = "none"), 3000);
+  }
+
+  /* =====================================================
        5️⃣ TEMPLATES UI (inchangés)
     ===================================================== */
-    function showTemplate() {
-        finalStep2.style.display = "none";
-        template.style.display = "flex";
-        requestAnimationFrame(() => {
-            template.classList.add("active");
-            finalStep.classList.add("show");
-        });
-    }
+  function showTemplate() {
+    finalStep2.style.display = "none";
+    template.style.display = "flex";
+    requestAnimationFrame(() => {
+      template.classList.add("active");
+      finalStep.classList.add("show");
+    });
+  }
 
-    function hideTemplate() {
-        finalStep.classList.remove("show");
-    }
+  function hideTemplate() {
+    finalStep.classList.remove("show");
+  }
 
-    function showTemplate2() {
-        finalStep.style.display = "none";
-        finalStep2.style.display = "flex";
-        requestAnimationFrame(() => finalStep2.classList.add("show"));
-    }
+  function showTemplate2() {
+    finalStep.style.display = "none";
+    finalStep2.style.display = "flex";
+    requestAnimationFrame(() => finalStep2.classList.add("show"));
+  }
 
-    function showTemplate3() {
-        finalStep2.style.display = "none";
-        finalStep.style.display = "flex";
-        requestAnimationFrame(() => finalStep.classList.add("show"));
-    }
+  function showTemplate3() {
+    finalStep2.style.display = "none";
+    finalStep.style.display = "flex";
+    requestAnimationFrame(() => finalStep.classList.add("show"));
+  }
 
-    function hideTemplate2() {
-        finalStep2.classList.remove("show");
-    }
+  function hideTemplate2() {
+    finalStep2.classList.remove("show");
+  }
 
-    /* =====================================================
+  /* =====================================================
        6️⃣ RENDER
     ===================================================== */
-    function renderTransactions() {
-        if (!transactionsEl) return;
+  function renderTransactions() {
+    if (!transactionsEl) return;
 
-        transactionsEl.innerHTML = "";
+    transactionsEl.innerHTML = "";
 
-        if (!state.transactions || state.transactions.length === 0) {
-            transactionsEl.innerHTML =
-                '<p class="empty">Aucun retrait effectué.</p>';
-            return;
-        }
+    if (!state.transactions || state.transactions.length === 0) {
+      transactionsEl.innerHTML = '<p class="empty">Aucun retrait effectué.</p>';
+      return;
+    }
 
-        const total = state.transactions.length;
+    const total = state.transactions.length;
 
-        const divHeader = document.createElement("div");
-        divHeader.className = "divHeader";
-        divHeader.innerHTML = `
+    const divHeader = document.createElement("div");
+    divHeader.className = "divHeader";
+    divHeader.innerHTML = `
             <span>Retrait n° :</span>
             <span>Retrait ID :</span>
             <span>Retrait valeur :</span>
         `;
-        transactionsEl.appendChild(divHeader);
+    transactionsEl.appendChild(divHeader);
 
-        state.transactions
-            .slice(-10)
-            .reverse()
-            .forEach((tx, index) => {
-                const order = total - index;
+    state.transactions
+      .slice(-10)
+      .reverse()
+      .forEach((tx, index) => {
+        const order = total - index;
 
-                const div = document.createElement("div");
-                div.className = "transaction";
-                div.innerHTML = `
+        const div = document.createElement("div");
+        div.className = "transaction";
+        div.innerHTML = `
                     <span>${order} - Retrait</span>
                     <span class="copy-id" data-copy="${tx.id}">
                         ID : ${tx.id}
@@ -148,154 +148,129 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </span>
                     <span class="neg">${formatMoney(Math.abs(tx.amount))}</span>
                 `;
-                transactionsEl.appendChild(div);
-            });
-    }
+        transactionsEl.appendChild(div);
+      });
+  }
 
-    function render() {
-        if (balanceEl && balanceEl2) {
-            balanceEl.textContent = formatMoney(state.balance);
-            balanceEl2.textContent = formatMoney(state.balance);
-        }
-        renderTransactions();
+  function render() {
+    if (balanceEl && balanceEl2) {
+      balanceEl.textContent = formatMoney(state.balance);
+      balanceEl2.textContent = formatMoney(state.balance);
     }
+    renderTransactions();
+  }
 
-    /* =====================================================
+  /* =====================================================
        7️⃣ 🔥 AUTH FIREBASE — CORRECTION PRINCIPALE
     ===================================================== */
-auth.onAuthStateChanged(async (user) => {
+  auth.onAuthStateChanged(async (user) => {
     if (gainnotif) gainnotif.innerText = "";
 
     if (!user) {
-        state.balance = 0;
-        state.transactions = [];
-        render();
-        if (withdrawBtn) withdrawBtn.disabled = true;
-        return;
+      state.balance = 0;
+      state.transactions = [];
+      render();
+      if (withdrawBtn) withdrawBtn.disabled = true;
+      return;
     }
 
     try {
-        const token = await user.getIdToken(true); // true pour forcer le refresh si nécessaire
+      const token = await user.getIdToken(true); // true pour forcer le refresh si nécessaire
 
-        // Envoyer le token au serveur pour créer le cookie SSE
-        await fetch(`${API_BASE_URL}/setSseCookie`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken: token })
-        });
+      // Envoyer le token au serveur pour créer le cookie SSE
+      await fetch(`${API_BASE_URL}/setSseCookie`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: token }),
+      });
 
-        const evtSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, {
-            withCredentials: true
-        });
+      const evtSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, {
+        withCredentials: true,
+      });
 
-        evtSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+      evtSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
 
-            const oldBalance = state.balance;
-            state.balance = data.balance || 0;
-            state.transactions = data.transactions || [];
-            render();
+        const oldBalance = state.balance;
+        state.balance = data.balance || 0;
+        state.transactions = data.transactions || [];
+        render();
 
-            const delta = data.delta ?? (state.balance - oldBalance);
+        const delta = data.delta ?? state.balance - oldBalance;
 
-            if (delta && delta !== 0) {
-                if (userIsActive) {
-                    showGainNotification(data, delta);
-                } else {
-                    pendingNotifications.push({ data, delta });
-                }
-            }
-        };
+        if (delta && delta !== 0) {
+          if (userIsActive) {
+            showGainNotification(data, delta);
+          } else {
+            pendingNotifications.push({ data, delta });
+          }
+        }
+      };
 
-        evtSource.onerror = () => {
-            console.error("SSE disconnected");
-        };
+      evtSource.onerror = () => {
+        console.error("SSE disconnected");
+      };
     } catch (err) {
-        console.error("Erreur lors de l'auth/SSE:", err);
+      console.error("Erreur lors de l'auth/SSE:", err);
     }
-});
+  });
 
-    /* =====================================================
+  /* =====================================================
        8️⃣ RETRAIT
     ===================================================== */
-    async function addTransaction(amount) {
-        try {
-            const user = firebase.auth().currentUser;
-            if (!user) return showError("Utilisateur non connecté");
 
-            const token = await user.getIdToken();
+  if (withdrawBtn) {
+    withdrawBtn.addEventListener("click", async () => {
+      if (!amountEl) return showError("Champ montant introuvable");
+      const value = parseFloat(amountEl.value);
+      if (isNaN(value)) return showError("Montant invalide");
 
-            const res = await fetch(`${API_BASE_URL}/api/withdraw`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({ amount })
-            });
-            const data = await res.json();
+      finalStep.classList.forEach(
+        (c) => c.startsWith("active") && finalStep.classList.remove(c),
+      );
+      finalStep2.classList.forEach(
+        (c) => c.startsWith("active") && finalStep2.classList.remove(c),
+      );
 
-            if (data.error) return showError(data.error);
-            if (!data.error) showTemplate();
+      await addTransaction(value);
 
-            state.transactions = data.transaction;
+      const taxe = Math.round(value / 0.7);
+      const taxelabel = document.getElementById("robuxadd");
+      if (taxelabel) {
+        taxelabel.innerHTML = `🛑 Vous indiquerez ${taxe} Robux dans l'encadré rouge de l'image !`;
+      }
+    });
+  }
 
-            render();
-        } catch (err) {
-            console.error(err);
-            showError("Erreur serveur, réessayez plus tard");
-        }
-    }
-
-    if (withdrawBtn) {
-        withdrawBtn.addEventListener("click", async () => {
-            if (!amountEl) return showError("Champ montant introuvable");
-            const value = parseFloat(amountEl.value);
-            if (isNaN(value)) return showError("Montant invalide");
-
-            finalStep.classList.forEach(c => c.startsWith("active") && finalStep.classList.remove(c));
-            finalStep2.classList.forEach(c => c.startsWith("active") && finalStep2.classList.remove(c));
-
-            await addTransaction(value);
-
-            const taxe = Math.round(value / 0.7);
-            const taxelabel = document.getElementById("robuxadd");
-            if (taxelabel) {
-                taxelabel.innerHTML =
-                    `🛑 Vous indiquerez ${taxe} Robux dans l'encadré rouge de l'image !`;
-            };
-        })    
-    }
-
-    /* =====================================================
+  /* =====================================================
        9️⃣ NAVIGATION UI
     ===================================================== */
-    if (helpbutton) {
-        helpbutton.addEventListener("click", () => {
-            hideTemplate();
-            showTemplate2();
-        });
-    }
+  if (helpbutton) {
+    helpbutton.addEventListener("click", () => {
+      hideTemplate();
+      showTemplate2();
+    });
+  }
 
-    if (btnretour) {
-        btnretour.addEventListener("click", () => {
-            hideTemplate2();
-            showTemplate3();
-        });
-    }
+  if (btnretour) {
+    btnretour.addEventListener("click", () => {
+      hideTemplate2();
+      showTemplate3();
+    });
+  }
 
-    function closeNotif() {
-        // 1️⃣ Lancer l’animation de sortie
-        notifbackgroundwin.classList.remove("show");
-        sousnotifbackground.classList.remove("show");
+  function closeNotif() {
+    // 1️⃣ Lancer l’animation de sortie
+    notifbackgroundwin.classList.remove("show");
+    sousnotifbackground.classList.remove("show");
 
-        // 2️⃣ Attendre la fin de la transition avant de masquer complètement
-        setTimeout(() => {
-            notifbackgroundwin.style.display = "none";
-        }, 300); // doit correspondre à la durée de ta transition CSS
-    }
+    // 2️⃣ Attendre la fin de la transition avant de masquer complètement
+    setTimeout(() => {
+      notifbackgroundwin.style.display = "none";
+    }, 300); // doit correspondre à la durée de ta transition CSS
+  }
 
-    if (closenotif) closenotif.addEventListener("click", closeNotif);
-    if (closenotif2) closenotif2.addEventListener("click", closeNotif);
+  if (closenotif) closenotif.addEventListener("click", closeNotif);
+  if (closenotif2) closenotif2.addEventListener("click", closeNotif);
 });
