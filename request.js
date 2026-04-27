@@ -1306,55 +1306,70 @@ app.post("/api/payServer", authenticate, async (req, res) => {
   }
 });
 
-app.post(
-  "/callback",
-  express.raw({ type: "application/json" }), // 🔥 CRUCIAL
-  (req, res) => {
-    const signature = req.headers["x-signature"];
+app.post("/callback", (req, res) => {
+  const sigHeader = req.headers["x-signature"];
 
-    if (!signature) {
-      return res.status(401).json({ error: "Missing signature" });
-    }
-
-    const raw = req.body; // Buffer EXACT
-
-    const expected = crypto
-      .createHmac("sha256", process.env.SELENIUM_SECRET)
-      .update(raw)
-      .digest("hex");
-
-    if (
-      !crypto.timingSafeEqual(
-        Buffer.from(signature, "hex"),
-        Buffer.from(expected, "hex")
-      )
-    ) {
-      console.log("❌ SIGNATURE FAIL");
-      console.log("RAW:", raw.toString());
-      console.log("EXPECTED:", expected);
-      console.log("GOT:", signature);
-
-      return res.status(403).json({ error: "Invalid signature" });
-    }
-
-    // 👉 parse APRES vérification
-    const body = JSON.parse(raw.toString());
-
-    const { job_id, status, error } = body;
-
-    if (!jobs[job_id]) {
-      return res.status(404).json({ error: "Job inconnu" });
-    }
-
-    jobs[job_id].status = status;
-    if (error) jobs[job_id].error = error;
-
-    console.log(`Job ${job_id} terminé: ${status}`);
-    if (error) console.log(`Erreur: ${error}`);
-
-    res.sendStatus(200);
+  if (!sigHeader) {
+    return res.status(401).json({ error: "Missing signature" });
   }
-);
+
+  const raw = req.rawBody;
+
+  // 🔍 Parse header
+  const parts = sigHeader.split(",");
+  const timestamp = parts.find(p => p.startsWith("t="))?.slice(2);
+  const signature = parts.find(p => p.startsWith("v1="))?.slice(3);
+
+  if (!timestamp || !signature) {
+    return res.status(400).json({ error: "Invalid signature format" });
+  }
+
+  // ⏱️ Protection replay (5 min max)
+  const now = Math.floor(Date.now() / 1000);
+  const tolerance = 300;
+
+  if (Math.abs(now - Number(timestamp)) > tolerance) {
+    return res.status(400).json({ error: "Signature expired" });
+  }
+
+  // 🔐 Rebuild signed payload
+  const signedPayload = Buffer.concat([
+    Buffer.from(timestamp),
+    Buffer.from("."),
+    raw
+  ]);
+
+  const expected = crypto
+    .createHmac("sha256", process.env.SELENIUM_SECRET)
+    .update(signedPayload)
+    .digest("hex");
+
+  if (
+    !crypto.timingSafeEqual(
+      Buffer.from(signature, "hex"),
+      Buffer.from(expected, "hex")
+    )
+  ) {
+    console.log("❌ SIGNATURE FAIL");
+    return res.status(403).json({ error: "Invalid signature" });
+  }
+
+  // ✅ SAFE → parse body
+  const body = req.body;
+
+  const { job_id, status, error } = body;
+
+  if (!jobs[job_id]) {
+    return res.status(404).json({ error: "Job inconnu" });
+  }
+
+  jobs[job_id].status = status;
+  if (error) jobs[job_id].error = error;
+
+  console.log(`Job ${job_id} terminé: ${status}`);
+
+  res.sendStatus(200);
+});
 
 app.get("/api/jobStatus", (req, res) => {
   const { job_id } = req.query;
