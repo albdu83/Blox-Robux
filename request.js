@@ -1327,6 +1327,9 @@ app.post("/callback", express.json({ limit: "1mb" }), (req, res) => {
     .update(body, "utf8")
     .digest("hex");
 
+  console.log("SELENIUM_SECRET =", JSON.stringify(process.env.SELENIUM_SECRET));
+  console.log("LEN =", process.env.SELENIUM_SECRET?.length);
+
   if (!crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"))) {
     console.log("❌ SIGNATURE FAIL");
     console.log("RAW:", body);
