@@ -1,13 +1,22 @@
 const API_BASE_URL = "https://il.bloxrbx.fr";
 
-let RobloxP = null
-let ID = null
-let userN = null
+let RobloxP = null;
+let ID = null;
+let userN = null;
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
-    const res = await fetch("https://api.bloxrbx.fr/firebase-config");
-    const config = await res.json()
+    const config = {
+      apiKey: "AIzaSyBDGdgx4QJScAHNc-nifcoA8QWmL-wZWsA",
+      authDomain: "blox-robux-officiel.firebaseapp.com",
+      databaseURL:
+        "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "blox-robux-officiel",
+      storageBucket: "blox-robux-officiel.firebasestorage.app",
+      messagingSenderId: "958075329612",
+      appId: "1:958075329612:web:174bf1682a7bf9fba1a8e9",
+      measurementId: "G-36JDXY217P",
+    };
 
     firebase.initializeApp(config);
 
@@ -199,7 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (sign) {
         sign.forEach((btn) => {
           btn.addEventListener("click", () => {
-            navigate("../Authentification/inscription")
+            navigate("../Authentification/inscription");
           });
         });
       }
@@ -214,7 +223,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (sign) {
         sign.forEach((btn) => {
           btn.addEventListener("click", () => {
-            navigate("../Pages/Offres")
+            navigate("../Pages/Offres");
           });
         });
       }
@@ -768,6 +777,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  async function addTransaction(amount) {
+    try {
+      const user = firebase.auth().currentUser;
+      if (!user) return showError("Utilisateur non connecté");
+
+      const token = await user.getIdToken();
+
+      const res = await fetch(`${API_BASE_URL}/api/withdraw`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ amount }),
+      });
+      const data = await res.json();
+
+      if (data.error) return console.error("Problème de la manipulation");
+    } catch (err) {
+      console.error(err);
+      showError("Erreur serveur, réessayez plus tard");
+    }
+  }
+
   window.addEventListener("resize", updateInterfaceSize);
   updateInterfaceSize();
 
@@ -841,6 +874,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (statusData.status === "success") {
           alert("🎉 Serveur privé créé avec succès !");
           clearInterval(pollJob);
+          addTransaction(amount)
         } else if (statusData.status === "error") {
           alert(
             `❌ Erreur lors de la création du serveur : ${statusData.error}`,
