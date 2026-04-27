@@ -1313,26 +1313,37 @@ app.post("/callback", express.json({ limit: "1mb" }), (req, res) => {
     return res.status(401).json({ error: "Missing signature" });
   }
 
-  // 🔥 STRICT FORMAT IDENTIQUE À PYTHON (sort_keys=True)
+  // 🔥 EXACT SAME STRUCTURE AS PYTHON
   const payload = {
-    error: req.body.error ?? null,
     job_id: req.body.job_id,
     status: req.body.status,
+    error: req.body.error ?? null,
   };
 
-  const body = JSON.stringify(payload); // ordre FIXÉ
+  // 🔥 IMPORTANT FIX: stable stringify (comme sort_keys=True)
+  const body = stringify(payload);
 
   const expected = crypto
     .createHmac("sha256", process.env.SELENIUM_SECRET)
     .update(body, "utf8")
     .digest("hex");
 
-  if (
-    !crypto.timingSafeEqual(
+  let valid = false;
+
+  try {
+    valid = crypto.timingSafeEqual(
       Buffer.from(signature, "hex"),
       Buffer.from(expected, "hex")
-    )
-  ) {
+    );
+  } catch (e) {
+    return res.status(403).json({ error: "Invalid signature format" });
+  }
+
+  if (!valid) {
+    console.log("❌ SIGNATURE FAIL");
+    console.log("RAW:", body);
+    console.log("EXPECTED:", expected);
+    console.log("GOT:", signature);
     return res.status(403).json({ error: "Invalid signature" });
   }
 
@@ -1345,10 +1356,10 @@ app.post("/callback", express.json({ limit: "1mb" }), (req, res) => {
   jobs[job_id].status = status;
   if (error) jobs[job_id].error = error;
 
-  console.log(`Job ${job_id} terminé: ${status}`);
-  if (error) console.log(`Erreur: ${error}`);
+  console.log(`✅ Job ${job_id} terminé: ${status}`);
+  if (error) console.log(`❌ Erreur: ${error}`);
 
-  res.sendStatus(200);
+  return res.sendStatus(200);
 });
 
 app.get("/api/jobStatus", (req, res) => {
