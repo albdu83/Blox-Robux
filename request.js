@@ -1338,6 +1338,7 @@ app.post("/api/getBalance", async (req, res) => {
 
 app.post("/api/withdraw", authenticate, async (req, res) => {
   const uid = req.user.uid;
+  const { amount } = req.body;
 
   const snap = await db.ref("users/" + uid).get();
   const userData = snap.val();
