@@ -1306,24 +1306,32 @@ app.post("/api/payServer", authenticate, async (req, res) => {
   }
 });
 
-app.post("/callback", (req, res) => {
+app.post("/callback", express.json({ limit: "1mb" }), (req, res) => {
   const signature = req.headers["x-signature"];
-  const body = JSON.stringify(req.body);
 
   if (!signature) {
     return res.status(401).json({ error: "Missing signature" });
   }
+
+  // 🔥 IMPORTANT: recreate EXACT same payload format as Python
+  const payload = {
+    job_id: req.body.job_id,
+    status: req.body.status,
+    error: req.body.error,
+  };
+
+  const body = JSON.stringify(payload);
 
   const expected = crypto
     .createHmac("sha256", process.env.SELENIUM_SECRET)
     .update(body, "utf8")
     .digest("hex");
 
-  if (signature !== expected) {
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
     return res.status(403).json({ error: "Invalid signature" });
   }
 
-  const { job_id, status, error } = req.body;
+  const { job_id, status, error } = payload;
 
   if (!jobs[job_id]) {
     return res.status(404).json({ error: "Job inconnu" });
