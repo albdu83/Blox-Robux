@@ -1343,12 +1343,12 @@ app.post("/api/withdraw", authenticate, async (req, res) => {
   const snap = await db.ref("users/" + uid).get();
   const userData = snap.val();
   const balance = userData.balance || 0;
-
+  let newTransaction
   const newBalance = balance - amount;
   await db.ref("users/" + uid).transaction((user) => {
     if (!user) return user;
 
-    const newTransaction = {
+    newTransaction = {
       id: Date.now(),
       type: "withdraw",
       amount: -amount,
