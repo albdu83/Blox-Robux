@@ -1240,7 +1240,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
         username: process.env.ROBLOX_USERNAME,
         password: process.env.ROBLOX_PASSWORD,
         server_url: `https://www.roblox.com/games/${gameId}`,
-        Receive_price: amount,
+        Receive_price: Price,
         job_id,
       }),
     })
