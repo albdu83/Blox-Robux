@@ -239,9 +239,8 @@ auth.onAuthStateChanged(async (user) => {
             if (data.error) return showError(data.error);
             if (!data.error) showTemplate();
 
-            // Mettre à jour le front avec la nouvelle balance
-            state.balance = data.balance;
-            //state.transactions.push(data.transaction);
+            state.transactions = data.transaction;
+
             render();
         } catch (err) {
             console.error(err);
