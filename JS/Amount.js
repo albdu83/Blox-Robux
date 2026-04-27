@@ -226,6 +226,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const value = parseFloat(amountEl.value);
       if (isNaN(value)) return showError("Montant invalide");
 
+      const balanceRes = await fetch(`${API_BASE_URL}/api/getBalance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: RobloxP, Montant: value }),
+      });
+
+      if (!balanceRes.ok) {
+        const errData = await balanceRes.json();
+        return showError(errData.error || "Erreur lors de la récupération du solde")
+      }
+
       finalStep.classList.forEach(
         (c) => c.startsWith("active") && finalStep.classList.remove(c),
       );
@@ -233,7 +244,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         (c) => c.startsWith("active") && finalStep2.classList.remove(c),
       );
 
-      showTemplate()
+      showTemplate();
 
       const taxe = Math.round(value / 0.7);
       const taxelabel = document.getElementById("robuxadd");
