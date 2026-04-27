@@ -1307,22 +1307,32 @@ app.post("/api/payServer", authenticate, async (req, res) => {
 });
 
 app.post("/callback", (req, res) => {
-  const { job_id, status, secret, error } = req.body;
+  const signature = req.headers["x-signature"];
+  const body = JSON.stringify(req.body);
 
-  if (secret !== process.env.SELENIUM_SECRET) {
-    return res.status(403).json({ error: "Forbidden" });
+  if (!signature) {
+    return res.status(401).json({ error: "Missing signature" });
   }
 
-  // Mettre à jour l'état du job
-  if (jobs[job_id]) {
-    jobs[job_id].status = status;
-    if (error) jobs[job_id].error = error;
-  } else {
-    console.log("Job inconnu:", job_id);
-    return res.sendStatus(404);
+  const expected = crypto
+    .createHmac("sha256", process.env.SELENIUM_SECRET)
+    .update(body, "utf8")
+    .digest("hex");
+
+  if (signature !== expected) {
+    return res.status(403).json({ error: "Invalid signature" });
   }
 
-  console.log(`Job ${job_id} terminé avec status: ${status}`);
+  const { job_id, status, error } = req.body;
+
+  if (!jobs[job_id]) {
+    return res.status(404).json({ error: "Job inconnu" });
+  }
+
+  jobs[job_id].status = status;
+  if (error) jobs[job_id].error = error;
+
+  console.log(`Job ${job_id} terminé: ${status}`);
   if (error) console.log(`Erreur: ${error}`);
 
   res.sendStatus(200);
