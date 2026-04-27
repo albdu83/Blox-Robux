@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs/promises");
 const admin = require("firebase-admin");
 const { fileURLToPath } = require("url");
+const stringify = require("json-stable-stringify");
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 app.use(helmet());
@@ -1215,7 +1216,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     // VALIDATION GAME ROBLOX
     // =========================
     const userGamesRes = await fetch(
-      `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`
+      `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`,
     );
 
     const userGames = await userGamesRes.json();
@@ -1254,7 +1255,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
       timestamp: Date.now(),
     };
 
-    const body = JSON.stringify(payload);
+    const body = stringify(payload);
 
     // =========================
     // HMAC SIGNATURE (FIX IMPORTANT)
@@ -1362,9 +1363,12 @@ app.post("/api/getBalance", async (req, res) => {
       return res.status(404).json({ error: "Utilisateur introuvable" });
     if (user.balance < Number(Montant))
       return res.status(400).json({ error: "Solde insuffisant" });
-    if (!Montant) return res.status(400).json({ error: "Paramètres manquants" });
+    if (!Montant)
+      return res.status(400).json({ error: "Paramètres manquants" });
     if (Montant < 25 || Montant > 375)
-      return res.status(400).json({ error: "Le montant doit être compris entre 25 et 375" });
+      return res
+        .status(400)
+        .json({ error: "Le montant doit être compris entre 25 et 375" });
     res.json({ robux: user.balance });
   } catch (err) {
     console.error("Erreur /api/getBalance :", err);
@@ -1379,7 +1383,7 @@ app.post("/api/withdraw", authenticate, async (req, res) => {
   const snap = await db.ref("users/" + uid).get();
   const userData = snap.val();
   const balance = userData.balance || 0;
-  let newTransaction
+  let newTransaction;
   const newBalance = balance - amount;
   await db.ref("users/" + uid).transaction((user) => {
     if (!user) return user;
