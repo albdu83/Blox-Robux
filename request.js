@@ -1193,24 +1193,14 @@ app.post("/api/payServer", authenticate, async (req, res) => {
   try {
     const { name, ID, gameId, amount } = req.body;
 
-    const userGamesRes = await fetch(
-      `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`,
-    );
-    const userGames = await userGamesRes.json();
-    const validGameIds = (userGames.data || [])
-      .map((game) => game.rootPlace?.id)
-      .filter(Boolean);
-
-    if (!validGameIds.includes(Number(gameId))) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Game ID invalide" });
-    }
-
-    if (!name || !gameId) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Paramètres manquants" });
+    // =========================
+    // VALIDATION INPUT
+    // =========================
+    if (!name || !gameId || !ID || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: "Paramètres manquants",
+      });
     }
 
     const num = Number(amount);
@@ -1221,28 +1211,69 @@ app.post("/api/payServer", authenticate, async (req, res) => {
 
     const Price = Math.round(num / 0.7);
 
-    // Générer un job_id unique
+    // =========================
+    // VALIDATION GAME ROBLOX
+    // =========================
+    const userGamesRes = await fetch(
+      `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`
+    );
+
+    const userGames = await userGamesRes.json();
+
+    const validGameIds = (userGames.data || [])
+      .map((game) => game.rootPlace?.id)
+      .filter(Boolean);
+
+    if (!validGameIds.includes(Number(gameId))) {
+      return res.status(400).json({
+        success: false,
+        error: "Game ID invalide",
+      });
+    }
+
+    // =========================
+    // JOB CREATION
+    // =========================
     const job_id = crypto.randomUUID();
 
-    // Initialiser le job à pending
     jobs[job_id] = {
       status: "pending",
       error: null,
       updatedAt: Date.now(),
     };
+
     setTimeout(() => delete jobs[job_id], 24 * 60 * 60 * 1000);
-    // Préparer payload pour le VPS
+
+    // =========================
+    // PAYLOAD VPS (IMPORTANT)
+    // =========================
+    const payload = {
+      job_id,
+      server_url: `https://www.roblox.com/games/${gameId}`,
+      Receive_price: String(Price),
+      timestamp: Date.now(),
+    };
+
+    const body = JSON.stringify(payload);
+
+    // =========================
+    // HMAC SIGNATURE (FIX IMPORTANT)
+    // =========================
+    const signature = crypto
+      .createHmac("sha256", process.env.SELENIUM_SECRET)
+      .update(body, "utf8")
+      .digest("hex");
+
+    // =========================
+    // SEND TO VPS
+    // =========================
     fetch("http://87.106.245.156:5000/run_job", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        secret: process.env.SELENIUM_SECRET,
-        username: process.env.ROBLOX_USERNAME,
-        password: process.env.ROBLOX_PASSWORD,
-        server_url: `https://www.roblox.com/games/${gameId}`,
-        Receive_price: Price,
-        job_id,
-      }),
+      headers: {
+        "Content-Type": "application/json",
+        "X-Signature": signature,
+      },
+      body,
     })
       .then((res) => res.json())
       .then((data) => {
@@ -1251,13 +1282,15 @@ app.post("/api/payServer", authenticate, async (req, res) => {
       .catch((err) => {
         console.error("VPS error", err);
 
-        // 🔥 important : mark job failed
         if (jobs[job_id]) {
           jobs[job_id].status = "failed";
           jobs[job_id].error = "VPS unreachable";
         }
       });
 
+    // =========================
+    // RESPONSE CLIENT
+    // =========================
     res.json({
       success: true,
       message: "Job lancé",
@@ -1265,7 +1298,10 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 });
 
