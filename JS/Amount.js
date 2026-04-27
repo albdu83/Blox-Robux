@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const delta = data.delta ?? state.balance - oldBalance;
 
-        if (delta && delta !== 0) {
+        if (delta && delta !== 0 && gainnotif) {
           if (userIsActive) {
             showGainNotification(data, delta);
           } else {
