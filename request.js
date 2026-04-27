@@ -1219,7 +1219,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
       throw new Error("Amount invalide");
     }
 
-    const Price = Math.round(num / 0.7);
+    const Price = Math.round(num * 0.7);
 
     // Générer un job_id unique
     const job_id = crypto.randomUUID();
