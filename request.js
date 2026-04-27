@@ -1313,9 +1313,15 @@ app.post("/callback", (req, res) => {
     return res.status(401).json({ error: "Missing signature" });
   }
 
-  const raw = req.rawBody;
+  const raw = req.body; // 🔥 Buffer garanti par express.raw
 
-  // 🔍 Parse header
+  if (!Buffer.isBuffer(raw)) {
+    return res.status(500).json({ error: "Invalid raw body" });
+  }
+
+  // =========================
+  // PARSE SIGNATURE HEADER
+  // =========================
   const parts = sigHeader.split(",");
   const timestamp = parts.find(p => p.startsWith("t="))?.slice(2);
   const signature = parts.find(p => p.startsWith("v1="))?.slice(3);
@@ -1324,38 +1330,52 @@ app.post("/callback", (req, res) => {
     return res.status(400).json({ error: "Invalid signature format" });
   }
 
-  // ⏱️ Protection replay (5 min max)
+  // =========================
+  // REPLAY PROTECTION
+  // =========================
   const now = Math.floor(Date.now() / 1000);
-  const tolerance = 300;
-
-  if (Math.abs(now - Number(timestamp)) > tolerance) {
+  if (Math.abs(now - Number(timestamp)) > 300) {
     return res.status(400).json({ error: "Signature expired" });
   }
 
-  // 🔐 Rebuild signed payload
+  // =========================
+  // CANONICAL PAYLOAD
+  // =========================
   const signedPayload = Buffer.concat([
-    Buffer.from(timestamp),
-    Buffer.from("."),
+    Buffer.from(timestamp + ".", "utf8"),
     raw
   ]);
 
+  // =========================
+  // HMAC VERIFY
+  // =========================
   const expected = crypto
     .createHmac("sha256", process.env.SELENIUM_SECRET)
     .update(signedPayload)
     .digest("hex");
 
-  if (
-    !crypto.timingSafeEqual(
-      Buffer.from(signature, "hex"),
-      Buffer.from(expected, "hex")
-    )
-  ) {
+  const sigBuf = Buffer.from(signature, "hex");
+  const expBuf = Buffer.from(expected, "hex");
+
+  if (sigBuf.length !== expBuf.length ||
+      !crypto.timingSafeEqual(sigBuf, expBuf)) {
     console.log("❌ SIGNATURE FAIL");
+    console.log("RAW:", raw.toString());
+    console.log("EXPECTED:", expected);
+    console.log("GOT:", signature);
+
     return res.status(403).json({ error: "Invalid signature" });
   }
 
-  // ✅ SAFE → parse body
-  const body = req.body;
+  // =========================
+  // SAFE PARSE ONLY AFTER VERIFY
+  // =========================
+  let body;
+  try {
+    body = JSON.parse(raw.toString("utf8"));
+  } catch (e) {
+    return res.status(400).json({ error: "Invalid JSON" });
+  }
 
   const { job_id, status, error } = body;
 
@@ -1366,7 +1386,7 @@ app.post("/callback", (req, res) => {
   jobs[job_id].status = status;
   if (error) jobs[job_id].error = error;
 
-  console.log(`Job ${job_id} terminé: ${status}`);
+  console.log(`✅ Job ${job_id} terminé: ${status}`);
 
   res.sendStatus(200);
 });
