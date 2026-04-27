@@ -233,8 +233,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         (c) => c.startsWith("active") && finalStep2.classList.remove(c),
       );
 
-      await addTransaction(value);
-
       const taxe = Math.round(value / 0.7);
       const taxelabel = document.getElementById("robuxadd");
       if (taxelabel) {
