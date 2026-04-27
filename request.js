@@ -1313,21 +1313,26 @@ app.post("/callback", express.json({ limit: "1mb" }), (req, res) => {
     return res.status(401).json({ error: "Missing signature" });
   }
 
-  // 🔥 IMPORTANT: recreate EXACT same payload format as Python
+  // 🔥 STRICT FORMAT IDENTIQUE À PYTHON (sort_keys=True)
   const payload = {
+    error: req.body.error ?? null,
     job_id: req.body.job_id,
     status: req.body.status,
-    error: req.body.error,
   };
 
-  const body = JSON.stringify(payload);
+  const body = JSON.stringify(payload); // ordre FIXÉ
 
   const expected = crypto
     .createHmac("sha256", process.env.SELENIUM_SECRET)
     .update(body, "utf8")
     .digest("hex");
 
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+  if (
+    !crypto.timingSafeEqual(
+      Buffer.from(signature, "hex"),
+      Buffer.from(expected, "hex")
+    )
+  ) {
     return res.status(403).json({ error: "Invalid signature" });
   }
 
