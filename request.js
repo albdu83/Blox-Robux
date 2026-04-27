@@ -1326,6 +1326,9 @@ app.post("/api/getBalance", async (req, res) => {
       return res.status(404).json({ error: "Utilisateur introuvable" });
     if (user.balance < Number(Montant))
       return res.status(400).json({ error: "Solde insuffisant" });
+    if (!Montant) return res.status(400).json({ error: "Paramètres manquants" });
+    if (Montant < 25 || Montant > 375)
+      return res.status(400).json({ error: "Le montant doit être compris entre 25 et 375" });
     res.json({ robux: user.balance });
   } catch (err) {
     console.error("Erreur /api/getBalance :", err);
@@ -1339,13 +1342,6 @@ app.post("/api/withdraw", authenticate, async (req, res) => {
   const snap = await db.ref("users/" + uid).get();
   const userData = snap.val();
   const balance = userData.balance || 0;
-
-  const { amount } = req.body;
-  if (!amount) return res.status(400).json({ error: "Paramètres manquants" });
-  if (amount < 25 || amount > 375)
-    return res.status(400).json({ error: "Montant invalide" });
-  if (amount > balance)
-    return res.status(400).json({ error: "Solde insuffisant" });
 
   const newBalance = balance - amount;
   await db.ref("users/" + uid).transaction((user) => {
