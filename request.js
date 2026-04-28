@@ -23,7 +23,11 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 const jobs = {};
 let sseTokens = {};
@@ -1308,24 +1312,24 @@ app.post("/api/payServer", authenticate, async (req, res) => {
 
 app.post("/callback", (req, res) => {
   try {
-    const raw = req.rawBody;
+    let raw = req.rawBody;
 
-    // =========================
-    // 1. VALIDATION RAW BODY
-    // =========================
-    if (!raw || !Buffer.isBuffer(raw)) {
+    // 🔥 FIX IMPORTANT : fallback si rawBody absent
+    if (!raw) {
+      raw = Buffer.isBuffer(req.body)
+        ? req.body
+        : Buffer.from(JSON.stringify(req.body || {}), "utf8");
+    }
+
+    if (!Buffer.isBuffer(raw)) {
       return res.status(400).json({ error: "Invalid raw body" });
     }
 
     const sigHeader = req.headers["x-signature"];
-
     if (!sigHeader) {
       return res.status(401).json({ error: "Missing signature" });
     }
 
-    // =========================
-    // 2. PARSE HEADER
-    // =========================
     const parts = sigHeader.split(",");
 
     const timestamp = parts.find(p => p.startsWith("t="))?.slice(2);
@@ -1335,28 +1339,19 @@ app.post("/callback", (req, res) => {
       return res.status(400).json({ error: "Invalid signature format" });
     }
 
-    // =========================
-    // 3. REPLAY PROTECTION
-    // =========================
+    // 🔒 anti replay
     const now = Math.floor(Date.now() / 1000);
-    const tolerance = 300;
-
-    if (Math.abs(now - Number(timestamp)) > tolerance) {
+    if (Math.abs(now - Number(timestamp)) > 300) {
       return res.status(400).json({ error: "Signature expired" });
     }
 
-    // =========================
-    // 4. BUILD SIGNED PAYLOAD
-    // =========================
+    // 🔥 payload EXACT identique Python
     const signedPayload = Buffer.concat([
-      Buffer.from(timestamp),
+      Buffer.from(timestamp, "utf8"),
       Buffer.from("."),
       raw
     ]);
 
-    // =========================
-    // 5. VERIFY HMAC
-    // =========================
     const expected = crypto
       .createHmac("sha256", process.env.SELENIUM_SECRET)
       .update(signedPayload)
@@ -1369,27 +1364,24 @@ app.post("/callback", (req, res) => {
         Buffer.from(signature, "hex"),
         Buffer.from(expected, "hex")
       );
-    } catch (e) {
-      return res.status(403).json({ error: "Invalid signature comparison" });
+    } catch {
+      return res.status(403).json({ error: "Invalid signature compare" });
     }
 
     if (!valid) {
-      console.log("❌ SIGNATURE FAIL");
-      console.log("RAW:", raw.toString());
+      console.log("❌ INVALID SIGNATURE");
+      console.log("RAW:", raw.toString("utf8"));
       console.log("EXPECTED:", expected);
       console.log("GOT:", signature);
 
       return res.status(403).json({ error: "Invalid signature" });
     }
 
-    // =========================
-    // 6. PARSE BODY (SAFE)
-    // =========================
+    // 🔥 parse JSON
     let body;
-
     try {
-      body = JSON.parse(raw.toString("utf-8"));
-    } catch (e) {
+      body = JSON.parse(raw.toString("utf8"));
+    } catch {
       return res.status(400).json({ error: "Invalid JSON body" });
     }
 
@@ -1399,25 +1391,19 @@ app.post("/callback", (req, res) => {
       return res.status(400).json({ error: "Missing fields" });
     }
 
-    // =========================
-    // 7. JOB UPDATE
-    // =========================
     if (!jobs[job_id]) {
-      return res.status(404).json({ error: "Job inconnu" });
+      return res.status(404).json({ error: "Unknown job" });
     }
 
     jobs[job_id].status = status;
+    if (error) jobs[job_id].error = error;
 
-    if (error) {
-      jobs[job_id].error = error;
-    }
-
-    console.log(`Job ${job_id} terminé: ${status}`);
+    console.log(`✅ Job ${job_id} => ${status}`);
 
     return res.sendStatus(200);
 
   } catch (err) {
-    console.error("Callback crash:", err);
+    console.error("🔥 CALLBACK CRASH:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
