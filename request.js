@@ -1307,100 +1307,119 @@ app.post("/api/payServer", authenticate, async (req, res) => {
 });
 
 app.post("/callback", (req, res) => {
-  const sigHeader = req.headers["x-signature"];
-
-  if (!sigHeader) {
-    return res.status(401).json({ error: "Missing signature" });
-  }
-
-  const raw = req.body; // 🔥 Buffer garanti par express.raw
-
-  if (!Buffer.isBuffer(raw)) {
-    return res.status(500).json({ error: "Invalid raw body" });
-  }
-
-  // =========================
-  // PARSE SIGNATURE HEADER
-  // =========================
-  const parts = sigHeader.split(",");
-  const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
-  const signature = parts.find((p) => p.startsWith("v1="))?.slice(3);
-
-  if (!timestamp || !signature) {
-    return res.status(400).json({ error: "Invalid signature format" });
-  }
-
-  // =========================
-  // REPLAY PROTECTION
-  // =========================
-  const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - Number(timestamp)) > 300) {
-    return res.status(400).json({ error: "Signature expired" });
-  }
-
-  // =========================
-  // CANONICAL PAYLOAD
-  // =========================
-  const signedPayload = Buffer.concat([
-    Buffer.from(timestamp + ".", "utf8"),
-    raw,
-  ]);
-
-  // =========================
-  // HMAC VERIFY
-  // =========================
-  const expected = crypto
-    .createHmac("sha256", process.env.SELENIUM_SECRET)
-    .update(signedPayload)
-    .digest("hex");
-
-  const sigBuf = Buffer.from(signature, "hex");
-  const expBuf = Buffer.from(expected, "hex");
-
-  if (
-    sigBuf.length !== expBuf.length ||
-    !crypto.timingSafeEqual(sigBuf, expBuf)
-  ) {
-    console.log("❌ SIGNATURE FAIL");
-    console.log("RAW:", raw.toString());
-    console.log("EXPECTED:", expected);
-    console.log("GOT:", signature);
-    const secret = process.env.SELENIUM_SECRET;
-
-    console.log("NODE SECRET LEN =", secret?.length);
-    console.log(
-      "NODE SECRET SHA256 =",
-      require("crypto")
-        .createHash("sha256")
-        .update(secret, "utf8")
-        .digest("hex"),
-    );
-
-    return res.status(403).json({ error: "Invalid signature" });
-  }
-
-  // =========================
-  // SAFE PARSE ONLY AFTER VERIFY
-  // =========================
-  let body;
   try {
-    body = JSON.parse(raw.toString("utf8"));
-  } catch (e) {
-    return res.status(400).json({ error: "Invalid JSON" });
+    const raw = req.rawBody;
+
+    // =========================
+    // 1. VALIDATION RAW BODY
+    // =========================
+    if (!raw || !Buffer.isBuffer(raw)) {
+      return res.status(400).json({ error: "Invalid raw body" });
+    }
+
+    const sigHeader = req.headers["x-signature"];
+
+    if (!sigHeader) {
+      return res.status(401).json({ error: "Missing signature" });
+    }
+
+    // =========================
+    // 2. PARSE HEADER
+    // =========================
+    const parts = sigHeader.split(",");
+
+    const timestamp = parts.find(p => p.startsWith("t="))?.slice(2);
+    const signature = parts.find(p => p.startsWith("v1="))?.slice(3);
+
+    if (!timestamp || !signature) {
+      return res.status(400).json({ error: "Invalid signature format" });
+    }
+
+    // =========================
+    // 3. REPLAY PROTECTION
+    // =========================
+    const now = Math.floor(Date.now() / 1000);
+    const tolerance = 300;
+
+    if (Math.abs(now - Number(timestamp)) > tolerance) {
+      return res.status(400).json({ error: "Signature expired" });
+    }
+
+    // =========================
+    // 4. BUILD SIGNED PAYLOAD
+    // =========================
+    const signedPayload = Buffer.concat([
+      Buffer.from(timestamp),
+      Buffer.from("."),
+      raw
+    ]);
+
+    // =========================
+    // 5. VERIFY HMAC
+    // =========================
+    const expected = crypto
+      .createHmac("sha256", process.env.SELENIUM_SECRET)
+      .update(signedPayload)
+      .digest("hex");
+
+    let valid = false;
+
+    try {
+      valid = crypto.timingSafeEqual(
+        Buffer.from(signature, "hex"),
+        Buffer.from(expected, "hex")
+      );
+    } catch (e) {
+      return res.status(403).json({ error: "Invalid signature comparison" });
+    }
+
+    if (!valid) {
+      console.log("❌ SIGNATURE FAIL");
+      console.log("RAW:", raw.toString());
+      console.log("EXPECTED:", expected);
+      console.log("GOT:", signature);
+
+      return res.status(403).json({ error: "Invalid signature" });
+    }
+
+    // =========================
+    // 6. PARSE BODY (SAFE)
+    // =========================
+    let body;
+
+    try {
+      body = JSON.parse(raw.toString("utf-8"));
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+
+    const { job_id, status, error } = body;
+
+    if (!job_id || !status) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    // =========================
+    // 7. JOB UPDATE
+    // =========================
+    if (!jobs[job_id]) {
+      return res.status(404).json({ error: "Job inconnu" });
+    }
+
+    jobs[job_id].status = status;
+
+    if (error) {
+      jobs[job_id].error = error;
+    }
+
+    console.log(`Job ${job_id} terminé: ${status}`);
+
+    return res.sendStatus(200);
+
+  } catch (err) {
+    console.error("Callback crash:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
-
-  const { job_id, status, error } = body;
-
-  if (!jobs[job_id]) {
-    return res.status(404).json({ error: "Job inconnu" });
-  }
-
-  jobs[job_id].status = status;
-  if (error) jobs[job_id].error = error;
-
-  console.log(`✅ Job ${job_id} terminé: ${status}`);
-
-  res.sendStatus(200);
 });
 
 app.get("/api/jobStatus", (req, res) => {
