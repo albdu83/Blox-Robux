@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const taxe = Math.round(value / 0.7);
       const taxelabel = document.getElementById("robuxadd");
       if (taxelabel) {
-        taxelabel.innerHTML = `🛑 Vous indiquerez ${taxe} Robux dans l'encadré rouge de l'image !`;
+        taxelabel.innerHTML = `🛑 Vous indiquerez <strong style="color: #a74949">${taxe}</strong> Robux dans l'encadré rouge de l'image !`;
       }
     });
   }
