@@ -226,6 +226,7 @@ input {
 
 
 button {
+  cursor: pointer;
   background: linear-gradient(135deg, #ffea00, #ffcc00);
   color: #111;
   border-radius: 12px;
@@ -364,19 +365,19 @@ button:hover {
   z-index: 2;
 }
 
-a {
+.lien_roblox {
   color: #ff8a2a; /* jaune principal de ton UI */
   text-decoration: none;
   transition: color 0.2s ease, opacity 0.2s ease;
 }
 
-a:hover {
+.lien_roblox:hover {
   color: #ffffff;
   opacity: 0.9;
   text-decoration: underline;
 }
 
-a:visited {
+.lien_roblox:visited {
   color: #d6c200; /* légèrement plus sombre mais lisible */
 }
 
