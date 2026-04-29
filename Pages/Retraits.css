@@ -365,19 +365,19 @@ button:hover {
   z-index: 2;
 }
 
-.lien_roblox {
-  color: #ff8a2a; /* jaune principal de ton UI */
+.step-card a {
+  color: #ff8a2a !important; /* jaune principal de ton UI */
   text-decoration: none;
   transition: color 0.2s ease, opacity 0.2s ease;
 }
 
-.lien_roblox:hover {
-  color: #ffffff;
+.step-card a:hover {
+  color: #ffffff !important;
   opacity: 0.9;
   text-decoration: underline;
 }
 
-.lien_roblox:visited {
+.step-card a:visited {
   color: #d6c200; /* légèrement plus sombre mais lisible */
 }
 
