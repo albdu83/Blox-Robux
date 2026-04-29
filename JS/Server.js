@@ -6,17 +6,8 @@ let userN = null;
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
-    const config = {
-      apiKey: "AIzaSyBDGdgx4QJScAHNc-nifcoA8QWmL-wZWsA",
-      authDomain: "blox-robux-officiel.firebaseapp.com",
-      databaseURL:
-        "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "blox-robux-officiel",
-      storageBucket: "blox-robux-officiel.firebasestorage.app",
-      messagingSenderId: "958075329612",
-      appId: "1:958075329612:web:174bf1682a7bf9fba1a8e9",
-      measurementId: "G-36JDXY217P",
-    };
+    const res = await fetch("https://api.bloxrbx.fr/firebase-config");
+    const config = await res.json()
 
     firebase.initializeApp(config);
 
@@ -667,26 +658,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function getPublicsPlaces(targetId) {
     if (!targetId) return;
 
+    const select = document.getElementById("public-places");
+    if (!select) return;
+
+    const Interface = document.querySelector(".Interface");
+    const explain = document.getElementById("explain");
+    const HELP = document.getElementById("HELP");
+    const tutocontainer = document.getElementById("tutocontainer");
+    const href = document.getElementById("href");
+    const href2 = document.getElementById("href2");
+
+    let hasChangedOnce = false;
+
     try {
-      const select = document.getElementById("public-places");
-      if (!select) return;
-
-      // Vider le select avant
-      select.innerHTML = "";
-
-      // Option par défaut
-      const defaultOption = document.createElement("option");
-      defaultOption.textContent = "Sélectionner un jeu";
-      defaultOption.value = ""; // important
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      select.appendChild(defaultOption);
-
-      // Récupérer les places
+      /* ======================
+       FETCH PLACES
+    ====================== */
       const res = await fetch(
         `${API_BASE_URL}/api/places?targetId=${targetId}`,
       );
       const data = await res.json();
+
+      select.innerHTML = "";
+
+      const defaultOption = document.createElement("option");
+      defaultOption.textContent = "Sélectionner un jeu";
+      defaultOption.value = "";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      select.appendChild(defaultOption);
 
       if (!data?.data?.length) {
         const option = document.createElement("option");
@@ -696,65 +696,66 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      // Ajouter les options
       data.data.forEach((game) => {
         rootIdMap[game.ID] = game.RootID;
-        let gameID = game.ID;
-        let displayName = game.name;
-        if (displayName.length > 15) {
-          displayName = displayName.slice(0, 15) + "...";
-        }
+
+        let name = game.name;
+        if (name.length > 15) name = name.slice(0, 15) + "...";
 
         const option = document.createElement("option");
-        option.textContent = `${displayName}`;
-        option.value = gameID;
+        option.value = game.ID;
+        option.textContent = name;
+
         select.appendChild(option);
       });
-      let variable = false;
-      select.onchange = () => {
-        const Interface = document.querySelector(".Interface");
-        const explain = document.getElementById("explain");
-        const HELP = document.getElementById("HELP");
-        const tutocontainer = document.getElementById("tutocontainer");
-        const paragraphe = document.getElementById("paragraphe");
-        const href = document.getElementById("href");
-        const href2 = document.getElementById("href2");
-        if (!href) return;
-        if (!href2) return;
-        href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`;
-        href2.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/experience-questionnaire`;
-        if (!paragraphe) return;
-        if (variable === true) {
-          tutocontainer.style.position = "relative";
-          tutocontainer.classList.remove("active10");
-          tutocontainer.addEventListener(
+
+      /* ======================
+       ON CHANGE (clean)
+    ====================== */
+      select.addEventListener("change", () => {
+        const gameId = select.value;
+        if (!gameId) return;
+
+        // update links
+        const updateLinks = () => {
+          href.href = `https://create.roblox.com/dashboard/creations/experiences/${gameId}/access`;
+          href2.href = `https://create.roblox.com/dashboard/creations/experiences/${gameId}/experience-questionnaire`;
+        };
+
+        updateLinks();
+
+        // UI first interaction only
+        if (!hasChangedOnce) {
+          Interface?.classList.add("active9");
+          explain?.classList.add("active6");
+          HELP?.classList.add("active7");
+
+          explain?.addEventListener(
             "transitionend",
             () => {
-              href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`;
-              href2.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/experience-questionnaire`;
-              tutocontainer.classList.add("active10");
+              tutocontainer?.classList.add("active10");
+              HELP?.classList.add("activeA");
+              explain?.classList.add("activeB");
             },
             { once: true },
           );
+
+          hasChangedOnce = true;
+          return;
         }
-        Interface.classList.add("active9");
-        explain.classList.add("active6");
-        HELP.classList.add("active7");
-        if (variable === false) {
-          href.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/access`;
-          href2.href = `https://create.roblox.com/dashboard/creations/experiences/${select.value}/experience-questionnaire`;
-        }
-        variable = true;
-        explain.addEventListener(
+
+        // subsequent changes (no re-animation spam)
+        tutocontainer?.classList.remove("active10");
+
+        tutocontainer?.addEventListener(
           "transitionend",
           () => {
-            tutocontainer.classList.add("active10");
-            HELP.classList.add("activeA");
-            explain.classList.add("activeB");
+            tutocontainer?.classList.add("active10");
+            updateLinks();
           },
           { once: true },
         );
-      };
+      });
     } catch (err) {
       console.error("Erreur lors de la récupération des places :", err);
     }
@@ -874,7 +875,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (statusData.status === "success") {
           alert("🎉 Serveur privé créé avec succès !");
           clearInterval(pollJob);
-          addTransaction(amount)
+          addTransaction(amount);
         } else if (statusData.status === "error") {
           alert(
             `❌ Erreur lors de la création du serveur : ${statusData.error}`,
