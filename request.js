@@ -23,11 +23,13 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json({
-  verify: (req, res, buf) => {
-    req.rawBody = buf;
-  }
-}));
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 
 const jobs = {};
 let sseTokens = {};
@@ -1332,8 +1334,8 @@ app.post("/callback", (req, res) => {
 
     const parts = sigHeader.split(",");
 
-    const timestamp = parts.find(p => p.startsWith("t="))?.slice(2);
-    const signature = parts.find(p => p.startsWith("v1="))?.slice(3);
+    const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
+    const signature = parts.find((p) => p.startsWith("v1="))?.slice(3);
 
     if (!timestamp || !signature) {
       return res.status(400).json({ error: "Invalid signature format" });
@@ -1349,7 +1351,7 @@ app.post("/callback", (req, res) => {
     const signedPayload = Buffer.concat([
       Buffer.from(timestamp, "utf8"),
       Buffer.from("."),
-      raw
+      raw,
     ]);
 
     const expected = crypto
@@ -1362,7 +1364,7 @@ app.post("/callback", (req, res) => {
     try {
       valid = crypto.timingSafeEqual(
         Buffer.from(signature, "hex"),
-        Buffer.from(expected, "hex")
+        Buffer.from(expected, "hex"),
       );
     } catch {
       return res.status(403).json({ error: "Invalid signature compare" });
@@ -1401,7 +1403,6 @@ app.post("/callback", (req, res) => {
     console.log(`✅ Job ${job_id} => ${status}`);
 
     return res.sendStatus(200);
-
   } catch (err) {
     console.error("🔥 CALLBACK CRASH:", err);
     return res.status(500).json({ error: "Internal server error" });
@@ -1759,6 +1760,42 @@ app.post("/update-profile", authenticate, async (req, res) => {
       success: true,
       Email: `${currentUser.firstUsername}@bloxrobux.local`,
     });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post("/mediaCheck", authenticate, async (req, res) => {
+  const { type } = req.body;
+  const uid = req.user.uid;
+
+  const allowed = ["discord", "youtube", "instagram", "tiktok"];
+
+  if (!allowed.includes(type)) {
+    return res.status(401).json({ error: "Type invalide" });
+  }
+
+  try {
+    const result = await db.ref(`users/${uid}`).transaction((user) => {
+      if (!user) user = {};
+
+      if (user[type]) {
+        return; // abort transaction
+      }
+
+      user[type] = true;
+      user.balance = (user.balance || 0) + 1;
+
+      return user;
+    });
+
+    if (!result.committed) {
+      return res.status(200).json({ message: "already joined" });
+    }
+
+    return res.status(200).json({ message: "OK" });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
