@@ -1786,6 +1786,7 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
 
       user[type] = true;
       user.balance = (user.balance || 0) + 1;
+      user.robuxGagnes = (user.robuxGagnes || 0) + 1;
 
       return user;
     });
