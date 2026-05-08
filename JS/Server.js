@@ -526,7 +526,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       function handleImgClick(selector) {
-        console.log("reçu nice");
         return async function (e) {
           const card = e.target.closest(selector);
           if (!card) return;
