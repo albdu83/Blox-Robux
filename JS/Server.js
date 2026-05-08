@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // REQUETE POUR MESSAGE //
   //----------------------//
 
-  const MessgaeDis = document.getElementById("MessgaeDis");
+  const MessgaeDis = document.getElementById("messageDis");
   const distitre = document.getElementById("distitre");
   const discontexte = document.getElementById("discontexte");
   const messageContainer = document.getElementById("message-dis-container");
@@ -270,68 +270,310 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (span) span.textContent = `${username}`;
       }
 
-      /* ===== CPX REASEARCH ===== */
-      const container3 = document.getElementById("offerwall1");
-      if (container3) {
+      const isMobile = () => window.matchMedia("(max-width: 460px)").matches;
+
+      let currentUrl = null;
+      let currentMode = null;
+
+      /* =========================
+   IFRAME FACTORY
+========================= */
+      const createIframe = (src, options = {}) => {
+        const iframe = document.createElement("iframe");
+
+        iframe.src = src;
+        iframe.width = "100%";
+        iframe.height = options.height || "700";
+        iframe.frameBorder = "0";
+        iframe.loading = "lazy";
+
+        if (options.allow) iframe.allow = options.allow;
+
+        return iframe;
+      };
+
+      /* =========================
+   VIEWER SYSTEM (MOBILE)
+========================= */
+      function openViewer(url) {
+        const viewerPage = document.getElementById("offer-viewer-page");
+        const grid = document.querySelectorAll(".offers-grid");
+        const pres = document.querySelectorAll(".offers_pres");
+        const desc = document.querySelectorAll(".offers_desc");
+        const medias = document.getElementById("medias-grid");
+        const presentation = document.getElementById("presentation");
+        const container = document.getElementById("iframe-container");
+
+        if (!viewerPage || !grid || !container) return;
+
+        currentUrl = url;
+
+        container.innerHTML = "";
+        container.appendChild(createIframe(url, { height: "100%" }));
+        presentation.style.display = "none";
+        grid.forEach((elements) => {
+          elements.style.display = "none";
+        });
+        pres.forEach((elements) => {
+          elements.style.display = "none";
+        });
+        desc.forEach((elements) => {
+          elements.style.display = "none";
+        });
+        medias.style.display = "none";
+        viewerPage.classList.remove("hidden");
+      }
+
+      function closeViewer() {
+        const viewerPage = document.getElementById("offer-viewer-page");
+        const grid = document.querySelectorAll(".offers-grid");
+        const pres = document.querySelectorAll(".offers_pres");
+        const desc = document.querySelectorAll(".offers_desc");
+        const medias = document.getElementById("medias-grid");
+        const presentation = document.getElementById("presentation");
+        const container = document.getElementById("iframe-container");
+
+        if (!viewerPage || !grid || !container) return;
+
+        container.innerHTML = "";
+
+        viewerPage.classList.add("hidden");
+        presentation.style.display = "block";
+        grid.forEach((elements) => {
+          elements.style.display = "grid";
+        });
+        pres.forEach((elements) => {
+          elements.style.display = "block";
+        });
+        desc.forEach((elements) => {
+          elements.style.display = "block";
+        });
+        medias.style.display = "grid";
+      }
+
+      /* =========================
+   OFFERS LOADERS (DESKTOP)
+========================= */
+      async function loadCPX(container) {
+        if (!container) return;
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ firstUsername }),
+          });
+
+          if (!res.ok) throw new Error("CPX error");
+
+          const data = await res.json();
+
+          container.innerHTML = "";
+          container.appendChild(createIframe(data.iframeUrl));
+
+          loadinggif?.style && (loadinggif.style.display = "none");
+        } catch (err) {
+          console.error("CPX error:", err);
+        }
+      }
+
+      function loadTimeWall(container) {
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        const url = new URL("https://timewall.io/users/login");
+        url.searchParams.set("oid", "2578908b35321055");
+        url.searchParams.set("uid", firstUsername);
+
+        container.appendChild(createIframe(url.toString()));
+      }
+
+      function loadTheoremReach(container) {
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        const transactionId =
+          crypto.randomUUID?.() ||
+          `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+        const url = new URL("https://theoremreach.com/respondent_entry/direct");
+
+        url.searchParams.set("api_key", "36131d298e73a7a2bc9bc433de51");
+        url.searchParams.set("user_id", firstUsername);
+        url.searchParams.set("transaction_id", transactionId);
+
+        container.appendChild(
+          createIframe(url.toString(), {
+            allow: "accelerometer; gyroscope; magnetometer; camera; microphone",
+          }),
+        );
+      }
+
+      /* =========================
+   URL BUILDERS (MOBILE VIEWER)
+========================= */
+      async function getCPXUrl() {
         const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ firstUsername }),
         });
-        if (!res) return console.error("Erreur lors du postback CPXHASH");
+
+        if (!res.ok) throw new Error("CPX request failed");
+
         const data = await res.json();
-        container3.innerHTML = "";
-        const offerwall1 = document.getElementById("offerwall1");
-        const iframe = document.createElement("iframe");
-        iframe.src = data.iframeUrl;
-        iframe.width = "100%";
-        iframe.height = "1000";
-        iframe.frameBorder = "0";
-        iframe.loading = "lazy";
-        container3.appendChild(iframe);
-        offerwall1.style.display = "flex";
-        loadinggif.style.display = "none";
+        return data.iframeUrl;
       }
 
-      /* ===== TIMEWALL ===== */
-      const container = document.getElementById("timewall-container");
-      if (container) {
-        container.innerHTML = "";
-        const iframe = document.createElement("iframe");
-        iframe.src = `https://timewall.io/users/login?oid=2578908b35321055&uid=${firstUsername}`;
-        iframe.width = "100%";
-        iframe.height = "1000";
-        iframe.frameBorder = "0";
-        iframe.loading = "lazy";
-        container.appendChild(iframe);
+      function getTimeWallUrl() {
+        const url = new URL("https://timewall.io/users/login");
+        url.searchParams.set("oid", "2578908b35321055");
+        url.searchParams.set("uid", firstUsername);
+        return url.toString();
       }
 
-      /* ===== THEOREME REACH ===== */
-      const container2 = document.getElementById("theoremecontainer");
-      if (container2) {
-        container2.innerHTML = "";
-
+      function getTheoremUrl() {
         const transactionId =
           crypto.randomUUID?.() ||
-          Date.now() + "_" + Math.random().toString(36).slice(2);
+          `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-        const iframe2 = document.createElement("iframe");
-        iframe2.src =
-          "https://theoremreach.com/respondent_entry/direct" +
-          "?api_key=36131d298e73a7a2bc9bc433de51" +
-          "&user_id=" +
-          encodeURIComponent(firstUsername) +
-          "&transaction_id=" +
-          transactionId;
+        const url = new URL("https://theoremreach.com/respondent_entry/direct");
 
-        iframe2.width = "100%";
-        iframe2.height = "1000";
-        iframe2.frameBorder = "0";
-        iframe2.allow =
-          "accelerometer; gyroscope; magnetometer; camera; microphone";
+        url.searchParams.set("api_key", "36131d298e73a7a2bc9bc433de51");
+        url.searchParams.set("user_id", firstUsername);
+        url.searchParams.set("transaction_id", transactionId);
 
-        container2.appendChild(iframe2);
+        return url.toString();
       }
+
+      /* =========================
+   MOBILE CARDS SYSTEM
+========================= */
+      function initMobileOffers() {
+        const grid = document.querySelectorAll(".offers-grid");
+        if (grid) {
+          grid.forEach((element) => {
+            element.removeEventListener("click", handleOfferClick);
+            element.addEventListener("click", handleOfferClick);
+          });
+        }
+        const medias_grid = document.getElementById("medias-grid");
+        if (medias_grid) {
+          const mediaClickHandler = handleImgClick(".media_img");
+
+          medias_grid.removeEventListener("click", mediaClickHandler);
+          medias_grid.addEventListener("click", mediaClickHandler);
+        }
+      }
+
+      async function handleOfferClick(e) {
+        const card = e.target.closest(".offer-card");
+        if (!card) return;
+
+        const type = card.dataset.offer;
+
+        try {
+          let url = null;
+
+          if (type === "cpx") {
+            url = await getCPXUrl();
+          } else if (type === "timewall") {
+            url = getTimeWallUrl();
+          } else if (type === "theorem") {
+            url = getTheoremUrl();
+          }
+
+          if (url) openViewer(url);
+        } catch (err) {
+          console.error("Mobile offer error:", err);
+        }
+      }
+
+      /* =========================
+   DESKTOP LOADER
+========================= */
+      function loadDesktopOffers() {
+        loadCPX(document.getElementById("offerwall1"));
+        loadTimeWall(document.getElementById("timewall-container"));
+        loadTheoremReach(document.getElementById("theoremecontainer"));
+        const deskmedia_grid = document.getElementById("deskmedia-grid");
+        if (deskmedia_grid) {
+          const mediaClickHandler = handleImgClick(".Desk_media_img");
+
+          deskmedia_grid.removeEventListener("click", mediaClickHandler);
+          deskmedia_grid.addEventListener("click", mediaClickHandler);
+        }
+      }
+
+      /* =========================
+   INIT SYSTEM (CLEAN SWITCH)
+========================= */
+      function initOffers() {
+        const mobile = isMobile();
+
+        if (mobile === currentMode) return;
+        currentMode = mobile;
+
+        document.querySelectorAll("iframe").forEach((i) => i.remove());
+
+        if (mobile) {
+          initMobileOffers();
+        } else {
+          loadDesktopOffers();
+        }
+      }
+
+      function handleImgClick(selector) {
+        console.log("reçu nice");
+        return async function (e) {
+          const card = e.target.closest(selector);
+          if (!card) return;
+
+          const type = card.dataset.link;
+          if (!type) return;
+
+          try {
+            const token = await user.getIdToken();
+
+            await fetch(`${API_BASE_URL}/mediaCheck`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token,
+              },
+              body: JSON.stringify({ type }),
+            });
+          } catch (err) {
+            console.error(err);
+          }
+        };
+      }
+      /* =========================
+   BUTTONS
+========================= */
+      document
+        .getElementById("back-btn")
+        ?.addEventListener("click", closeViewer);
+
+      document.getElementById("open-btn")?.addEventListener("click", () => {
+        if (currentUrl) window.open(currentUrl, "_blank");
+      });
+
+      /* =========================
+   START
+========================= */
+      initOffers();
+      let resizeTimeout;
+
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimeout);
+
+        resizeTimeout = setTimeout(() => {
+          initOffers();
+        }, 150);
+      });
 
       /* ===== BOUTONS ===== */
       const warn = document.getElementById("warn");
