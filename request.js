@@ -251,7 +251,7 @@ function logFailedAttempt(ip, username) {
 }
 
 const trackerCooldown = new Map();
-
+const withdrawCooldowns = new Map();
 const delayMap = new Map();
 
 function getLoginDelay(ip) {
@@ -1200,6 +1200,16 @@ app.post("/api/payServer", authenticate, async (req, res) => {
   try {
     const { name, ID, gameId, amount } = req.body;
 
+    const cooldown = withdrawCooldowns.get(req.user.uid);
+    const remaining = Math.ceil((60_000 - (Date.now() - cooldown)) / 1000);
+
+    if (cooldown && Date.now() - cooldown < 60_000) {
+      return res.status(429).json({
+        success: false,
+        error: `Attends ${remaining}s avant un autre retrait`,
+      });
+    }
+
     // =========================
     // VALIDATION INPUT
     // =========================
@@ -1298,6 +1308,8 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     // =========================
     // RESPONSE CLIENT
     // =========================
+    withdrawCooldowns.set(req.user.uid, Date.now());
+
     res.json({
       success: true,
       message: "Job lancé",
@@ -1796,7 +1808,6 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
     }
 
     return res.status(200).json({ message: "OK" });
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
