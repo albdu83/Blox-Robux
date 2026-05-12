@@ -41,16 +41,14 @@ let lienavatar = null;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 const SECRET_KEY = process.env.SECRET_KEY;
 const THEOREM_SECRET = process.env.THEOREM_SECRET;
-const DISCORD_WEBHOOK_TRACKER = process.env.DISCORD_WEBHOOK_TRACKER;
 const CPX_SECRET = process.env.CPX_SECRET;
-const logChannel = process.env.LOG_CHANNEL_ID
+const logChannel = process.env.LOG_CHANNEL_ID;
 if (!SECRET_KEY) throw new Error("SECRET_KEY manquant");
 if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
 if (!RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
 if (!THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
-if (!DISCORD_WEBHOOK) throw new Error("DISCORD_WEBHOOK manquant");
-if (!DISCORD_WEBHOOK_TRACKER)
-  throw new Error("DISCORD_WEBHOOK_TRACKER manquant");
+if (!logChannel) throw new Error("LOG_CHANNEL_ID manquant");
+if (!process.env.DISCORD_TOKEN) throw new Error("DISCORD_TOKEN manquant");
 
 const queue = [];
 let processing = false;
