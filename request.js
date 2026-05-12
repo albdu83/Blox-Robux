@@ -9,6 +9,7 @@ const admin = require("firebase-admin");
 const { fileURLToPath } = require("url");
 const stringify = require("json-stable-stringify");
 const cookieParser = require("cookie-parser");
+const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
 app.use(cookieParser());
 app.use(helmet());
 app.set("trust proxy", 1);
@@ -116,7 +117,7 @@ async function processQueue() {
 
     try {
       // petit délai anti-spam Discord
-      await new Promise((r) => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 1500));
 
       const res = await fetch(job.webhook, {
         method: "POST",
@@ -260,40 +261,74 @@ function getLoginDelay(ip) {
   return Math.min(5000 * attempts, 30000); // max 30s
 }
 
-async function StatList(message, key = "Erreur fatale ou iconnue") {
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds],
+});
+
+const trackerCooldown = new Map();
+
+let trackerChannel = null;
+
+client.once("ready", async () => {
+  console.log(`✅ Bot connecté : ${client.user.tag}`);
+
+  trackerChannel = await client.channels.fetch(
+    process.env.TRACKER_CHANNEL_ID
+  );
+
+  console.log("✅ Salon tracker chargé");
+});
+
+client.login(process.env.DISCORD_TOKEN);
+
+/* ====================================================== */
+
+async function StatList(
+  message,
+  key = "Erreur fatale ou inconnue"
+) {
   try {
     const now = Date.now();
 
-    // ⏱️ Anti-spam (1 message / 30s par clé)
+    // ⏱️ Anti-spam (1 msg / 5s par clé)
     if (trackerCooldown.has(key)) {
-      if (now - trackerCooldown.get(key) < 5_000) return;
+      if (now - trackerCooldown.get(key) < 5000) return;
     }
+
     trackerCooldown.set(key, now);
 
-    // 🧼 Nettoyage anti-mention Discord
-    const safeMessage = message.replace(/@/g, "@\u200b").slice(0, 1800); // limite Discord
+    // 🧼 Anti mention
+    const safeMessage = message
+      .replace(/@/g, "@\u200b")
+      .slice(0, 1800);
 
-    sendWebhook(
-      {
-        embeds: [
-          {
-            title: "🚨 Tentative de connexion échouée ou bloquée",
-            description: safeMessage,
-            color: 0x992d22,
-            footer: {
-              text: "BloxRobux Security",
-              icon_url: "https://i.imgur.com/PjcK6QD.png",
-            },
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      },
-      DISCORD_WEBHOOK_TRACKER,
-    );
+    if (!trackerChannel) {
+      console.error("❌ Tracker channel non chargé");
+      return;
+    }
+
+    const embed = new EmbedBuilder()
+      .setTitle("🚨 Tentative de connexion échouée ou bloquée")
+      .setDescription(safeMessage)
+      .setColor(0x992d22)
+      .setFooter({
+        text: "BloxRobux Security",
+        iconURL: "https://i.imgur.com/PjcK6QD.png",
+      })
+      .setTimestamp();
+
+    await trackerChannel.send({
+      embeds: [embed],
+    });
+
   } catch (err) {
     console.error("Tracker Discord erreur :", err.message);
   }
 }
+
+module.exports = {
+  StatList,
+};
 
 const attempts = new Map();
 
