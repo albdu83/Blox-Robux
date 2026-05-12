@@ -49,7 +49,6 @@ if (!RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
 if (!THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
 if (!logChannel) throw new Error("LOG_CHANNEL_ID manquant");
 if (!process.env.DISCORD_TOKEN) throw new Error("DISCORD_TOKEN manquant");
-const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
 
 const queue = [];
 let processing = false;
