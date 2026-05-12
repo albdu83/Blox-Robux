@@ -771,6 +771,17 @@ app.post("/signup", verifyCsrf, async (req, res) => {
   if (usernameSnap.exists()) {
     return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
   }
+
+  const RobloxNameSnap = await db
+    .ref("users")
+    .orderByChild("RobloxName")
+    .equalTo(RobloxName)
+    .get();
+
+  if (RobloxNameSnap.exists()) {
+    return res.status(409).json({ error: "Pseudo Roblox déjà utilisé" });
+  }
+
   try {
     const userRecord = await admin.auth().createUser({
       email,
@@ -1814,7 +1825,7 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
 
     if (alreadyUsed) {
       return res.status(200).json({
-        message: "Un compte avec ce pseudo Roblox a déjà validé ce média"
+        message: "Un compte avec ce pseudo Roblox a déjà validé ce média",
       });
     }
 
@@ -1838,7 +1849,6 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
     }
 
     return res.status(200).json({ message: "OK" });
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
