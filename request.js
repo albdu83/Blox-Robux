@@ -211,6 +211,8 @@ client.once("ready", async () => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+client.on("error", console.error);
+client.on("debug", console.log);
 
 /* ====================================================== */
 
