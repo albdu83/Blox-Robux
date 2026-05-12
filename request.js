@@ -1789,11 +1789,41 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
   }
 
   try {
+    // récupérer user actuel
+    const userSnap = await db.ref(`users/${uid}`).once("value");
+    const currentUser = userSnap.val();
+
+    if (!currentUser || !currentUser.RobloxName) {
+      return res.status(400).json({ error: "Pseudo introuvable" });
+    }
+
+    const RobloxName = currentUser.RobloxName;
+
+    // récupérer tous les users
+    const usersSnap = await db.ref("users").once("value");
+    const users = usersSnap.val() || {};
+
+    // check si un compte avec même pseudo a déjà type=true
+    const alreadyUsed = Object.entries(users).some(([otherUid, user]) => {
+      return (
+        otherUid !== uid &&
+        user.RobloxName === RobloxName &&
+        user[type] === true
+      );
+    });
+
+    if (alreadyUsed) {
+      return res.status(200).json({
+        message: "Un compte avec ce pseudo Roblox a déjà validé ce média"
+      });
+    }
+
+    // transaction normale
     const result = await db.ref(`users/${uid}`).transaction((user) => {
       if (!user) user = {};
 
       if (user[type]) {
-        return; // abort transaction
+        return;
       }
 
       user[type] = true;
@@ -1808,6 +1838,7 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
     }
 
     return res.status(200).json({ message: "OK" });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
