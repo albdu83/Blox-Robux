@@ -202,8 +202,6 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-let trackerChannel = null;
-
 client.once("ready", async () => {
   console.log(`✅ Bot connecté : ${client.user.tag}`);
 
