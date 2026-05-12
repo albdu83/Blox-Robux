@@ -119,7 +119,7 @@ async function processQueue() {
       }
 
       await logChannel.send({
-        embeds: job.payload || [],
+        embeds: job.payload.embeds || [],
       });
 
       console.log("✅ Message envoyé");
