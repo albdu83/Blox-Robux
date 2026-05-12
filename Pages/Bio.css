@@ -14,27 +14,19 @@ html {
 body {
   min-height: 100vh;
   line-height: 1.6;
-  letter-spacing: 0.2px;
   margin: 0;
   overflow-x: hidden;
-  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   color: #e5e7eb;
-  position: relative; /* pour superposer correctement les pseudo-éléments */
+  position: relative;
 
   background:
-    radial-gradient(
-      1200px 600px at top center,
-      #1e1e3d 0%,
-      #16171d 40%,
-      #070707 85%
-    ),
-    linear-gradient(
-      to bottom,
-      #232430,
-      #0b0b0b
-    );
+    radial-gradient(900px 500px at 20% 0%, rgba(99,102,241,0.15), transparent 60%),
+    radial-gradient(800px 500px at 80% 10%, rgba(59,130,246,0.12), transparent 60%),
+    radial-gradient(1200px 800px at center bottom, #0b0b0f 0%, #070707 60%, #050505 100%);
 }
 
+/* vignette + grain léger */
 body::before {
   content: "";
   position: absolute;
@@ -43,13 +35,17 @@ body::before {
   background-size: 50px 50px; /* avant 100px → moins de pixels à calculer */
   pointer-events: none;
   z-index: -1;
+  animation: moveBg 10s linear infinite;
 }
 
-body > * {
-  position: relative;
-  z-index: 1;
+@keyframes moveBg {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 200px -200px;
+  }
 }
-
 
 /* ===================== */
 /* TRANSITION CHARGEMENT  */
@@ -365,18 +361,123 @@ header ul li a.active {
 }
 
 #container {
+    width: min(1100px, 92%);
+    margin: 40px auto;
+    padding: 40px;
+    border-radius: 24px;
+
+    background: rgba(18, 18, 30, 0.75);
+    backdrop-filter: blur(14px);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+        0 10px 40px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+#pagecontainer {
     display: flex;
     flex-direction: column;
-    align-self: center;
-    align-items: center;
-    justify-self: center;
-    justify-content: start;
-    background: linear-gradient(#636363, #292929);
-    height: 83vh;
-    width: 65vw;
-    border-radius: 10px;
-    border: #0a0a0a solid 5px;
-    overflow-y: scroll;
+    gap: 45px;
+}
+
+#pagecontainer h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+
+    background: linear-gradient(90deg, #60a5fa, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    margin-bottom: 10px;
+}
+
+#pagecontainer h3 {
+    font-size: 1.4rem;
+    color: #93c5fd;
+    margin-bottom: 15px;
+}
+
+#pagecontainer p,
+#pagecontainer li {
+    color: #d1d5db;
+    line-height: 1.9;
+    font-size: 1rem;
+}
+
+.timeline {
+    border-left: 3px solid #4f46e5;
+    padding-left: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+
+    left: -34px;
+    top: 5px;
+
+    width: 14px;
+    height: 14px;
+
+    border-radius: 50%;
+    background: #6366f1;
+
+    box-shadow: 0 0 15px #6366f1;
+}
+
+.timeline-item span {
+    color: #818cf8;
+    font-weight: bold;
+}
+
+.hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+}
+
+.hero h1 {
+    font-size: clamp(3rem, 10vw, 5rem);
+
+    background: linear-gradient(90deg, #60a5fa, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    max-width: 700px;
+    margin: auto;
+
+    color: #cbd5e1;
+    font-size: 1.15rem;
+}
+
+.section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+
+    padding: 30px;
+    border-radius: 18px;
+
+    transition:
+      transform .25s ease,
+      border-color .25s ease,
+      background .25s ease;
+}
+
+.section:hover {
+    transform: translateY(-4px);
+
+    border-color: rgba(99,102,241,0.4);
+
+    background: rgba(255,255,255,0.05);
 }
 
 #container::-webkit-scrollbar {
@@ -408,6 +509,14 @@ header ul li a.active {
   padding: 30px 20px;
 }
 
+footer {
+  text-align: center;
+
+  color: #94a3b8;
+
+  font-size: 14px;
+}
+
 @media (max-width: 600px) {
     .text {
         font-size: clamp(14px, 5vw, 20px);
@@ -417,5 +526,27 @@ header ul li a.active {
         gap: 5px;
         flex-wrap: wrap;
         justify-content: flex-end;
+    }
+}
+@media (max-width: 768px) {
+
+    #container {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .section {
+        padding: 20px;
+    }
+
+    #Block {
+        flex-direction: column;
+        height: auto;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .infos {
+        flex-direction: column;
     }
 }
