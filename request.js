@@ -202,8 +202,6 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-const trackerCooldown = new Map();
-
 let trackerChannel = null;
 
 client.once("ready", async () => {
