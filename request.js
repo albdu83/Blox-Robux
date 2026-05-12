@@ -200,10 +200,12 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-client.once("clientReady", async (client) => {
+client.once("ready", async () => {
   console.log(`✅ Bot connecté : ${client.user.tag}`);
 
-  trackerChannel = await client.channels.fetch(process.env.TRACKER_CHANNEL_ID);
+  trackerChannel = await client.channels.fetch(
+    process.env.TRACKER_CHANNEL_ID
+  );
 
   console.log("✅ Salon tracker chargé");
 });
