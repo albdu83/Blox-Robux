@@ -9,6 +9,7 @@
     "dev": "nodemon request.js"
   },
   "dependencies": {
+    "discord.js": "^14.19.3",
     "express": "^4.19.2",
     "cors": "^2.8.5",
     "firebase-admin": "^12.5.0",
