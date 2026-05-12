@@ -34,16 +34,16 @@ app.use(
 
 const jobs = {};
 let sseTokens = {};
-
+const trackerChannel = null;
 let lienavatar = null;
 
 // --- SECRET_KEYS ---
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 const SECRET_KEY = process.env.SECRET_KEY;
 const THEOREM_SECRET = process.env.THEOREM_SECRET;
-const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
 const DISCORD_WEBHOOK_TRACKER = process.env.DISCORD_WEBHOOK_TRACKER;
 const CPX_SECRET = process.env.CPX_SECRET;
+const logChannel = process.env.LOG_CHANNEL_ID
 if (!SECRET_KEY) throw new Error("SECRET_KEY manquant");
 if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
 if (!RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
@@ -113,103 +113,40 @@ async function processQueue() {
 
   while (queue.length > 0) {
     const job = queue.shift();
-    console.log(`🚀 Traitement d'un job, queue restante: ${queue.length}`);
+    console.log(`🚀 Traitement d'un job, reste: ${queue.length}`);
 
     try {
-      // petit délai anti-spam Discord
-      await new Promise((r) => setTimeout(r, 1500));
+      if (!logChannel) {
+        throw new Error("Log channel non prêt");
+      }
 
-      const res = await fetch(job.webhook, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": "Mozilla/5.0 (Node.js Bot)",
-        },
-        body: JSON.stringify(job.payload),
+      await logChannel.send({
+        embeds: job.embeds || [],
       });
 
-      const contentType = res.headers.get("content-type") || "";
+      console.log("✅ Message envoyé");
 
-      /* ───────── 1️⃣ RATE LIMIT DISCORD / CLOUDFLARE ───────── */
-      if (res.status === 429 || res.status === 403) {
-        let waitTime = 5000; // fallback
-
-        try {
-          if (contentType.includes("application/json")) {
-            const data = await res.json();
-            waitTime = data.retry_after || waitTime;
-
-            console.log(`🔁 Rate limit reçu → attendre ${waitTime}ms`);
-          } else {
-            const text = await res.text();
-
-            if (
-              text.includes("1015") ||
-              text.toLowerCase().includes("rate limited")
-            ) {
-              console.warn("🚫 Cloudflare rate limit → attente 10s");
-              waitTime = 10000;
-            } else {
-              console.warn("⚠️ Réponse non JSON :", text.slice(0, 200));
-            }
-          }
-        } catch (err) {
-          console.warn("⚠️ Erreur parsing réponse :", err.message);
-        }
-
-        job.retries = (job.retries || 0) + 1;
-
-        if (job.retries <= 5) {
-          setTimeout(() => {
-            queue.unshift(job);
-            processQueue();
-          }, waitTime);
-        } else {
-          console.error(`❌ Job abandonné après ${job.retries} retries`);
-        }
-
-        continue;
-      }
-
-      /* ───────── 2️⃣ AUTRES ERREURS HTTP ───────── */
-      if (!res.ok) {
-        console.error(`❌ Webhook failed: ${res.status}`);
-
-        job.retries = (job.retries || 0) + 1;
-
-        if (job.retries <= 5) {
-          const delay = Math.min(1000 * 2 ** (job.retries - 1), 60000);
-          console.log(`🔁 Retry ${job.retries}/5 après ${delay}ms`);
-
-          setTimeout(() => {
-            queue.unshift(job);
-            processQueue();
-          }, delay);
-        } else {
-          console.error(`❌ Job abandonné après ${job.retries} retries`);
-        }
-
-        continue;
-      }
-
-      /* ───────── 3️⃣ SUCCESS ───────── */
-      console.log("✅ Webhook envoyé avec succès");
+      // anti-spam Discord (IMPORTANT)
+      await new Promise((r) => setTimeout(r, 1200));
     } catch (err) {
-      console.error(`🔥 Error: ${err.message}`);
+      console.error("❌ Discord send error:", err.message);
 
       job.retries = (job.retries || 0) + 1;
 
       if (job.retries <= 5) {
         const delay = Math.min(1000 * 2 ** (job.retries - 1), 60000);
-        console.log(`🔁 Retry ${job.retries}/5 après ${delay}ms`);
+
+        console.log(`🔁 Retry ${job.retries}/5 dans ${delay}ms`);
 
         setTimeout(() => {
           queue.unshift(job);
           processQueue();
         }, delay);
       } else {
-        console.error(`❌ Job échoué après ${job.retries} retries`);
+        console.error("💀 Job abandonné après 5 retries");
       }
+
+      continue;
     }
   }
 
@@ -272,9 +209,7 @@ let trackerChannel = null;
 client.once("ready", async () => {
   console.log(`✅ Bot connecté : ${client.user.tag}`);
 
-  trackerChannel = await client.channels.fetch(
-    process.env.TRACKER_CHANNEL_ID
-  );
+  trackerChannel = await client.channels.fetch(process.env.TRACKER_CHANNEL_ID);
 
   console.log("✅ Salon tracker chargé");
 });
@@ -285,7 +220,9 @@ client.login(process.env.DISCORD_TOKEN);
 
 async function StatList(
   message,
-  key = "Erreur fatale ou inconnue"
+  key = "Erreur fatale ou inconnue",
+  title = "🚨 Tentative de connexion échouée ou bloquée",
+  color = "0x992d22",
 ) {
   try {
     const now = Date.now();
@@ -298,9 +235,7 @@ async function StatList(
     trackerCooldown.set(key, now);
 
     // 🧼 Anti mention
-    const safeMessage = message
-      .replace(/@/g, "@\u200b")
-      .slice(0, 1800);
+    const safeMessage = message.replace(/@/g, "@\u200b").slice(0, 1800);
 
     if (!trackerChannel) {
       console.error("❌ Tracker channel non chargé");
@@ -308,9 +243,9 @@ async function StatList(
     }
 
     const embed = new EmbedBuilder()
-      .setTitle("🚨 Tentative de connexion échouée ou bloquée")
+      .setTitle(title)
       .setDescription(safeMessage)
-      .setColor(0x992d22)
+      .setColor(color)
       .setFooter({
         text: "BloxRobux Security",
         iconURL: "https://i.imgur.com/PjcK6QD.png",
@@ -320,15 +255,10 @@ async function StatList(
     await trackerChannel.send({
       embeds: [embed],
     });
-
   } catch (err) {
     console.error("Tracker Discord erreur :", err.message);
   }
 }
-
-module.exports = {
-  StatList,
-};
 
 const attempts = new Map();
 
@@ -974,22 +904,11 @@ app.post("/login", verifyCsrf, async (req, res) => {
 
     /* ───────── 9️⃣ WEBHOOK ───────── */
     try {
-      sendWebhook(
-        {
-          embeds: [
-            {
-              title: "✅ Tentative de connexion réussi",
-              description: `Connexion réussi pour le compte ${username}`,
-              color: 0xc27c0e,
-              footer: {
-                text: "BloxRobux Security",
-                icon_url: "https://i.imgur.com/PjcK6QD.png",
-              },
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        },
-        DISCORD_WEBHOOK_TRACKER,
+      StatList(
+        `Connexion réussi pour le compte ${username}`,
+        "Connexion réussi",
+        "✅ Tentative de connexion réussi",
+        0xc27c0e,
       );
     } catch (err) {
       console.error("Tracker Discord erreur :", err.message);
