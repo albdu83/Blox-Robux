@@ -221,7 +221,7 @@ async function StatList(
   message,
   key = "Erreur fatale ou inconnue",
   title = "🚨 Tentative de connexion échouée ou bloquée",
-  color = "0x992d22",
+  color = 0x992d22,
 ) {
   try {
     const now = Date.now();
