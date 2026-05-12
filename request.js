@@ -34,7 +34,7 @@ app.use(
 
 const jobs = {};
 let sseTokens = {};
-const trackerChannel = null;
+let trackerChannel = null;
 let lienavatar = null;
 
 // --- SECRET_KEYS ---
@@ -200,7 +200,7 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-client.once("ready", async () => {
+client.once("clientReady", async (client) => {
   console.log(`✅ Bot connecté : ${client.user.tag}`);
 
   trackerChannel = await client.channels.fetch(process.env.TRACKER_CHANNEL_ID);
