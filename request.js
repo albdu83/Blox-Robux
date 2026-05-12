@@ -36,19 +36,18 @@ const jobs = {};
 let sseTokens = {};
 let trackerChannel = null;
 let lienavatar = null;
+let logChannel = null
 
 // --- SECRET_KEYS ---
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 const SECRET_KEY = process.env.SECRET_KEY;
 const THEOREM_SECRET = process.env.THEOREM_SECRET;
 const CPX_SECRET = process.env.CPX_SECRET;
-const logChannel = process.env.LOG_CHANNEL_ID;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 if (!SECRET_KEY) throw new Error("SECRET_KEY manquant");
 if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
 if (!RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
 if (!THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
-if (!logChannel) throw new Error("LOG_CHANNEL_ID manquant");
 if (!DISCORD_TOKEN) throw new Error("DISCORD_TOKEN manquant");
 
 const queue = [];
@@ -204,9 +203,9 @@ const client = new Client({
 client.once("ready", async () => {
   console.log(`✅ Bot connecté : ${client.user.tag}`);
 
-  trackerChannel = await client.channels.fetch(
-    process.env.TRACKER_CHANNEL_ID
-  );
+  trackerChannel = await client.channels.fetch(process.env.TRACKER_CHANNEL_ID);
+
+  logChannel = await client.channels.fetch(process.env.LOG_CHANNEL_ID);
 
   console.log("✅ Salon tracker chargé");
 });
