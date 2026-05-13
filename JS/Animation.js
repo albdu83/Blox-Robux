@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const link = e.target.closest("a[href], button[data-href]");
     if (!link) return;
 
-    const url = link.getAttribute("href");
+    const url = link.getAttribute("href") || link.dataset.href;
     const target = link.getAttribute("target");
     if (target === "_blank") return;
     if (
