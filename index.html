@@ -77,7 +77,14 @@
           align-items: center;
         "
       >
-        <h3 style="text-align: center; max-width: 100%; font-size: clamp(0.75rem, 2vw, 1.2rem);" class="fade-in">
+        <h3
+          style="
+            text-align: center;
+            max-width: 100%;
+            font-size: clamp(0.75rem, 2vw, 1.2rem);
+          "
+          class="fade-in"
+        >
           Bienvenue sur Blox R$, un site où vous pouvez gagner des R$
           gratuitement en complétant des offres, en répondant à des sondages et
           en jouant à des jeux ! Créez un compte gratuitement pour commencer dès
@@ -306,7 +313,12 @@
     </div>
     <div class="separator"></div>
     <div id="Block">
-      <img src="img/BloxImg.png" alt="BloxRobuxLogo" />
+      <!-- COLONNE GAUCHE -->
+      <div class="side">
+        <img src="img/BloxImg.png" alt="BloxRobuxLogo" />
+      </div>
+
+      <!-- COLONNE CENTRALE -->
       <div id="BlockBottom">
         <div class="infos">
           <div class="col">
@@ -320,7 +332,6 @@
 
           <div class="col">
             <h2>Mentions légales</h2>
-
             <ul>
               <li><a href="Legal/CGU">Conditions d'utilisations</a></li>
               <li><a href="Legal/PCF">Politique de confidentialité</a></li>
@@ -366,11 +377,9 @@
           </div>
         </div>
       </div>
-      <img
-        src="img/BloxImg.png"
-        alt="BloxRobuxLogo"
-        style="visibility: hidden"
-      />
+
+      <!-- COLONNE DROITE VIDE -->
+      <div class="side empty"></div>
     </div>
     <script>
       if ("scrollRestoration" in history) {
