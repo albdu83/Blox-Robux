@@ -550,13 +550,12 @@ header.scrolled {
   align-items: center;
   justify-content: space-between;
 
-  background: linear-gradient(135deg, #0e1f41, #132b5c);
+  background: linear-gradient(135deg, #0e1f4180, #132b5c80);
 
   padding: 3rem 5%;
 
   border-top: 4px solid rgb(27, 59, 201);
   overflow: hidden;
-  z-index: 0;
 }
 
 /* lumière floue derrière */
