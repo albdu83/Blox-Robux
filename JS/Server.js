@@ -63,6 +63,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const start = document.getElementById("start");
   const countmember = document.getElementById("countmember");
   const robuxnumber = document.getElementById("robuxnumber");
+  const btnAccueil = document.getElementById("btnAccueil");
+  const btnRetour = document.getElementById("btn-Retour");
 
   function scrambleText(el, finalText, duration = 1000) {
     const chars = "0123456789";
@@ -207,9 +209,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       return;
     } else {
-      if (elements && btnInscription && btnConnexion) {
+      if (elements) {
         elements.style.display = "none";
+      }
+
+      if (btnAccueil) {
+        btnAccueil.style.display = "none";
+      }
+
+      if (btnRetour) {
+        btnRetour.style.display = "none";
+      }
+
+      if (btnInscription) {
         btnInscription.style.display = "none";
+      }
+
+      if (btnConnexion) {
         btnConnexion.style.display = "none";
       }
 
@@ -259,9 +275,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         lienprofil.href = "Pages/Profil";
         lienprofil.style.justifyContent = "center";
         const span = lienprofil.querySelector("span");
-        if (elements && btnInscription && btnConnexion) {
+        if (elements) {
           elements.style.display = "flex";
+        }
+
+        if (btnAccueil) {
+          btnAccueil.style.display = "flex";
+        }
+
+        if (btnRetour) {
+          btnRetour.style.display = "flex";
+        }
+
+        if (btnInscription) {
           btnInscription.style.display = "flex";
+        }
+
+        if (btnConnexion) {
           btnConnexion.style.display = "flex";
         }
         if (loadimg) {
