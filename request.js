@@ -1181,20 +1181,9 @@ app.get("/api/places", async (req, res) => {
   }
 });
 
-async function getUserBalance(RobloxName) {
-  const snap = await db
-    .ref("users")
-    .orderByChild("RobloxName")
-    .equalTo(RobloxName)
-    .get();
-  if (!snap.exists()) return null;
-  const uid = Object.keys(snap.val())[0];
-  return { uid, balance: snap.val()[uid].balance || 0 };
-}
-
 app.post("/api/payServer", authenticate, async (req, res) => {
   try {
-    const { name, ID, gameId, amount } = req.body;
+    const { ID, gameId, amount } = req.body;
 
     const cooldown = withdrawCooldowns.get(req.user.uid);
     const remaining = Math.ceil((60_000 - (Date.now() - cooldown)) / 1000);
@@ -1209,7 +1198,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     // =========================
     // VALIDATION INPUT
     // =========================
-    if (!name || !gameId || !ID || !amount) {
+    if (!gameId || !ID || !amount) {
       return res.status(400).json({
         success: false,
         error: "Paramètres manquants",
@@ -1417,8 +1406,25 @@ app.post("/callback", (req, res) => {
   }
 });
 
-app.get("/api/jobStatus", (req, res) => {
-  const { job_id } = req.query;
+app.post("/api/update-roblox-name", authenticate, async (req, res) => {
+  const uid = req.user.uid;
+  const { newName } = req.body;
+
+  if (!newName) {
+    return res.status(400).json({ error: "Nouveau nom manquant" });
+  }
+
+  try {
+    await db.ref("users/" + uid).update({ RobloxName: newName });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("🔥 UPDATE ROBLOX NAME CRASH:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/jobStatus", (req, res) => {
+  const { job_id } = req.body;
   if (!job_id || !jobs[job_id]) {
     return res.status(404).json({ error: "Job introuvable" });
   }
