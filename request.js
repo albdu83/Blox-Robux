@@ -522,7 +522,11 @@ app.get("/timewall", async (req, res) => {
 });
 
 app.post("/timewallhash", authenticate, async (req, res) => {
-  const { firstUsername } = req.body;
+  const uid = req.user.uid;
+  const snap = await db.ref("users/" + uid).get();
+  if (!snap.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
+  const user = snap.val();
+  const firstUsername = user.firstUsername;
 
   try {
     const url = new URL("https://timewall.io/users/login");
