@@ -146,10 +146,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // TITRE / CONTENU SAFE
         if (title) title.value = data.Titre || "";
-        if (content) content.innerHTML = data.Contexte || "";
+        if (content)
+          content.innerHTML = DOMPurify.sanitize(data.Contexte || "");
 
         if (distitre) distitre.textContent = data.Titre || "";
-        if (discontexte) discontexte.innerHTML = data.Contexte || "";
+        if (discontexte)
+          discontexte.innerHTML = DOMPurify.sanitize(data.Contexte || "");
       };
 
       evtSource.onerror = () => {
@@ -1084,38 +1086,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!btn || !select) return;
 
   btn.addEventListener("click", async () => {
-    const selectedGameID = select.value;
-    const rootID = rootIdMap[selectedGameID];
-    console.log("selectedGameID:", selectedGameID, "rootID:", rootID);
-    if (!rootID) return alert("Place introuvable !");
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try {
+      const selectedGameID = select.value;
+      const rootID = rootIdMap[selectedGameID];
+      if (!rootID) return alert("Place introuvable !");
 
-    if (!selectedGameID) return alert("Sélectionne un jeu");
+      if (!selectedGameID) return alert("Sélectionne un jeu");
 
-    const pseudo = RobloxP;
-    const amountEl = document.getElementById("amount");
-    const amount = parseFloat(amountEl.value);
+      const amountEl = document.getElementById("amount");
+      const amount = parseFloat(amountEl.value);
 
-    if (!pseudo || !amount) {
-      return alert("Utilisateur ou montant invalide");
-    }
+      if (!amount) {
+        return alert("Utilisateur ou montant invalide");
+      }
 
-    // 1️⃣ Vérifier le solde
-    const balanceRes = await fetch(`${API_BASE_URL}/api/getBalance`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: pseudo, Montant: amount }),
-    });
-
-    if (!balanceRes.ok) {
-      const errData = await balanceRes.json();
-      return alert(errData.error || "Erreur lors de la récupération du solde");
-    }
-
-    // 2️⃣ Payer le serveur privé
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) return;
+      const user = firebase.auth().currentUser; // ← utilisateur déjà connu
+      if (!user) return alert("Non connecté");
 
       const token = await user.getIdToken();
+
+      // 1️⃣ Vérifier le solde
+      const balanceRes = await fetch(`${API_BASE_URL}/api/getBalance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ Montant: amount }),
+      });
+
+      if (!balanceRes.ok) {
+        const errData = await balanceRes.json();
+        return alert(
+          errData.error || "Erreur lors de la récupération du solde",
+        );
+      }
+
+      // 2️⃣ Payer le serveur privé
 
       const payRes = await fetch(`${API_BASE_URL}/api/payServer`, {
         method: "POST",
@@ -1124,7 +1133,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           Authorization: `Bearer ${token}`, // ✅ IMPORTANT
         },
         body: JSON.stringify({
-          name: pseudo,
           ID,
           gameId: rootID,
           amount,
@@ -1140,23 +1148,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       const job_id = payData.job_id;
 
       const pollJob = setInterval(async () => {
-        const statusRes = await fetch(
-          `${API_BASE_URL}/api/jobStatus?job_id=${job_id}`,
-        );
+        const statusRes = await fetch(`${API_BASE_URL}/api/jobStatus`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ job_id }),
+        });
         const statusData = await statusRes.json();
 
         if (statusData.status === "success") {
           alert("🎉 Serveur privé créé avec succès !");
           clearInterval(pollJob);
           addTransaction(amount);
+          btn.disabled = false;
         } else if (statusData.status === "error") {
           alert(
             `❌ Erreur lors de la création du serveur : ${statusData.error}`,
           );
           clearInterval(pollJob);
+          btn.disabled = false;
         }
       }, 3000);
-    });
+    } catch (err) {
+      console.error(err);
+      alert("Erreur inattendue");
+      btn.disabled = false; // ← et en cas d'erreur avant le polling
+    }
   });
   async function checkAndFixRobloxName(user) {
     if (!user) return;
@@ -1201,7 +1220,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             return alert("Pseudo invalide, essayez un autre !");
 
           // Mettre à jour Firebase
-          await firebase.database().ref(`users/${uid}/RobloxName`).set(newName);
+          const token = await user.getIdToken();
+          await fetch(`${API_BASE_URL}/api/update-roblox-name`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ newName }),
+          });
           alert("Pseudo Roblox mis à jour ✅");
 
           // Fermer le modal
