@@ -127,70 +127,6 @@ body::before {
   margin-bottom: 20px;
 }
 
-.navigation {
-  opacity: 0;
-  overflow-x: hidden;
-  visibility: hidden;
-  position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: flex-end;
-  background: rgba(8, 12, 32, 0.6);
-  z-index: 9998;
-  transition: opacity 1s ease, visibility 1s ease;
-  pointer-events: none;
-}
-
-.nav-panel {
-  margin-left: 1%;
-  width: 260px;
-  height: 100vh;
-  background-color: #161638;
-  padding: 24px;
-
-  display: flex;
-  flex-direction: column;
-}
-
-.navigation > div {
-  background-color: #161638;
-  border: 2px solid #757463;
-  border-radius: 12px;
-  padding: clamp(20px, 6vw, 40px);
-  width: 90%;
-  max-width: 75px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  /* 👇 AJOUTE ÇA */
-  height: 100vh;        /* prend 80% de la hauteur de l'écran */
-  max-height: 100vh;    /* limite pour éviter le débordement */
-  
-  text-align: center;
-  box-shadow: 0 0 10px rgba(180, 180, 173, 0.5);
-  transition: max-width 1s ease;
-}
-
-.navigation > div.active {
-  max-width: 220px;
-}
-
-.navigation.active {
-  visibility: visible;
-  pointer-events: auto;
-  opacity: 1;
-}
-
-.nave {
-  list-style: none;   /* enlève les puces */
-  padding: 0;         /* enlève le padding par défaut */
-  margin: 0;
-
-  display: flex;
-  flex-direction: column; /* 👈 vertical */
-  gap: 16px;
-}
-
 .fade-transition {
   position: fixed;
   inset: 0;
@@ -259,23 +195,6 @@ body::before {
     width: clamp(28px, 6vw, 40px);
     height: clamp(28px, 6vw, 40px);
     border-radius: 50%;
-}
-
-.nave li a {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: bolder;
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: white;
-  transition: color 0.5s ease;
-}
-
-.nave li a:hover {
-  color: #ffea00;
 }
 
 #CGU::-webkit-scrollbar {
@@ -689,4 +608,304 @@ footer {
   color: #94a3b8;
 
   font-size: 14px;
+}
+
+.navigation {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+
+  display: flex;
+  justify-content: flex-end;
+
+  background: rgba(2, 6, 23, 0.55);
+
+  backdrop-filter: blur(4px);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition:
+    opacity 0.45s ease,
+    visibility 0.45s ease;
+}
+
+/* état ouvert */
+.navigation.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* panneau */
+.navigation > div {
+  position: relative;
+
+  width: 100%;
+  max-width: 88px;
+  height: 100vh;
+
+  padding: 28px 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(30, 41, 59, 0.96),
+      rgba(15, 23, 42, 0.98)
+    );
+
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    -20px 0 60px rgba(0, 0, 0, 0.45),
+    inset 1px 0 rgba(255, 255, 255, 0.05);
+
+  backdrop-filter: blur(18px);
+
+  overflow: hidden;
+
+  transform: translateX(30px);
+
+  transition:
+    max-width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease;
+}
+
+/* animation entrée */
+.navigation.active > div {
+  transform: translateX(0);
+}
+
+/* panneau déployé */
+.navigation > div.active {
+  max-width: 280px;
+}
+
+/* effet lumière subtil */
+.navigation > div::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06),
+      transparent 35%
+    );
+
+  pointer-events: none;
+}
+
+/* menu */
+.nave {
+  list-style: none;
+
+  width: 100%;
+
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* items */
+.nave li {
+  width: 100%;
+}
+
+.nave li {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: navItem 0.5s forwards;
+}
+
+.nave li:nth-child(1) { animation-delay: 0.08s; }
+.nave li:nth-child(2) { animation-delay: 0.14s; }
+.nave li:nth-child(3) { animation-delay: 0.20s; }
+.nave li:nth-child(4) { animation-delay: 0.26s; }
+
+@keyframes navItem {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* liens */
+.nave a {
+  position: relative;
+
+  width: 100%;
+
+  padding: 14px 16px;
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  font-weight: 500;
+
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease,
+    color 0.25s ease;
+}
+
+/* hover moderne */
+.nave a:hover {
+  background: rgba(255, 255, 255, 0.08);
+
+  color: white;
+
+  transform: translateX(4px);
+}
+
+/* item actif */
+.nave a.active {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.95),
+    rgba(59, 130, 246, 0.9)
+  );
+
+  color: white;
+
+  box-shadow:
+    0 10px 25px rgba(59, 130, 246, 0.25);
+}
+
+/* icône rotation */
+#barres {
+  transition:
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#barres.rotated {
+  transform: rotate(180deg);
+}
+
+.logo img {
+  height: 50px;
+}
+
+.logo2 img {
+  height: 48px;
+
+  padding: 10px;
+
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+
+.logo2 img:hover {
+  cursor: pointer;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+#logo2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.nave li a::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.18),
+    rgba(99, 102, 241, 0.14)
+  );
+
+  opacity: 0;
+
+  transition: opacity 0.25s ease;
+}
+
+.nave li a:hover::before {
+  opacity: 1;
+}
+
+.nave li a:hover {
+  color: white;
+
+  transform: translateX(4px);
+}
+
+.nave li a {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  width: 100%;
+
+  padding: 14px 16px;
+
+  border-radius: 16px;
+
+  text-decoration: none;
+
+  color: #dbe4ff;
+
+  font-weight: 600;
+
+  overflow: hidden;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.nave li a:hover {
+  color: #ffea00;
+}
+
+.loadimg {
+  align-self: center;
+  width: 52px;
+  height: 52px;
+
+  border: 5px solid rgba(59, 130, 246, 0.15);
+  border-top-color: #3b82f6;
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+
+  box-shadow:
+    0 0 12px rgba(59, 130, 246, 0.35);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
