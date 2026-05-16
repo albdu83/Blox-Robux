@@ -36,7 +36,7 @@ const jobs = {};
 let sseTokens = {};
 let trackerChannel = null;
 let lienavatar = null;
-let logChannel = null
+let logChannel = null;
 
 // --- SECRET_KEYS ---
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
@@ -524,7 +524,8 @@ app.get("/timewall", async (req, res) => {
 app.post("/timewallhash", authenticate, async (req, res) => {
   const uid = req.user.uid;
   const snap = await db.ref("users/" + uid).get();
-  if (!snap.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
+  if (!snap.exists())
+    return res.status(404).json({ error: "Utilisateur introuvable" });
   const user = snap.val();
   const firstUsername = user.firstUsername;
 
@@ -941,43 +942,6 @@ app.post("/login", verifyCsrf, async (req, res) => {
   }
 });
 
-app.get("/getEmail", authenticate, verifyCsrf, async (req, res) => {
-  const username = req.query.username;
-  if (!username) return res.status(400).json({ error: "Username manquant" });
-
-  try {
-    // On récupère l'utilisateur par son username actuel
-    const snapshot = await db
-      .ref("users")
-      .orderByChild("username")
-      .equalTo(username)
-      .once("value");
-    if (!snapshot.exists())
-      return res.status(404).json({ error: "Utilisateur introuvable" });
-
-    const uid = Object.keys(snapshot.val())[0];
-    const user = snapshot.val()[uid];
-
-    // On utilise firstUsername pour construire l'email
-    let email = user.email;
-    if (!email && user.firstUsername) {
-      email = `${user.firstUsername}@bloxrobux.local`;
-      // Optionnel : on met à jour la DB pour que ce soit permanent
-      await db.ref("users/" + uid).update({ email });
-    }
-
-    if (!email)
-      return res
-        .status(404)
-        .json({ error: "Email non défini pour cet utilisateur" });
-
-    res.json({ email });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
 app.post("/api/roblox-user/:username", async (req, res) => {
   const username = req.params.username;
   const response = await fetch("https://users.roblox.com/v1/usernames/users", {
@@ -1113,7 +1077,8 @@ app.get("/reach", async (req, res) => {
 app.post("/api/offer-url/theorem", authenticate, async (req, res) => {
   const uid = req.user.uid;
   const snap = await db.ref("users/" + uid).get();
-  if (!snap.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
+  if (!snap.exists())
+    return res.status(404).json({ error: "Utilisateur introuvable" });
   const user = snap.val();
   const firstUsername = user.firstUsername;
 
@@ -1269,7 +1234,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     // =========================
     // SEND TO VPS
     // =========================
-    fetch("http://87.106.245.156:5000/run_job", {
+    fetch(process.env.VPS_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1650,47 +1615,54 @@ app.post("/setSseCookie", async (req, res) => {
   }
 });
 
-app.post("/apply-promo", authenticate, async (req, res) => {
+app.post("/api/apply-promo", authenticate, async (req, res) => {
+  const uid = req.user.uid;
+  const { code } = req.body;
+
+  if (!code || /[.#$\[\]]/.test(code))
+    return res.status(400).json({ error: "Code invalide" });
+
+  const promoRef = admin.database().ref(`promocodes/${code}`);
+  const userRef = admin.database().ref(`users/${uid}`);
+
   try {
-    const { username, code } = req.body;
-    const snapshot = await db
-      .ref("users")
-      .orderByChild("username")
-      .equalTo(username)
-      .once("value");
-    if (!snapshot.exists())
-      return res.status(404).json({ error: "Utilisateur introuvable" });
+    // Transaction atomique — lit et écrit en une seule opération
+    await promoRef.transaction((promo) => {
+      if (!promo) return; // code inexistant → annule
+      if (promo.expiration && new Date(promo.expiration) < new Date()) return;
+      if (promo.usedBy?.[uid]) return; // déjà utilisé
+      if (promo.usesLeft !== undefined && promo.usesLeft <= 0) return;
+      // Applique les modifications atomiquement
+      if (!promo.usedBy) promo.usedBy = {};
+      promo.usedBy[uid] = true;
+      if (promo.usesLeft !== undefined) promo.usesLeft--;
 
-    const uid = Object.keys(snapshot.val())[0];
+      return promo; // valide la transaction
+    });
 
-    const ref = admin.database().ref(`promocodes/${code}`);
-    const snap = await ref.get();
+    // Récupère le montant et met à jour le solde
+    const promoSnap = await promoRef.get();
+    const promo = promoSnap.val();
+    if (!promo?.usedBy?.[uid])
+      return res.status(400).json({ error: "Code invalide ou déjà utilisé" });
 
-    if (!snap.exists()) return res.status(400).send("Invalid code");
+    // ✅ Côté serveur dans /api/apply-promo
+    const amount = promo.amount;
 
-    const promo = snap.val();
-
-    if (promo.usesLeft === 0) {
-      return res.status(400).send("Code expired");
+    if (typeof amount !== "number" || amount <= 0 || amount > 10000) {
+      return res.status(400).json({ error: "Montant du code invalide" });
     }
 
-    const userRef = admin.database().ref(`users/${uid}`);
-    const userSnap = await userRef.get();
-    const balance = userSnap.val()?.balance || 0;
-
-    await userRef.update({
-      balance: balance + promo.amount,
+    await userRef.transaction((user) => {
+      if (!user) return;
+      user.balance = (user.balance || 0) + promo.amount;
+      return user;
     });
 
-    await ref.update({
-      usesLeft: (promo.usesLeft ?? 1) - 1,
-      [`usedBy/${uid}`]: true,
-    });
-
-    res.json({ success: true, added: promo.amount });
+    res.json({ success: true, amount: promo.amount });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error");
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
@@ -1699,6 +1671,12 @@ app.post("/update-profile", authenticate, async (req, res) => {
     const { username, robloxName, newPassword, oldUsername, oldPassword } =
       req.body;
     const uid = req.user.uid;
+
+        // 1. récupérer user actuel
+    const userRef = db.ref(`users/${uid}`);
+    const userSnap = await userRef.get();
+
+    const COOLDOWN = 5 * 60 * 1000;
 
     if (!username || !robloxName || !newPassword) {
       return res.status(400).json({ error: "Missing fields" });
@@ -1711,6 +1689,19 @@ app.post("/update-profile", authenticate, async (req, res) => {
     }
 
     const currentUser = currentSnap.val();
+
+    const lastUpdate = userData?.lastProfileUpdate || 0;
+    const elapsed = Date.now() - lastUpdate;
+
+    if (elapsed < COOLDOWN) {
+      const retryAfter = Math.ceil((COOLDOWN - elapsed) / 1000);
+      return res.status(429).json({ error: "Trop de tentatives", retryAfter });
+    }
+
+    // ... ta logique de mise à jour ...
+
+    // Enregistre le timestamp côté serveur
+    await userRef.update({ lastProfileUpdate: Date.now() });
 
     // 2. check ancien username appartient bien à ce user
     if (currentUser.username !== oldUsername) {
@@ -1737,10 +1728,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
     if (!response.ok) {
       return res.status(401).json({ error: "identifiants incorrectes" });
     }
-
-    // 1. récupérer user actuel
-    const userRef = db.ref(`users/${uid}`);
-    const userSnap = await userRef.get();
 
     if (!userSnap.exists()) {
       return res.status(404).json({ error: "User not found" });
@@ -1772,9 +1759,11 @@ app.post("/update-profile", authenticate, async (req, res) => {
       password: newPassword,
     });
 
+    const customToken = await admin.auth().createCustomToken(uid);
+
     return res.json({
       success: true,
-      Email: `${currentUser.firstUsername}@bloxrobux.local`,
+      customToken,
     });
   } catch (err) {
     console.error(err);
