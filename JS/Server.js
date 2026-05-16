@@ -33,6 +33,13 @@ async function fetchCsrfToken() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  
+  if (loadimg) {
+    loadimg.forEach((img) => {
+      img.style.display = "none";
+    });
+  }
+  
   const { auth, db } = await initFirebase();
 
   /* =======================
