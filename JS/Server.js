@@ -6,17 +6,10 @@ let userN = null;
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
-    const config = {
-      apiKey: "AIzaSyBDGdgx4QJScAHNc-nifcoA8QWmL-wZWsA",
-      authDomain: "blox-robux-officiel.firebaseapp.com",
-      databaseURL:
-        "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "blox-robux-officiel",
-      storageBucket: "blox-robux-officiel.firebasestorage.app",
-      messagingSenderId: "958075329612",
-      appId: "1:958075329612:web:174bf1682a7bf9fba1a8e9",
-      measurementId: "G-36JDXY217P",
-    };
+    const res = await fetch("https://api.bloxrbx.fr/firebase-config", {
+      method: "POST"
+    });
+    const config = await res.json()
 
     firebase.initializeApp(config);
 
