@@ -33,13 +33,15 @@ async function fetchCsrfToken() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+  const loadimg = document.querySelectorAll(".loadimg");
   
   if (loadimg) {
     loadimg.forEach((img) => {
       img.style.display = "none";
     });
   }
-  
+
   const { auth, db } = await initFirebase();
 
   /* =======================
@@ -49,7 +51,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const disco = document.getElementById("disconnect");
   const body = document.getElementById("body");
   const loadinggif = document.getElementById("sous-container-wrapper");
-  const loadimg = document.querySelectorAll(".loadimg");
   const elements = document.getElementById("lien-profil");
   const btnInscription = document.getElementById("btn-inscription");
   const btnConnexion = document.getElementById("btn-connexion");
