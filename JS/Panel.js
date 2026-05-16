@@ -10,7 +10,9 @@ async function fetchCsrfToken() {
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
-    const res = await fetch("https://api.bloxrbx.fr/firebase-config");
+    const res = await fetch("https://api.bloxrbx.fr/firebase-config", {
+      method: "POST"
+    });
     const config = await res.json()
 
     firebase.initializeApp(config);
