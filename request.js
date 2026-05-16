@@ -1106,7 +1106,7 @@ app.get("/reach", async (req, res) => {
 });
 
 // Sur ton serveur — les clés sont dans des variables d'environnement
-app.post("/api/offer-url/theorem", authenticate, (req, res) => {
+app.post("/api/offer-url/theorem", authenticate, async (req, res) => {
   const uid = req.user.uid;
   const snap = await db.ref("users/" + uid).get();
   if (!snap.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
