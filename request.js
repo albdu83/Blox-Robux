@@ -157,8 +157,6 @@ function addJob(job) {
   processQueue();
 }
 
-module.exports = { addJob, processQueue };
-
 const loginAttempts = {};
 
 async function authenticate(req, res, next) {
@@ -522,7 +520,21 @@ app.get("/timewall", async (req, res) => {
     return res.status(200).send("OK");
   }
 });
-//---------------------------------------------------------------------------------------------------------------------------//
+
+app.post("/timewallhash", authenticate, async (req, res) => {
+  const { firstUsername } = req.body;
+
+  try {
+    const url = new URL("https://timewall.io/users/login");
+    url.searchParams.set("oid", "2578908b35321055");
+    url.searchParams.set("uid", firstUsername);
+    return res.status(200).send({ url });
+  } catch (err) {
+    console.error("🔥 TimeWall hash error:", err);
+    return res.status(500).send("Internal Server Error");
+  }
+});
+
 app.get("/cpx", async (req, res) => {
   const { status, trans_id, user_id, amount_local, amount_usd, hash } =
     req.query;
@@ -636,9 +648,11 @@ app.get("/cpx", async (req, res) => {
 
 //---------------------------------------------------------------------------------------------------------------------------//
 
-app.post("/CPXHASH", async (req, res) => {
-  const { firstUsername } = req.body;
-  const user_id = firstUsername;
+app.post("/CPXHASH", authenticate, async (req, res) => {
+  const uid = req.user.uid;
+  const snap = await db.ref("users/" + uid).get();
+  const userData = snap.val();
+  const user_id = userData.firstUsername;
   // Génération du secure_hash
   const app_id = "26353";
   const secure_hash = crypto
@@ -733,6 +747,16 @@ app.post("/signup", verifyCsrf, async (req, res) => {
 
   if (usernameSnap.exists()) {
     return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
+  }
+
+  const RobloxNameSnap = await db
+    .ref("users")
+    .orderByChild("RobloxName")
+    .equalTo(RobloxName)
+    .get();
+
+  if (RobloxNameSnap.exists()) {
+    return res.status(409).json({ error: "Pseudo Roblox déjà utilisé" });
   }
 
   try {
@@ -1081,6 +1105,21 @@ app.get("/reach", async (req, res) => {
   return OK();
 });
 
+// Sur ton serveur — les clés sont dans des variables d'environnement
+app.post("/api/offer-url/theorem", authenticate, (req, res) => {
+  const uid = req.user.uid;
+  const snap = await db.ref("users/" + uid).get();
+  if (!snap.exists()) return res.status(404).json({ error: "Utilisateur introuvable" });
+  const user = snap.val();
+  const firstUsername = user.firstUsername;
+
+  const url = new URL("https://theoremreach.com/respondent_entry/direct");
+  url.searchParams.set("api_key", process.env.THEOREM_API_KEY); // ← dans .env
+  url.searchParams.set("user_id", firstUsername);
+  url.searchParams.set("transaction_id", crypto.randomUUID());
+  res.json({ url: url.toString() });
+});
+
 app.post("/checkAdminCode", verifyCsrf, async (req, res) => {
   const userCode = req.body.code;
 
@@ -1398,13 +1437,15 @@ app.get("/getmultiplier", async (req, res) => {
   }
 });
 
-app.post("/api/getBalance", async (req, res) => {
+app.post("/api/getBalance", authenticate, async (req, res) => {
   try {
-    const { name, Montant } = req.body;
+    const uid = req.user.uid;
+    const snap = await db.ref("users/" + uid).get();
+    const user = snap.val();
+    const name = user.firstUsername;
+    const { Montant } = req.body;
     if (!name)
       return res.status(400).json({ error: "Paramètre manquant : name" });
-
-    const user = await getUserBalance(name);
     if (!user)
       return res.status(404).json({ error: "Utilisateur introuvable" });
     if (user.balance < Number(Montant))
