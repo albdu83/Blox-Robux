@@ -6,10 +6,17 @@ let userN = null;
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
-    const res = await fetch("https://api.bloxrbx.fr/firebase-config", {
-      method: "POST"                      
-    });
-    const config = await res.json()
+    const config = {
+      apiKey: "AIzaSyBDGdgx4QJScAHNc-nifcoA8QWmL-wZWsA",
+      authDomain: "blox-robux-officiel.firebaseapp.com",
+      databaseURL:
+        "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "blox-robux-officiel",
+      storageBucket: "blox-robux-officiel.firebasestorage.app",
+      messagingSenderId: "958075329612",
+      appId: "1:958075329612:web:174bf1682a7bf9fba1a8e9",
+      measurementId: "G-36JDXY217P",
+    };
 
     firebase.initializeApp(config);
 
@@ -33,9 +40,8 @@ async function fetchCsrfToken() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-
   const loadimg = document.querySelectorAll(".loadimg");
-  
+
   if (loadimg) {
     loadimg.forEach((img) => {
       img.style.display = "none";
@@ -394,71 +400,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       /* =========================
    OFFERS LOADERS (DESKTOP)
 ========================= */
-      async function loadCPX(container) {
-        if (!container) return;
 
-        try {
-          const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ firstUsername }),
-          });
-
-          if (!res.ok) throw new Error("CPX error");
-
-          const data = await res.json();
-
-          container.innerHTML = "";
-          container.appendChild(createIframe(data.iframeUrl));
-
-          loadinggif?.style && (loadinggif.style.display = "none");
-        } catch (err) {
-          console.error("CPX error:", err);
-        }
-      }
-
-      function loadTimeWall(container) {
-        if (!container) return;
-
-        container.innerHTML = "";
-
-        const url = new URL("https://timewall.io/users/login");
-        url.searchParams.set("oid", "2578908b35321055");
-        url.searchParams.set("uid", firstUsername);
-
-        container.appendChild(createIframe(url.toString()));
-      }
-
-      function loadTheoremReach(container) {
-        if (!container) return;
-
-        container.innerHTML = "";
-
-        const transactionId =
-          crypto.randomUUID?.() ||
-          `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-
-        const url = new URL("https://theoremreach.com/respondent_entry/direct");
-
-        url.searchParams.set("api_key", "36131d298e73a7a2bc9bc433de51");
-        url.searchParams.set("user_id", firstUsername);
-        url.searchParams.set("transaction_id", transactionId);
-
-        container.appendChild(
-          createIframe(url.toString(), {
-            allow: "accelerometer; gyroscope; magnetometer; camera; microphone",
-          }),
-        );
-      }
-
-      /* =========================
-   URL BUILDERS (MOBILE VIEWER)
-========================= */
       async function getCPXUrl() {
+        const token = await user.getIdToken();
         const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ firstUsername }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!res.ok) throw new Error("CPX request failed");
@@ -467,25 +417,74 @@ document.addEventListener("DOMContentLoaded", async () => {
         return data.iframeUrl;
       }
 
-      function getTimeWallUrl() {
-        const url = new URL("https://timewall.io/users/login");
-        url.searchParams.set("oid", "2578908b35321055");
-        url.searchParams.set("uid", firstUsername);
-        return url.toString();
+      async function loadCPX(container) {
+        if (!container) return;
+
+        try {
+          const url = await getCPXUrl();
+
+          container.innerHTML = "";
+          container.appendChild(
+            createIframe(url.toString(), { allow: "camera; microphone" }),
+          );
+
+          loadinggif?.style && (loadinggif.style.display = "none");
+        } catch (err) {
+          console.error("CPX error:", err);
+        }
       }
 
-      function getTheoremUrl() {
-        const transactionId =
-          crypto.randomUUID?.() ||
-          `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      async function getTimeWallUrl() {
+        const token = await user.getIdToken();
+        const res = await fetch(`${API_BASE_URL}/timewallhash`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        const url = new URL("https://theoremreach.com/respondent_entry/direct");
+        if (!res.ok) throw new Error("TimeWall request failed");
 
-        url.searchParams.set("api_key", "36131d298e73a7a2bc9bc433de51");
-        url.searchParams.set("user_id", firstUsername);
-        url.searchParams.set("transaction_id", transactionId);
+        const data = await res.json();
+        return data.url;
+      }
 
-        return url.toString();
+      async function loadTimeWall(container) {
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        const url = await getTimeWallUrl();
+
+        container.appendChild(createIframe(url.toString()));
+      }
+
+      async function getTheoremUrl() {
+        const token = await user.getIdToken();
+        const res = await fetch(`${API_BASE_URL}/api/offer-url/theorem`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        return data.url; // l'URL est construite côté serveur
+      }
+
+      async function loadTheoremReach(container) {
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        const url = await getTheoremUrl();
+
+        container.appendChild(
+          createIframe(url.toString(), {
+            allow: "accelerometer; gyroscope; magnetometer; camera; microphone",
+          }),
+        );
       }
 
       /* =========================
@@ -520,9 +519,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (type === "cpx") {
             url = await getCPXUrl();
           } else if (type === "timewall") {
-            url = getTimeWallUrl();
+            url = await getTimeWallUrl();
           } else if (type === "theorem") {
-            url = getTheoremUrl();
+            url = await getTheoremUrl();
           }
 
           if (url) openViewer(url);
