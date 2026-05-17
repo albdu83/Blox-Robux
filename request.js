@@ -55,19 +55,39 @@ let processing = false;
 
 function verifyCsrf(req, res, next) {
   const token = req.headers["x-csrf-token"];
+  const sessionId = req.cookies.session_id;
 
-  if (!token) {
+  if (!token || !sessionId)
     return res.status(403).json({ error: "CSRF manquant" });
-  }
 
-  if (!global.csrfTokens || !global.csrfTokens.has(token)) {
+  const expected = crypto
+    .createHmac("sha256", process.env.CSRF_SECRET)
+    .update(sessionId)
+    .digest("hex");
+
+  // Comparaison timing-safe
+  try {
+    const valid = crypto.timingSafeEqual(
+      Buffer.from(token, "hex"),
+      Buffer.from(expected, "hex"),
+    );
+    if (!valid) return res.status(403).json({ error: "CSRF invalide" });
+  } catch {
     return res.status(403).json({ error: "CSRF invalide" });
   }
 
-  // option sécurité extra: one-time use
-  global.csrfTokens.delete(token);
-
   next();
+}
+
+// ✅ Créer un middleware admin réutilisable
+async function requireAdmin(req, res, next) {
+  // authenticate vérifie le token Firebase
+  await authenticate(req, res, async () => {
+    const snap = await db.ref(`users/${req.user.uid}/role`).get();
+    if (snap.val() !== "admin")
+      return res.status(403).json({ error: "Accès refusé" });
+    next();
+  });
 }
 
 async function getAllUsersCount(nextPageToken = undefined, total = 0) {
@@ -209,8 +229,6 @@ client.once("ready", async () => {
 });
 
 client.login(DISCORD_TOKEN);
-client.on("error", console.error);
-client.on("debug", console.log);
 
 /* ====================================================== */
 
@@ -671,14 +689,26 @@ app.post("/CPXHASH", authenticate, async (req, res) => {
 });
 
 //---------------------------------------------------------------------------------------------------------------------------//
+// ✅ CSRF lié au cookie de session — le Double Submit Cookie pattern
+// C'est la méthode la plus robuste sans état serveur
+
 app.get("/getCsrfToken", (req, res) => {
-  const token = crypto.randomBytes(32).toString("hex");
+  // Génère un token lié à un secret serveur + un identifiant de session
+  const sessionId =
+    req.cookies.session_id || crypto.randomBytes(16).toString("hex");
 
-  // optionnel : stockage mémoire court terme (anti-replay léger)
-  if (!global.csrfTokens) global.csrfTokens = new Set();
-  global.csrfTokens.add(token);
+  const token = crypto
+    .createHmac("sha256", process.env.CSRF_SECRET)
+    .update(sessionId)
+    .digest("hex");
 
-  setTimeout(() => global.csrfTokens.delete(token), 10 * 60 * 1000); // 10 min
+  // Le session_id dans un cookie HttpOnly
+  res.cookie("session_id", sessionId, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
+    maxAge: 10 * 60 * 1000, // 10 min
+  });
 
   res.json({ token });
 });
@@ -1096,11 +1126,21 @@ app.post("/checkAdminCode", verifyCsrf, async (req, res) => {
     const snap = await db.ref("admin/code").get();
     const correctCode = snap.val();
 
-    if (userCode === correctCode) {
-      return res.status(200).json({ success: true });
-    } else {
+    if (
+      typeof userCode !== "string" ||
+      typeof correctCode !== "string" ||
+      userCode.length !== correctCode.length
+    ) {
       return res.status(401).json({ success: false });
     }
+
+    const valid = crypto.timingSafeEqual(
+      Buffer.from(userCode),
+      Buffer.from(correctCode),
+    );
+
+    if (!valid) return res.status(401).json({ success: false });
+    return res.status(200).json({ success: true });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Erreur serveur" });
@@ -1108,12 +1148,11 @@ app.post("/checkAdminCode", verifyCsrf, async (req, res) => {
 });
 
 app.get("/api/places", async (req, res) => {
-  const { targetId } = req.query;
+  const targetId = parseInt(req.query.targetId, 10);
 
   try {
-    if (!targetId) {
-      return res.status(400).json({ error: "userId manquant" });
-    }
+    if (!targetId || isNaN(targetId) || targetId <= 0)
+      return res.status(400).json({ error: "targetId invalide" });
 
     const placesRes = await fetch(
       `https://games.roblox.com/v2/users/${targetId}/games?accessFilter=Public`,
@@ -1413,20 +1452,20 @@ app.get("/getmultiplier", async (req, res) => {
 });
 
 app.post("/api/getBalance", authenticate, async (req, res) => {
+  const { Montant } = req.body;
   try {
+    if (!Montant)
+      return res.status(400).json({ error: "Paramètres manquants" });
     const uid = req.user.uid;
     const snap = await db.ref("users/" + uid).get();
     const user = snap.val();
     const name = user.firstUsername;
-    const { Montant } = req.body;
     if (!name)
       return res.status(400).json({ error: "Paramètre manquant : name" });
     if (!user)
       return res.status(404).json({ error: "Utilisateur introuvable" });
     if (user.balance < Number(Montant))
       return res.status(400).json({ error: "Solde insuffisant" });
-    if (!Montant)
-      return res.status(400).json({ error: "Paramètres manquants" });
     if (Montant < 25 || Montant > 375)
       return res
         .status(400)
@@ -1438,33 +1477,45 @@ app.post("/api/getBalance", authenticate, async (req, res) => {
   }
 });
 
+// ✅ CORRECTION
 app.post("/api/withdraw", authenticate, async (req, res) => {
   const uid = req.user.uid;
-  const { amount } = req.body;
+  const amount = Number(req.body.amount);
 
-  const snap = await db.ref("users/" + uid).get();
-  const userData = snap.val();
-  const balance = userData.balance || 0;
+  // Validation du montant
+  if (!amount || isNaN(amount) || amount <= 0 || amount > 375)
+    return res.status(400).json({ error: "Montant invalide" });
+
   let newTransaction;
-  const newBalance = balance - amount;
-  await db.ref("users/" + uid).transaction((user) => {
-    if (!user) return user;
 
-    newTransaction = {
-      id: Date.now(),
-      type: "withdraw",
-      amount: -amount,
-      date: new Date().toISOString(),
-    };
+  try {
+    const result = await db.ref(`users/${uid}`).transaction((user) => {
+      if (!user) return user;
 
-    user.balance = (user.balance || 0) - amount;
-    user.transactions = [...(user.transactions || []), newTransaction];
+      // ✅ Vérification du solde dans la transaction atomique
+      if ((user.balance || 0) < amount) return; // annule la transaction
 
-    return user;
-  });
+      newTransaction = {
+        id: Date.now(),
+        type: "withdraw",
+        amount: -amount,
+        date: new Date().toISOString(),
+      };
 
-  // Juste pour info : renvoyer le solde actuel
-  res.json({ newTransaction });
+      user.balance = (user.balance || 0) - amount;
+      user.transactions = [...(user.transactions || []), newTransaction];
+
+      return user;
+    });
+
+    if (!result.committed)
+      return res.status(400).json({ error: "Solde insuffisant" });
+
+    res.json({ newTransaction });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
 });
 
 app.get("/api/sse/balance", async (req, res) => {
@@ -1511,27 +1562,24 @@ app.get("/api/sse/balance", async (req, res) => {
   });
 });
 
-app.post("/discord/statuemessage", async (req, res) => {
-  const { statue } = req.body;
-  try {
-    await db.ref("settings/MessageContext").update({
-      messageEnabled: statue,
-    });
-
-    res.status(200).json("OK");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-app.post("/discord/annouce", async (req, res) => {
+// ✅ Appliquer sur les routes sensibles
+app.post("/discord/annouce", requireAdmin, async (req, res) => {
   const { title, content } = req.body;
   try {
     await db.ref("settings/MessageContext").update({
       Titre: title,
       Contexte: content,
     });
+    res.status(200).json("OK");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
+app.post("/discord/statuemessage", requireAdmin, async (req, res) => {
+  const { statue } = req.body;
+  try {
+    await db.ref("settings/MessageContext").update({ messageEnabled: statue });
     res.status(200).json("OK");
   } catch (err) {
     res.status(500).json(err);
@@ -1668,103 +1716,77 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
 
 app.post("/update-profile", authenticate, async (req, res) => {
   try {
-    const { username, robloxName, newPassword, oldUsername, oldPassword } =
-      req.body;
+    const { username, robloxName, newPassword, oldUsername, oldPassword } = req.body;
     const uid = req.user.uid;
+    const COOLDOWN = 5 * 60 * 1000;
 
-    // 1. récupérer user actuel
+    // 1. Validation des champs
+    if (!username || !robloxName || !newPassword || !oldUsername || !oldPassword)
+      return res.status(400).json({ error: "Missing fields" });
+
+    // 2. Récupérer l'utilisateur (une seule fois)
     const userRef = db.ref(`users/${uid}`);
     const userSnap = await userRef.get();
 
-    if (!userSnap.exists()) {
+    if (!userSnap.exists())
       return res.status(404).json({ error: "User not found" });
-    }
 
-    const COOLDOWN = 5 * 60 * 1000;
+    const currentUser = userSnap.val();
 
-    if (!username || !robloxName || !newPassword) {
-      return res.status(400).json({ error: "Missing fields" });
-    }
-
-    // 1. récupérer utilisateur actuel (sécurisé)
-    const currentSnap = await db.ref(`users/${uid}`).get();
-    if (!currentSnap.exists()) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const currentUser = currentSnap.val();
-
-    const lastUpdate = userSnap?.lastProfileUpdate || 0;
+    // 3. Vérifier le cooldown
+    const lastUpdate = currentUser.lastProfileUpdate || 0;
     const elapsed = Date.now() - lastUpdate;
-
     if (elapsed < COOLDOWN) {
       const retryAfter = Math.ceil((COOLDOWN - elapsed) / 1000);
       return res.status(429).json({ error: "Trop de tentatives", retryAfter });
     }
 
-    // ... ta logique de mise à jour ...
-
-    // Enregistre le timestamp côté serveur
-    await userRef.update({ lastProfileUpdate: Date.now() });
-
-    // 2. check ancien username appartient bien à ce user
-    if (currentUser.username !== oldUsername) {
+    // 4. Vérifier que l'ancien username correspond bien à ce compte
+    if (currentUser.username !== oldUsername)
       return res.status(403).json({ error: "Username invalide" });
-    }
 
-    // 3. récupérer email via current user (PAS via search)
-    const email = currentUser.email;
-
-    // 4. vérifier password Firebase
+    // 5. Vérifier le mot de passe via Firebase
     const response = await fetch(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
+          email: currentUser.email,
           password: oldPassword,
           returnSecureToken: false,
         }),
-      },
+      }
     );
 
-    if (!response.ok) {
-      return res.status(401).json({ error: "identifiants incorrectes" });
-    }
+    if (!response.ok)
+      return res.status(401).json({ error: "Identifiants incorrects" });
 
-    // 2. check username si changé
+    // 6. Vérifier l'unicité du nouveau username si changé
     if (username !== currentUser.username) {
-      const snapshot = await db
-        .ref("users")
+      const snapshot = await db.ref("users")
         .orderByChild("username")
         .equalTo(username)
         .get();
-
-      if (snapshot.exists()) {
-        return res
-          .status(409)
-          .json({ error: "Nom d'utilisateur déjà utilisé" });
-      }
+      if (snapshot.exists())
+        return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
     }
 
-    // 3. update DB
+    // 7. Mettre à jour la DB
     await userRef.update({
       username,
       RobloxName: robloxName,
+      lastProfileUpdate: Date.now(),
     });
 
-    // 4. update auth password
-    await admin.auth().updateUser(uid, {
-      password: newPassword,
-    });
+    // 8. Mettre à jour le mot de passe Firebase Auth
+    await admin.auth().updateUser(uid, { password: newPassword });
 
+    // 9. Générer un nouveau custom token
     const customToken = await admin.auth().createCustomToken(uid);
 
-    return res.json({
-      success: true,
-      customToken,
-    });
+    return res.json({ success: true, customToken });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
@@ -1778,12 +1800,12 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
   const allowed = ["discord", "youtube", "instagram", "tiktok"];
 
   if (!allowed.includes(type)) {
-    return res.status(401).json({ error: "Type invalide" });
+    return res.status(400).json({ error: "Type invalide" });
   }
 
   try {
-    // récupérer user actuel
-    const userSnap = await db.ref(`users/${uid}`).once("value");
+    // 1. Récupérer l'utilisateur courant
+    const userSnap = await db.ref(`users/${uid}`).get();
     const currentUser = userSnap.val();
 
     if (!currentUser || !currentUser.RobloxName) {
@@ -1792,18 +1814,19 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
 
     const RobloxName = currentUser.RobloxName;
 
-    // récupérer tous les users
-    const usersSnap = await db.ref("users").once("value");
-    const users = usersSnap.val() || {};
+    // 2. Vérifier si un autre compte a déjà validé ce média
+    //    ✅ Via index Firebase — pas de chargement de toute la base
+    const duplicateSnap = await db
+      .ref("users")
+      .orderByChild("RobloxName")
+      .equalTo(RobloxName)
+      .get();
 
-    // check si un compte avec même pseudo a déjà type=true
-    const alreadyUsed = Object.entries(users).some(([otherUid, user]) => {
-      return (
-        otherUid !== uid &&
-        user.RobloxName === RobloxName &&
-        user[type] === true
+    const alreadyUsed =
+      duplicateSnap.exists() &&
+      Object.entries(duplicateSnap.val()).some(
+        ([otherUid, user]) => otherUid !== uid && user[type] === true,
       );
-    });
 
     if (alreadyUsed) {
       return res.status(200).json({
@@ -1811,13 +1834,10 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
       });
     }
 
-    // transaction normale
+    // 3. Transaction atomique sur l'utilisateur courant
     const result = await db.ref(`users/${uid}`).transaction((user) => {
-      if (!user) user = {};
-
-      if (user[type]) {
-        return;
-      }
+      if (!user) return user;
+      if (user[type]) return; // déjà validé → annule
 
       user[type] = true;
       user.balance = (user.balance || 0) + 1;
