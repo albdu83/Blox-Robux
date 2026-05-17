@@ -110,7 +110,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       pendingData = { username, password, robloxName };
       warn.style.display = "flex";
       requestAnimationFrame(() => warn.classList.add("active"));
-
     } catch (err) {
       console.error(err);
       showMsg(msg, "❌ Erreur inattendue");
@@ -211,9 +210,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const msg = document.getElementById("promoMessage");
     const user = firebase.auth().currentUser;
 
-    if (!codeInput || /[.#$\[\]]/.test(codeInput))
-      return showMsg(msg, "❌ Code promo invalide.");
-    if (!user) return showMsg(msg, "❌ Vous devez être connecté");
+    if (!codeInput || /[.#$\[\]]/.test(codeInput)) {
+      saveBtn.disabled = false;
+      showMsg(msg, "❌ Code promo invalide.");
+      return;
+    }
+    if (!user) {
+      saveBtn.disabled = false;
+      showMsg(msg, "❌ Vous devez être connecté");
+      return;
+    }
 
     try {
       const token = await user.getIdToken();
@@ -227,12 +233,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       const data = await res.json();
-      if (!res.ok) return showMsg(msg, `❌ ${data.error}`);
+      if (!res.ok) {
+        saveBtn.disabled = false;
+        return showMsg(msg, `❌ ${data.error}`);
+      }
 
       inputEl.value = "";
       showMsg(msg, `✔️ +${data.amount} R$ ajouté !`, true);
     } catch (err) {
       console.error(err);
+      saveBtn.disabled = false;
       showMsg(msg, "❌ Une erreur est survenue.");
     } finally {
       btn.disabled = false;
