@@ -84,8 +84,8 @@ body::before {
     );
 
   transition:
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.5s ease;
+    transform 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.9s ease;
 }
 
 .fade-transition::before {
@@ -901,9 +901,6 @@ textarea {
 }
 @media (max-width: 900px) {
   main { width: 95%; }
-}
-@media (max-width: 500px) {
-  .card { padding: 15px; }
 }
 @media (max-width: 500px) {
   .card { padding: 15px; }
