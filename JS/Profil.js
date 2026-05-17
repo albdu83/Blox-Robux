@@ -1,1882 +1,251 @@
-const express = require("express");
-const cors = require("cors");
-const crypto = require("crypto");
-const app = express();
-const helmet = require("helmet");
-const path = require("path");
-const fs = require("fs/promises");
-const admin = require("firebase-admin");
-const { fileURLToPath } = require("url");
-const stringify = require("json-stable-stringify");
-const cookieParser = require("cookie-parser");
-const { Client, GatewayIntentBits, EmbedBuilder } = require("discord.js");
-app.use(cookieParser());
-app.use(helmet());
-app.set("trust proxy", 1);
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://www.bloxrbx.fr",
-      "https://bloxrbx.fr",
-      "https://il.bloxrbx.fr",
-    ],
-    credentials: true,
-  }),
-);
-app.use(
-  express.json({
-    verify: (req, res, buf) => {
-      req.rawBody = buf;
-    },
-  }),
-);
+document.addEventListener("DOMContentLoaded", async () => {
+  const { auth, db } = await initFirebase();
 
-const jobs = {};
-let sseTokens = {};
-let trackerChannel = null;
-let lienavatar = null;
-let logChannel = null;
-
-// --- SECRET_KEYS ---
-const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
-const SECRET_KEY = process.env.SECRET_KEY;
-const THEOREM_SECRET = process.env.THEOREM_SECRET;
-const CPX_SECRET = process.env.CPX_SECRET;
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-if (!SECRET_KEY) throw new Error("SECRET_KEY manquant");
-if (!CPX_SECRET) throw new Error("CPX_SECRET manquant");
-if (!RECAPTCHA_SECRET) throw new Error("RECAPTCHA_SECRET manquant");
-if (!THEOREM_SECRET) throw new Error("THEOREM_SECRET manquant");
-if (!DISCORD_TOKEN) throw new Error("DISCORD_TOKEN manquant");
-
-const queue = [];
-let processing = false;
-
-function verifyCsrf(req, res, next) {
-  const token = req.headers["x-csrf-token"];
-
-  if (!token) {
-    return res.status(403).json({ error: "CSRF manquant" });
+  if (!db || !auth) {
+    console.error("Firebase n'est pas initialisé !");
+    return;
   }
 
-  if (!global.csrfTokens || !global.csrfTokens.has(token)) {
-    return res.status(403).json({ error: "CSRF invalide" });
+  const gif = document.getElementById("loading");
+  const saveBtn = document.getElementById("saveProfile");
+  const warn = document.getElementById("warn");
+  const confirmBtn = document.getElementById("Confirm");
+  const msg = document.getElementById("profileMessage");
+  const msg2 = document.getElementById("profileMessage2");
+  const pseudoR = document.getElementById("pseudoR");
+
+  function formatTime(seconds) {
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min} min ${sec.toString().padStart(2, "0")} s`;
   }
 
-  // option sécurité extra: one-time use
-  global.csrfTokens.delete(token);
+  let pendingData = null;
 
-  next();
-}
-
-async function getAllUsersCount(nextPageToken = undefined, total = 0) {
-  const result = await admin.auth().listUsers(1000, nextPageToken);
-
-  total += result.users.length;
-
-  const next = result.pageToken;
-
-  if (next) {
-    return getAllUsersCount(next, total);
-  }
-
-  return total;
-}
-
-async function getTotalRobuxGagnes() {
-  const snap = await db.ref("users").get();
-
-  if (!snap.exists()) return 0;
-
-  let total = 0;
-
-  snap.forEach((child) => {
-    const data = child.val();
-    total += Number(data.robuxGagnes || 0);
-  });
-
-  return total;
-}
-
-function sendWebhook(payload) {
-  queue.push({ payload, retries: 0 });
-  console.log("📦 Queue size:", queue.length);
-  processQueue();
-}
-
-async function processQueue() {
-  if (processing || queue.length === 0) return;
-  processing = true;
-
-  while (queue.length > 0) {
-    const job = queue.shift();
-    console.log(`🚀 Traitement d'un job, reste: ${queue.length}`);
-
-    try {
-      if (!logChannel) {
-        throw new Error("Log channel non prêt");
-      }
-
-      await logChannel.send({
-        embeds: job.payload.embeds || [],
-      });
-
-      console.log("✅ Message envoyé");
-
-      // anti-spam Discord (IMPORTANT)
-      await new Promise((r) => setTimeout(r, 1200));
-    } catch (err) {
-      console.error("❌ Discord send error:", err.message);
-
-      job.retries = (job.retries || 0) + 1;
-
-      if (job.retries <= 5) {
-        const delay = Math.min(1000 * 2 ** (job.retries - 1), 60000);
-
-        console.log(`🔁 Retry ${job.retries}/5 dans ${delay}ms`);
-
-        setTimeout(() => {
-          queue.unshift(job);
-          processQueue();
-        }, delay);
-      } else {
-        console.error("💀 Job abandonné après 5 retries");
-      }
-
-      continue;
-    }
-  }
-
-  processing = false;
-}
-
-// Ajouter un job à la queue
-function addJob(job) {
-  queue.push(job);
-  processQueue();
-}
-
-const loginAttempts = {};
-
-async function authenticate(req, res, next) {
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ")
-    ? authHeader.split(" ")[1]
-    : null;
-
-  if (!token) return res.status(401).send("Token manquant");
-
-  try {
-    const decoded = await admin.auth().verifyIdToken(token);
-    req.user = { uid: decoded.uid };
-    next();
-  } catch (err) {
-    console.error("Erreur verifyIdToken:", err.message);
-    res.status(401).send("Token invalide");
-  }
-}
-
-function logFailedAttempt(ip, username) {
-  const key = `${ip}:${username}`;
-  if (!loginAttempts[key]) loginAttempts[key] = [];
-  loginAttempts[key].push(Date.now());
-  console.log(`⚠️ Tentative de login échouée pour ${username} depuis ${ip}`);
-}
-
-const trackerCooldown = new Map();
-const withdrawCooldowns = new Map();
-const delayMap = new Map();
-
-function getLoginDelay(ip) {
-  const attempts = delayMap.get(ip) || 0;
-  delayMap.set(ip, attempts + 1);
-  return Math.min(5000 * attempts, 30000); // max 30s
-}
-
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds],
-});
-
-client.once("ready", async () => {
-  console.log(`✅ Bot connecté : ${client.user.tag}`);
-
-  trackerChannel = await client.channels.fetch(process.env.TRACKER_CHANNEL_ID);
-
-  logChannel = await client.channels.fetch(process.env.LOG_CHANNEL_ID);
-
-  console.log("✅ Salon tracker chargé");
-});
-
-client.login(DISCORD_TOKEN);
-client.on("error", console.error);
-client.on("debug", console.log);
-
-/* ====================================================== */
-
-async function StatList(
-  message,
-  key = "Erreur fatale ou inconnue",
-  title = "🚨 Tentative de connexion échouée ou bloquée",
-  color = 0x992d22,
-) {
-  try {
-    const now = Date.now();
-
-    // ⏱️ Anti-spam (1 msg / 5s par clé)
-    if (trackerCooldown.has(key)) {
-      if (now - trackerCooldown.get(key) < 5000) return;
-    }
-
-    trackerCooldown.set(key, now);
-
-    // 🧼 Anti mention
-    const safeMessage = message.replace(/@/g, "@\u200b").slice(0, 1800);
-
-    if (!trackerChannel) {
-      console.error("❌ Tracker channel non chargé");
+  firebase.auth().onAuthStateChanged((user) => {
+    if (!user) {
+      console.log("Utilisateur non connecté");
       return;
     }
 
-    const embed = new EmbedBuilder()
-      .setTitle(title)
-      .setDescription(safeMessage)
-      .setColor(color)
-      .setFooter({
-        text: "BloxRobux Security",
-        iconURL: "https://i.imgur.com/PjcK6QD.png",
-      })
-      .setTimestamp();
-
-    await trackerChannel.send({
-      embeds: [embed],
-    });
-  } catch (err) {
-    console.error("Tracker Discord erreur :", err.message);
-  }
-}
-
-const attempts = new Map();
-
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, data] of attempts) {
-    if (now - data.first > 5 * 60_000) attempts.delete(key);
-  }
-}, 60_000);
-
-/**
- * Vérifie si un utilisateur ou une IP est en limite de tentative
- * @param {string} ip - IP du client
- * @param {string} username - username tenté
- * @returns {boolean} true si limité, false sinon
- */
-function isRateLimited(ip, username) {
-  const now = Date.now();
-
-  // --- Limite globale par IP ---
-  const ipKey = `ip:${ip}`;
-  let ipData = attempts.get(ipKey) || { count: 0, first: now };
-
-  // Reset après 5 minutes
-  if (now - ipData.first > 5 * 60_000) {
-    ipData.count = 0;
-    ipData.first = now;
-  }
-
-  ipData.count++;
-  attempts.set(ipKey, ipData);
-
-  if (ipData.count > 10) {
-    // max 10 tentatives / 5 min par IP
-    return true;
-  }
-
-  // --- Limite spécifique IP + username ---
-  const ipUserKey = `ip-user:${ip}:${username}`;
-  let ipUserData = attempts.get(ipUserKey) || { count: 0, first: now };
-
-  if (now - ipUserData.first > 5 * 60_000) {
-    ipUserData.count = 0;
-    ipUserData.first = now;
-  }
-
-  ipUserData.count++;
-  attempts.set(ipUserKey, ipUserData);
-
-  if (ipUserData.count > 5) {
-    // max 5 tentatives / 5 min par IP+username
-    return true;
-  }
-
-  // --- Tout est OK ---
-  return false;
-}
-
-function verifyTheoremReachHash(req, secret) {
-  // URL complète (protocole + host + path + query)
-  const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
-
-  const hashIndex = fullUrl.lastIndexOf("&hash=");
-  if (hashIndex === -1) {
-    return { valid: false, reason: "hash missing" };
-  }
-
-  const urlToSign = fullUrl.substring(0, hashIndex);
-  const receivedHash = fullUrl.substring(hashIndex + 6);
-
-  const computedHash = crypto
-    .createHmac("sha1", secret)
-    .update(urlToSign, "utf8")
-    .digest("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-
-  return {
-    valid: computedHash === receivedHash,
-    urlToSign,
-    computedHash,
-    receivedHash,
-  };
-}
-
-async function getRobloxAvatar(username) {
-  const res = await fetch("https://users.roblox.com/v1/usernames/users", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
+    const uid = user.uid;
+    updateProfileInfo(uid);
   });
-  const data = await res.json();
-  if (!data.data || !data.data.length) return null;
-
-  const userId = data.data[0].id;
-
-  const avatarRes = await fetch(
-    `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`,
-  );
-  const avatarData = await avatarRes.json();
-
-  return avatarData?.data?.[0]?.imageUrl || null;
-}
-
-// --- Endpoint Roblox avatar ---
-app.get("/api/avatar/:username", async (req, res) => {
-  const username = req.params.username;
-
-  try {
-    const response = await fetch(
-      "https://users.roblox.com/v1/usernames/users",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          usernames: [username],
-          excludeBannedUsers: true,
-        }),
-      },
-    );
-
-    const data = await response.json();
-    if (!data.data || data.data.length === 0)
-      return res.status(404).json({ error: "Utilisateur introuvable" });
-
-    const userId = data.data[0].id;
-
-    const avatarRes = await fetch(
-      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`,
-    );
-
-    const avatarData = await avatarRes.json();
-    if (!avatarData.data || avatarData.data.length === 0)
-      return res.status(500).json({ error: "Erreur avatar Roblox" });
-    ((lienavatar = avatarData.data[0].imageUrl),
-      res.json({
-        avatarUrl: avatarData.data[0].imageUrl,
-        targetId: userId,
-      }));
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-// --- Endpoint TimeWall ---
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(
-      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT),
-    ),
-    databaseURL:
-      "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
-  });
-}
-
-const db = admin.database();
-
-app.get("/timewall", async (req, res) => {
-  const { userID, transactionID, currencyAmount, revenue, hash, type } =
-    req.query;
-  console.log("🔥 /timewall HIT", req.query);
-
-  try {
-    if (!userID || !transactionID || !revenue || !hash) {
-      console.log("❌ Paramètres manquants");
-      return res.status(200).send("OK");
-    }
-
-    // ✅ HASH = revenue (PAS currencyAmount)
-    const computedHash = crypto
-      .createHash("sha256")
-      .update(userID + revenue + SECRET_KEY)
-      .digest("hex");
-
-    if (computedHash !== hash) {
-      console.log("❌ Hash invalide", {
-        userID,
-        revenue,
-        received: hash,
-        expected: computedHash,
-      });
-      return res.status(200).send("OK");
-    }
-
-    // ✅ Solde = currencyAmount
-    let amount = Math.ceil(Number(currencyAmount));
-
-    if (amount <= 0) {
-      console.log("❌ Amount invalide :", currencyAmount);
-      return res.status(200).send("OK");
-    }
-
-    const snap2 = await db.ref("settings").get();
-
-    if (!snap2.exists()) {
-      console.error("❌ Erreur fatale : settings manquant");
-      return res.status(500).send("Settings missing");
-    }
-
-    const settings = snap2.val();
-    const multiplier = Number(settings.gainMultiplier) || 1;
-
-    amount = Math.round(amount * multiplier);
-
-    // 🔎 Récupération UID Firebase via RobloxName
-    const snap = await db
-      .ref("users")
-      .orderByChild("firstUsername")
-      .equalTo(userID)
-      .get();
-
-    if (!snap.exists()) {
-      console.log("❌ Utilisateur Firebase introuvable");
-      return res.status(200).send("OK");
-    }
-
-    const uid = Object.keys(snap.val())[0];
-
-    // 🔒 Anti-doublon
-    const txRef = db.ref("transactions/" + transactionID);
-    if ((await txRef.get()).exists()) {
-      console.log("⚠️ Transaction déjà traitée");
-      return res.status(200).send("OK");
-    }
-
-    const snapshot = await db.ref("users/" + uid).get();
-    const data = snapshot.val();
-    await txRef.set({ uid, amount, type, date: Date.now() });
-
-    await db.ref(`users/${uid}/balance`).transaction((v) => (v || 0) + amount);
-
-    await db
-      .ref(`users/${uid}/robuxGagnes`)
-      .transaction((v) => (v || 0) + amount);
-    const avatarUrl = await getRobloxAvatar(data.RobloxName);
-    sendWebhook({
-      embeds: [
-        {
-          title: `**${data.username}** a gagné **${amount} R$** !`,
-          description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur TimeWall`,
-          color: 0x5865f2,
-          thumbnail: {
-            url: avatarUrl,
-          },
-          image: {
-            url: "https://i.imgur.com/1t5wioe.png",
-          },
-          footer: {
-            text: "BloxRobux",
-            icon_url: "https://i.imgur.com/PjcK6QD.png",
-          },
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    });
-    console.log(`✅ Crédité ${userID} (${uid}) +${amount}`);
-    return res.status(200).send("OK");
-  } catch (err) {
-    console.error("🔥 TimeWall error:", err);
-    return res.status(200).send("OK");
-  }
-});
-
-app.post("/timewallhash", authenticate, async (req, res) => {
-  const uid = req.user.uid;
-  const snap = await db.ref("users/" + uid).get();
-  if (!snap.exists())
-    return res.status(404).json({ error: "Utilisateur introuvable" });
-  const user = snap.val();
-  const firstUsername = user.firstUsername;
-
-  try {
-    const url = new URL("https://timewall.io/users/login");
-    url.searchParams.set("oid", "2578908b35321055");
-    url.searchParams.set("uid", firstUsername);
-    return res.status(200).send({ url });
-  } catch (err) {
-    console.error("🔥 TimeWall hash error:", err);
-    return res.status(500).send("Internal Server Error");
-  }
-});
-
-app.get("/cpx", async (req, res) => {
-  const { status, trans_id, user_id, amount_local, amount_usd, hash } =
-    req.query;
-  console.log("🔥 /CPX HIT", req.query);
-
-  try {
-    if (!status || !trans_id || !user_id || !amount_usd || !hash) {
-      console.log("❌ Paramètres manquants");
-      return res.status(200).send("OK");
-    }
-
-    if (status !== "1") {
-      console.log("⚠️ Status non approuvé :", status);
-      return res.status(200).send("OK");
-    }
-
-    const expectedHash = crypto
-      .createHash("md5")
-      .update(`${trans_id}-${CPX_SECRET}`)
-      .digest("hex");
-
-    if (expectedHash !== hash) {
-      console.log("❌ Hash invalide", {
-        user_id,
-        amount_usd,
-        received: hash,
-        expected: expectedHash,
-      });
-      return res.status(200).send("OK");
-    }
-
-    // ✅ Solde = currencyAmount
-    let amount = Math.ceil(Number(amount_local));
-
-    if (amount <= 0) {
-      console.log("❌ Amount invalide :", amount_local);
-      return res.status(200).send("OK");
-    }
-
-    const snap2 = await db.ref("settings").get();
-
-    if (!snap2.exists()) {
-      console.error("❌ Erreur fatale : settings manquant");
-      return res.status(500).send("Settings missing");
-    }
-
-    const settings = snap2.val();
-    const multiplier = Number(settings.gainMultiplier) || 1;
-
-    amount = Math.round(amount * multiplier);
-
-    // 🔎 Récupération UID Firebase via RobloxName
-    const snap = await db
-      .ref("users")
-      .orderByChild("firstUsername")
-      .equalTo(user_id)
-      .get();
-
-    if (!snap.exists()) {
-      console.log("❌ Utilisateur Firebase introuvable");
-      return res.status(200).send("OK");
-    }
-
-    const uid = Object.keys(snap.val())[0];
-
-    // 🔒 Anti-doublon
-    const txRef = db.ref("transactions/" + trans_id);
-    if ((await txRef.get()).exists()) {
-      console.log("⚠️ Transaction déjà traitée");
-      return res.status(200).send("OK");
-    }
-    const source = "cpx";
-    const snapshot = await db.ref("users/" + uid).get();
-    const data = snapshot.val();
-    await txRef.set({ uid, amount, source, date: Date.now() });
-
-    await db.ref(`users/${uid}/balance`).transaction((v) => (v || 0) + amount);
-
-    await db
-      .ref(`users/${uid}/robuxGagnes`)
-      .transaction((v) => (v || 0) + amount);
-    const avatarUrl = await getRobloxAvatar(data.RobloxName);
-    sendWebhook({
-      embeds: [
-        {
-          title: `**${data.username}** a gagné **${amount} R$** !`,
-          description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur CPX Research`,
-          color: 0x5865f2,
-          thumbnail: {
-            url: avatarUrl,
-          },
-          image: {
-            url: "https://i.imgur.com/qT78ezf.png",
-          },
-          footer: {
-            text: "BloxRobux",
-            icon_url: "https://i.imgur.com/PjcK6QD.png",
-          },
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    });
-
-    console.log(`✅ Crédité ${user_id} (${uid}) +${amount}`);
-    return res.status(200).send("OK");
-  } catch (err) {
-    console.error("🔥 TimeWall error:", err);
-    return res.status(200).send("OK");
-  }
-});
-
-//---------------------------------------------------------------------------------------------------------------------------//
-
-app.post("/CPXHASH", authenticate, async (req, res) => {
-  const uid = req.user.uid;
-  const snap = await db.ref("users/" + uid).get();
-  const userData = snap.val();
-  const user_id = userData.firstUsername;
-  // Génération du secure_hash
-  const app_id = "26353";
-  const secure_hash = crypto
-    .createHash("sha256")
-    .update(app_id + user_id + CPX_SECRET)
-    .digest("hex");
-
-  // URL iframe à envoyer au front
-  const iframeUrl = `https://offers.cpx-research.com/index.php?app_id=${app_id}&ext_user_id=${user_id}&secure_hash=${secure_hash}`;
-  return res.status(200).json({ iframeUrl });
-});
-
-//---------------------------------------------------------------------------------------------------------------------------//
-app.get("/getCsrfToken", (req, res) => {
-  const token = crypto.randomBytes(32).toString("hex");
-
-  // optionnel : stockage mémoire court terme (anti-replay léger)
-  if (!global.csrfTokens) global.csrfTokens = new Set();
-  global.csrfTokens.add(token);
-
-  setTimeout(() => global.csrfTokens.delete(token), 10 * 60 * 1000); // 10 min
-
-  res.json({ token });
-});
-
-app.post("/signup", verifyCsrf, async (req, res) => {
-  const { username, password, RobloxName, captcha } = req.body;
-
-  // 1️⃣ CAPTCHA côté serveur
-  if (!captcha) {
-    return res.status(400).json({ error: "Captcha manquant" });
-  }
-
-  try {
-    const captchaRes = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
-      { method: "POST" },
-    );
-    const captchaData = await captchaRes.json();
-
-    if (!captchaData.success) {
-      return res.status(403).json({ error: "Captcha invalide" });
-    }
-  } catch (err) {
-    return res.status(500).json({ error: "Erreur de vérification captcha" });
-  }
-
-  // 2️⃣ Vérifications des champs
-  if (!username || username.length < 3 || username.length > 20) {
-    return res.status(400).json({ error: "Username invalide" });
-  }
-
-  if (!password || password.length < 8) {
-    return res
-      .status(400)
-      .json({ error: "Mot de passe trop court (au moins 8 caractères)" });
-  }
-
-  if (!RobloxName) {
-    return res.status(400).json({ error: "RobloxName manquant" });
-  }
-
-  // 3️⃣ Vérification de l'existence du pseudo Roblox
-  try {
-    const response = await fetch(
-      "https://users.roblox.com/v1/usernames/users",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          usernames: [RobloxName],
-          excludeBannedUsers: true,
-        }),
-      },
-    );
-    const data = await response.json();
-
-    if (!data?.data?.length) {
-      return res.status(404).json({ error: "Pseudo Roblox inexistant" });
-    }
-  } catch (err) {
-    return res.status(500).json({ error: "Erreur vérification Roblox" });
-  }
-
-  // 4️⃣ Création de l'email et utilisateur Firebase
-  const email = `${username}@bloxrobux.local`;
-  const usernameSnap = await db
-    .ref("users")
-    .orderByChild("username")
-    .equalTo(username)
-    .get();
-
-  if (usernameSnap.exists()) {
-    return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
-  }
-
-  const RobloxNameSnap = await db
-    .ref("users")
-    .orderByChild("RobloxName")
-    .equalTo(RobloxName)
-    .get();
-
-  if (RobloxNameSnap.exists()) {
-    return res.status(409).json({ error: "Pseudo Roblox déjà utilisé" });
-  }
-
-  try {
-    const userRecord = await admin.auth().createUser({
-      email,
-      password,
-    });
-    const uid = userRecord.uid;
-
-    const customToken = await admin.auth().createCustomToken(uid);
-    // 5️⃣ Stockage sécurisé dans la DB
-    await db.ref("users/" + uid).set({
-      email,
-      username,
-      firstUsername: username,
-      RobloxName,
-      balance: 0,
-      createdAt: Date.now(), // timestamp serveur
-      nbConnexions: 1,
-      robuxGagnes: 0,
-      isBanned: false,
-    });
-
-    return res.status(201).json({ success: true, uid, customToken });
-  } catch (err) {
-    // Gestion des doublons / erreurs Firebase
-    if (err.code === "auth/email-already-in-use") {
-      return res.status(409).json({ error: "Nom d'utilisateur déjà pris" });
-    }
-    console.error(err);
-    return res.status(500).json({ error: "Erreur création utilisateur" });
-  }
-});
-
-app.post("/login", verifyCsrf, async (req, res) => {
-  const { username, password, captcha } = req.body;
-
-  /* ───────── 1️⃣ VALIDATIONS STRICTES ───────── */
-  if (
-    typeof username !== "string" ||
-    typeof password !== "string" ||
-    typeof captcha !== "string"
-  ) {
-    StatList(
-      `Erreur lors du saisie des informations\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-    );
-    return res.status(400).json({ error: "Requête invalide" });
-  }
-
-  if (username.length < 3 || username.length > 20 || password.length < 8) {
-    return res.status(401).json({ error: "Identifiants invalides" });
-  }
-
-  /* ───────── 2️⃣ CAPTCHA (ANTI-BOT) ───────── */
-  try {
-    const captchaRes = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captcha}`,
-      { method: "POST" },
-    );
-    const captchaData = await captchaRes.json();
-
-    if (!captchaData.success) {
-      StatList(
-        `Captcha invalide\n\n👤 Username : ${username}\n🌍 IP: : ${req.ip}`,
-        `IP:${req.ip}`,
-      );
-      return res.status(403).json({ error: "Captcha invalide" });
-    }
-  } catch {
-    StatList(
-      `Erreur Captcha inconnue\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-    );
-    return res.status(500).json({ error: "Erreur captcha" });
-  }
-
-  /* ───────── 3️⃣ RATE LIMIT ───────── */
-  if (isRateLimited(req.ip, username)) {
-    StatList(
-      `@🛡️ Propriétaire Rate limit déclenché\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-      `ratelimit:${req.ip}`,
-    );
-    return res.status(429).json({
-      error: "Trop de tentatives, réessaie plus tard",
-    });
-  }
-
-  try {
-    const delay = getLoginDelay(req.ip);
-    await new Promise((r) => setTimeout(r, delay));
-    /* ───────── 4️⃣ RÉCUPÉRATION UTILISATEUR ───────── */
-    const snap = await db
-      .ref("users")
-      .orderByChild("username")
-      .equalTo(username)
-      .get();
-
-    if (!snap.exists()) {
-      logFailedAttempt(req.ip, username);
-      StatList(
-        `Un utilisateur a tenté de se connecter à un **compte inexistant**\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-        `IP:${req.ip}`,
-      );
-      return res.status(401).json({ error: "Identifiants invalides" });
-    }
-
-    const uid = Object.keys(snap.val())[0];
-    const user = snap.val()[uid];
-
-    /* ───────── 5️⃣ CONTRÔLES COMPTE ───────── */
-    if (user.isBanned === true) {
-      StatList(
-        `Un utilisateur a tenté de se connecter à un **compte banni**\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-        `banned:${username}`,
-      );
-      return res.status(403).json({ error: "Compte suspendu" });
-    }
-
-    if (!user.email) {
-      StatList(
-        `Compte corrompu\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-        `Compte:${username}`,
-      );
-      return res.status(500).json({ error: "Compte corrompu" });
-    }
-
-    /* ───────── 6️⃣ VÉRIFICATION MOT DE PASSE (FIREBASE) ───────── */
-    const fbRes = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: user.email,
-          password,
-          returnSecureToken: false,
-        }),
-      },
-    );
-
-    if (!fbRes.ok) {
-      logFailedAttempt(req.ip, username);
-      StatList(
-        `Erreur fatale lors de la connexion\n\n👤 Username : ${username}\n🌍 IP : ${req.ip}`,
-      );
-      return res.status(401).json({ error: "Identifiants invalides" });
-    }
-
-    /* ───────── 7️⃣ TOKEN FIREBASE CUSTOM ───────── */
-    const customToken = await admin.auth().createCustomToken(uid);
-
-    /* ───────── 8️⃣ STATS & CLEANUP ───────── */
-    await db.ref(`users/${uid}`).update({
-      lastLoginAt: Date.now(),
-    });
-
-    await db.ref(`users/${uid}/nbConnexions`).transaction((v) => (v || 0) + 1);
-
-    /* ───────── 9️⃣ WEBHOOK ───────── */
+  const imgage = document.getElementById("roblox");
+  async function setRobloxAvatar(robloxName) {
+    pseudoR.textContent = `@${robloxName}`;
     try {
-      StatList(
-        `Connexion réussi pour le compte ${username}`,
-        "Connexion réussi",
-        "✅ Tentative de connexion réussi",
-        0xc27c0e,
-      );
+      const res = await fetch(`https://il.bloxrbx.fr/api/avatar/${robloxName}`);
+      const data = await res.json();
+      if (!imgage) return;
+
+      imgage.src = data.avatarUrl || "img/default-avatar.png";
+      imgage.style.display = "inline-block";
     } catch (err) {
-      console.error("Tracker Discord erreur :", err.message);
+      console.error("Erreur avatar :", err);
     }
-
-    /* ───────── 🔟 RÉPONSE ───────── */
-    return res.json({
-      success: true,
-      token: customToken,
-    });
-  } catch (err) {
-    console.error("🔥 Erreur login:", err);
-    return res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-app.get("/getEmail", authenticate, verifyCsrf, async (req, res) => {
-  const username = req.query.username;
-  if (!username) return res.status(400).json({ error: "Username manquant" });
-
-  try {
-    // On récupère l'utilisateur par son username actuel
-    const snapshot = await db
-      .ref("users")
-      .orderByChild("username")
-      .equalTo(username)
-      .once("value");
-    if (!snapshot.exists())
-      return res.status(404).json({ error: "Utilisateur introuvable" });
-
-    const uid = Object.keys(snapshot.val())[0];
-    const user = snapshot.val()[uid];
-
-    // On utilise firstUsername pour construire l'email
-    let email = user.email;
-    if (!email && user.firstUsername) {
-      email = `${user.firstUsername}@bloxrobux.local`;
-      // Optionnel : on met à jour la DB pour que ce soit permanent
-      await db.ref("users/" + uid).update({ email });
-    }
-
-    if (!email)
-      return res
-        .status(404)
-        .json({ error: "Email non défini pour cet utilisateur" });
-
-    res.json({ email });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-app.post("/api/roblox-user/:username", async (req, res) => {
-  const username = req.params.username;
-  const response = await fetch("https://users.roblox.com/v1/usernames/users", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ usernames: [username], excludeBannedUsers: true }),
-  });
-  const data = await response.json();
-  res.json(data);
-});
-
-app.get("/reach", async (req, res) => {
-  console.log("🔥 /reach HIT", req.originalUrl);
-  const { user_id, reward, tx_id, debug, reversal } = req.query;
-
-  // Toujours répondre 200 à Reach
-  const OK = () => res.status(200).send("OK");
-
-  // Paramètres minimum requis
-  if (!user_id || !reward || !tx_id) {
-    console.log("❌ paramètres manquants");
-    return OK();
   }
 
-  // 🔐 Vérification du hash AVANT TOUT
-  const result = verifyTheoremReachHash(req, THEOREM_SECRET);
-
-  console.log("RAW QUERY :", result.queryString);
-  console.log("HASH CALCULÉ :", result.computedHash);
-  console.log("HASH REÇU    :", result.receivedHash);
-
-  if (!result.valid) {
-    console.log("❌ HASH INVALIDE");
-    return OK();
-  }
-
-  console.log("✅ HASH VALIDE");
-
-  // 🧪 Debug → on ignore totalement
-  if (debug === "true") {
-    console.log("🧪 DEBUG CALLBACK → ignoré");
-    return OK();
-  }
-
-  // 🔁 Reversal → on ignore (ou logique de retrait si tu veux)
-  if (reversal === "true") {
-    console.log("↩️ REVERSAL → ignoré");
-    return OK();
-  }
-
-  // 💰 Conversion reward
-  let amount = Math.round(parseFloat(reward) || 0);
-  if (amount <= 0) {
-    console.log("❌ reward invalide :", reward);
-    return OK();
-  }
-
-  // 🔒 Anti-doublon tx_id (exemple simple)
-  const txSnap = await db.ref(`transactions/${tx_id}`).get();
-  if (txSnap.exists()) {
-    console.log("⚠️ tx_id déjà traité");
-    return OK();
-  }
-
-  // 🔎 Récupération utilisateur (exemple RobloxName)
-  const snap = await db
-    .ref("users")
-    .orderByChild("firstUsername")
-    .equalTo(user_id)
-    .get();
-
-  if (!snap.exists()) {
-    console.log("❌ utilisateur introuvable :", user_id);
-    return OK();
-  }
-
-  const snap2 = await db.ref("settings").get();
-
-  if (!snap2.exists()) {
-    console.error("❌ Erreur fatale : settings manquant");
-    return res.status(500).send("Settings missing");
-  }
-
-  const settings = snap2.val();
-  const multiplier = Number(settings.gainMultiplier) || 1;
-
-  amount = Math.round(amount * multiplier);
-
-  const uid = Object.keys(snap.val())[0];
-  const data = snap.val()[uid];
-
-  // 💾 Enregistrement transaction
-  await db.ref(`transactions/${tx_id}`).set({
-    uid,
-    amount,
-    source: "theoremreach",
-    date: Date.now(),
-  });
-
-  // 💸 Crédit utilisateur
-  await db.ref(`users/${uid}/balance`).transaction((v) => (v || 0) + amount);
-
-  await db
-    .ref(`users/${uid}/robuxGagnes`)
-    .transaction((v) => (v || 0) + amount);
-
-  console.log(`✅ ${user_id} crédité +${amount} | tx:${tx_id}`);
-  const avatarUrl = await getRobloxAvatar(data.RobloxName);
-  sendWebhook({
-    embeds: [
-      {
-        title: `**${data.username}** a gagné **${amount} R$** !`,
-        description: `félicitations à **${data.username}** qui a gagné **${amount} R$** en complétant une offre sur Theoreme Reach`,
-        color: 0x5865f2,
-        thumbnail: {
-          url: avatarUrl,
-        },
-        image: {
-          url: "https://i.imgur.com/RuBfCsu.png",
-        },
-        footer: {
-          text: "BloxRobux",
-          icon_url: "https://i.imgur.com/PjcK6QD.png",
-        },
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  });
-  return OK();
-});
-
-// Sur ton serveur — les clés sont dans des variables d'environnement
-app.post("/api/offer-url/theorem", authenticate, async (req, res) => {
-  const uid = req.user.uid;
-  const snap = await db.ref("users/" + uid).get();
-  if (!snap.exists())
-    return res.status(404).json({ error: "Utilisateur introuvable" });
-  const user = snap.val();
-  const firstUsername = user.firstUsername;
-
-  const url = new URL("https://theoremreach.com/respondent_entry/direct");
-  url.searchParams.set("api_key", process.env.THEOREM_API_KEY); // ← dans .env
-  url.searchParams.set("user_id", firstUsername);
-  url.searchParams.set("transaction_id", crypto.randomUUID());
-  res.json({ url: url.toString() });
-});
-
-app.post("/checkAdminCode", verifyCsrf, async (req, res) => {
-  const userCode = req.body.code;
-
-  try {
-    const snap = await db.ref("admin/code").get();
-    const correctCode = snap.val();
-
-    if (userCode === correctCode) {
-      return res.status(200).json({ success: true });
-    } else {
-      return res.status(401).json({ success: false });
-    }
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-app.get("/api/places", async (req, res) => {
-  const { targetId } = req.query;
-
-  try {
-    if (!targetId) {
-      return res.status(400).json({ error: "userId manquant" });
-    }
-
-    const placesRes = await fetch(
-      `https://games.roblox.com/v2/users/${targetId}/games?accessFilter=Public`,
-    );
-
-    if (!placesRes.ok) {
-      return res.status(placesRes.status).json({
-        error: "Erreur API Roblox",
-      });
-    }
-
-    const data = await placesRes.json();
-
-    // On renvoie uniquement ce qui est utile au front
-    const formatted = {
-      data: data.data
-        .map((game) => ({
-          name: game.name,
-          ID: game.id || null,
-          RootID: game.rootPlace?.id || null,
-        }))
-        .filter((game) => game.RootID !== null)
-        .filter((game) => game.ID !== null),
-    };
-
-    res.json(formatted);
-  } catch (err) {
-    console.error("Erreur récupération places :", err);
-    res.status(500).json({ error: "Impossible de récupérer les emplacements" });
-  }
-});
-
-app.post("/api/payServer", authenticate, async (req, res) => {
-  try {
-    const { ID, gameId, amount } = req.body;
-
-    const cooldown = withdrawCooldowns.get(req.user.uid);
-    const remaining = Math.ceil((60_000 - (Date.now() - cooldown)) / 1000);
-
-    if (cooldown && Date.now() - cooldown < 60_000) {
-      return res.status(429).json({
-        success: false,
-        error: `Attends ${remaining}s avant un autre retrait`,
-      });
-    }
-
-    // =========================
-    // VALIDATION INPUT
-    // =========================
-    if (!gameId || !ID || !amount) {
-      return res.status(400).json({
-        success: false,
-        error: "Paramètres manquants",
-      });
-    }
-
-    const num = Number(amount);
-
-    if (isNaN(num)) {
-      throw new Error("Amount invalide");
-    }
-
-    const Price = Math.round(num / 0.7);
-
-    // =========================
-    // VALIDATION GAME ROBLOX
-    // =========================
-    const userGamesRes = await fetch(
-      `https://games.roblox.com/v2/users/${ID}/games?accessFilter=Public`,
-    );
-
-    const userGames = await userGamesRes.json();
-
-    const validGameIds = (userGames.data || [])
-      .map((game) => game.rootPlace?.id)
-      .filter(Boolean);
-
-    if (!validGameIds.includes(Number(gameId))) {
-      return res.status(400).json({
-        success: false,
-        error: "Game ID invalide",
-      });
-    }
-
-    // =========================
-    // JOB CREATION
-    // =========================
-    const job_id = crypto.randomUUID();
-
-    jobs[job_id] = {
-      status: "pending",
-      error: null,
-      updatedAt: Date.now(),
-    };
-
-    setTimeout(() => delete jobs[job_id], 24 * 60 * 60 * 1000);
-
-    // =========================
-    // PAYLOAD VPS (IMPORTANT)
-    // =========================
-    const payload = {
-      job_id,
-      server_url: `https://www.roblox.com/games/${gameId}`,
-      Receive_price: String(Price),
-      timestamp: Date.now(),
-    };
-
-    const body = stringify(payload);
-
-    // =========================
-    // HMAC SIGNATURE (FIX IMPORTANT)
-    // =========================
-    const signature = crypto
-      .createHmac("sha256", process.env.SELENIUM_SECRET)
-      .update(body, "utf8")
-      .digest("hex");
-
-    // =========================
-    // SEND TO VPS
-    // =========================
-    fetch("http://87.106.245.156:5000/run_job", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Signature": signature,
-      },
-      body,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Job envoyé", data);
-      })
-      .catch((err) => {
-        console.error("VPS error", err);
-
-        if (jobs[job_id]) {
-          jobs[job_id].status = "failed";
-          jobs[job_id].error = "VPS unreachable";
-        }
-      });
-
-    // =========================
-    // RESPONSE CLIENT
-    // =========================
-    withdrawCooldowns.set(req.user.uid, Date.now());
-
-    res.json({
-      success: true,
-      message: "Job lancé",
-      job_id,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-
-app.post("/callback", (req, res) => {
-  try {
-    let raw = req.rawBody;
-
-    // 🔥 FIX IMPORTANT : fallback si rawBody absent
-    if (!raw) {
-      raw = Buffer.isBuffer(req.body)
-        ? req.body
-        : Buffer.from(JSON.stringify(req.body || {}), "utf8");
-    }
-
-    if (!Buffer.isBuffer(raw)) {
-      return res.status(400).json({ error: "Invalid raw body" });
-    }
-
-    const sigHeader = req.headers["x-signature"];
-    if (!sigHeader) {
-      return res.status(401).json({ error: "Missing signature" });
-    }
-
-    const parts = sigHeader.split(",");
-
-    const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
-    const signature = parts.find((p) => p.startsWith("v1="))?.slice(3);
-
-    if (!timestamp || !signature) {
-      return res.status(400).json({ error: "Invalid signature format" });
-    }
-
-    // 🔒 anti replay
-    const now = Math.floor(Date.now() / 1000);
-    if (Math.abs(now - Number(timestamp)) > 300) {
-      return res.status(400).json({ error: "Signature expired" });
-    }
-
-    // 🔥 payload EXACT identique Python
-    const signedPayload = Buffer.concat([
-      Buffer.from(timestamp, "utf8"),
-      Buffer.from("."),
-      raw,
-    ]);
-
-    const expected = crypto
-      .createHmac("sha256", process.env.SELENIUM_SECRET)
-      .update(signedPayload)
-      .digest("hex");
-
-    let valid = false;
-
+  async function updateProfileInfo(uid) {
     try {
-      valid = crypto.timingSafeEqual(
-        Buffer.from(signature, "hex"),
-        Buffer.from(expected, "hex"),
-      );
-    } catch {
-      return res.status(403).json({ error: "Invalid signature compare" });
+      const snapshot = await db.ref(`users/${uid}`).get();
+      if (!snapshot.exists()) return;
+      const data = snapshot.val();
+      setRobloxAvatar(data.RobloxName);
+      document.getElementById("robuxGagnes").textContent =
+        data.robuxGagnes ?? "0";
+      document.getElementById("retraits").textContent = Object.keys(
+        data.transactions || {},
+      ).length;
+      document.getElementById("balance").textContent = data.balance ?? "0";
+      document.getElementById("statut").textContent =
+        data.role ?? "Utilisateur";
+      document.getElementById("nomRoblox").textContent = data.RobloxName ?? "—";
+      document.getElementById("Username").textContent = data.username ?? "—";
+      const date = data.createdAt
+        ? new Date(data.createdAt).toLocaleDateString()
+        : "—";
+      document.getElementById("motdepasse").textContent = date;
+      document.getElementById("nbConnexions").textContent =
+        data.nbConnexions ?? "0";
+    } catch (err) {
+      console.error("Erreur mise à jour profil :", err);
     }
+  }
 
-    if (!valid) {
-      console.log("❌ INVALID SIGNATURE");
-      console.log("RAW:", raw.toString("utf8"));
-      console.log("EXPECTED:", expected);
-      console.log("GOT:", signature);
+  /* =========================
+       ENREGISTRER PROFIL
+    ========================== */
+  saveBtn.addEventListener("click", async () => {
+    msg.textContent = "";
 
-      return res.status(403).json({ error: "Invalid signature" });
-    }
+    const user = auth.currentUser;
+    if (!user) return showMsg(msg, "❌ Utilisateur non connecté");
 
-    // 🔥 parse JSON
-    let body;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const confirmPassword = document.getElementById("email").value.trim();
+    const robloxName = document.getElementById("Roblox").value.trim();
+
+    if (!username || !password || !confirmPassword || !robloxName)
+      return showMsg(msg, "❌ Informations manquantes");
+    if (password !== confirmPassword)
+      return showMsg(msg, "❌ Les mots de passe ne correspondent pas");
+    if (password.length < 6) return showMsg(msg, "❌ Mot de passe trop court");
+
+    /* Vérif pseudo Roblox via backend */
     try {
-      body = JSON.parse(raw.toString("utf8"));
-    } catch {
-      return res.status(400).json({ error: "Invalid JSON body" });
-    }
-
-    const { job_id, status, error } = body;
-
-    if (!job_id || !status) {
-      return res.status(400).json({ error: "Missing fields" });
-    }
-
-    if (!jobs[job_id]) {
-      return res.status(404).json({ error: "Unknown job" });
-    }
-
-    jobs[job_id].status = status;
-    if (error) jobs[job_id].error = error;
-
-    console.log(`✅ Job ${job_id} => ${status}`);
-
-    return res.sendStatus(200);
-  } catch (err) {
-    console.error("🔥 CALLBACK CRASH:", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-app.post("/api/update-roblox-name", authenticate, async (req, res) => {
-  const uid = req.user.uid;
-  const { newName } = req.body;
-
-  if (!newName) {
-    return res.status(400).json({ error: "Nouveau nom manquant" });
-  }
-
-  try {
-    await db.ref("users/" + uid).update({ RobloxName: newName });
-    res.json({ success: true });
-  } catch (err) {
-    console.error("🔥 UPDATE ROBLOX NAME CRASH:", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-app.post("/api/jobStatus", (req, res) => {
-  const { job_id } = req.body;
-  if (!job_id || !jobs[job_id]) {
-    return res.status(404).json({ error: "Job introuvable" });
-  }
-  res.json(jobs[job_id]);
-});
-
-app.get("/getmultiplier", async (req, res) => {
-  try {
-    const snap = await db.ref("settings").get();
-    if (!snap.exists())
-      return res.status(404).json({ error: "Settings introuvables" });
-
-    const settings = snap.val();
-    const multiplier = Number(settings.gainMultiplier) || 1;
-
-    res.json({ multiplier });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-app.post("/api/getBalance", authenticate, async (req, res) => {
-  try {
-    const uid = req.user.uid;
-    const snap = await db.ref("users/" + uid).get();
-    const user = snap.val();
-    const name = user.firstUsername;
-    const { Montant } = req.body;
-    if (!name)
-      return res.status(400).json({ error: "Paramètre manquant : name" });
-    if (!user)
-      return res.status(404).json({ error: "Utilisateur introuvable" });
-    if (user.balance < Number(Montant))
-      return res.status(400).json({ error: "Solde insuffisant" });
-    if (!Montant)
-      return res.status(400).json({ error: "Paramètres manquants" });
-    if (Montant < 25 || Montant > 375)
-      return res
-        .status(400)
-        .json({ error: "Le montant doit être compris entre 25 et 375" });
-    res.json({ robux: user.balance });
-  } catch (err) {
-    console.error("Erreur /api/getBalance :", err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-app.post("/api/withdraw", authenticate, async (req, res) => {
-  const uid = req.user.uid;
-  const { amount } = req.body;
-
-  const snap = await db.ref("users/" + uid).get();
-  const userData = snap.val();
-  const balance = userData.balance || 0;
-  let newTransaction;
-  const newBalance = balance - amount;
-  await db.ref("users/" + uid).transaction((user) => {
-    if (!user) return user;
-
-    newTransaction = {
-      id: Date.now(),
-      type: "withdraw",
-      amount: -amount,
-      date: new Date().toISOString(),
-    };
-
-    user.balance = (user.balance || 0) - amount;
-    user.transactions = [...(user.transactions || []), newTransaction];
-
-    return user;
-  });
-
-  // Juste pour info : renvoyer le solde actuel
-  res.json({ newTransaction });
-});
-
-app.get("/api/sse/balance", async (req, res) => {
-  const sseToken = req.cookies.sse_token;
-  if (!sseToken || !sseTokens[sseToken]) {
-    return res.status(403).send("Forbidden");
-  }
-
-  const { uid } = sseTokens[sseToken];
-  const userRef = admin.database().ref(`users/${uid}`);
-
-  res.set({
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  });
-  res.flushHeaders();
-
-  let lastBalance = 0;
-
-  // 🔹 Envoi initial
-  const snapshot = await userRef.get();
-  const data = snapshot.val() || { balance: 0 };
-  lastBalance = data.balance || 0;
-  res.write(`data: ${JSON.stringify({ ...data, delta: 0 })}\n\n`);
-
-  // 🔹 Listener Firebase en temps réel
-  const listener = userRef.on("value", (snapshot) => {
-    const data = snapshot.val() || { balance: 0 };
-    const balance = data.balance || 0;
-    const delta = balance - lastBalance;
-    lastBalance = balance;
-    res.write(`data: ${JSON.stringify({ ...data, delta })}\n\n`);
-  });
-
-  // 🔹 Keep-alive ping toutes les 20s
-  const keepAlive = setInterval(() => res.write(": ping\n\n"), 20000);
-
-  // 🔹 Cleanup si client ferme la connexion
-  req.on("close", () => {
-    userRef.off("value", listener);
-    clearInterval(keepAlive);
-    res.end();
-  });
-});
-
-app.post("/discord/statuemessage", async (req, res) => {
-  const { statue } = req.body;
-  try {
-    await db.ref("settings/MessageContext").update({
-      messageEnabled: statue,
-    });
-
-    res.status(200).json("OK");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-app.post("/discord/annouce", async (req, res) => {
-  const { title, content } = req.body;
-  try {
-    await db.ref("settings/MessageContext").update({
-      Titre: title,
-      Contexte: content,
-    });
-
-    res.status(200).json("OK");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-app.get("/discord/getannounce", async (req, res) => {
-  res.set({
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  });
-
-  res.flushHeaders();
-
-  const count = await getAllUsersCount();
-  const Robux = await getTotalRobuxGagnes();
-
-  const settingsref = admin.database().ref("settings/MessageContext");
-
-  // 🔹 Envoi initial immédiat
-  settingsref.once("value").then((snapshot) => {
-    const data = snapshot.val() || {
-      Titre: null,
-      Contexte: null,
-      messageEnabled: false,
-    };
-    res.write(`data: ${JSON.stringify({ ...data, count, Robux })}\n\n`);
-  });
-
-  // 🔹 Listener pour les changements suivants
-  const listener = settingsref.on("value", (snapshot) => {
-    const data = snapshot.val() || {
-      Titre: null,
-      Contexte: null,
-      messageEnabled: false,
-    };
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-  });
-
-  // keep-alive pour éviter timeout sur certains hébergeurs
-  const keepAlive = setInterval(() => {
-    res.write(": keep-alive\n\n");
-  }, 20000);
-
-  req.on("close", () => {
-    settingsref.off("value", listener);
-    clearInterval(keepAlive);
-    res.end();
-  });
-});
-
-app.post("/setSseCookie", async (req, res) => {
-  const { refreshToken } = req.body;
-  if (!refreshToken) return res.status(400).send("Missing refresh token");
-
-  try {
-    // Vérifier le refresh token Firebase
-    const user = await admin.auth().verifyIdToken(refreshToken); // ou custom verification
-    const sseToken = crypto.randomBytes(32).toString("hex");
-
-    // Stocker en mémoire ou DB temporaire
-    sseTokens[sseToken] = {
-      uid: user.uid,
-      expires: Date.now() + 24 * 60 * 60 * 1000, // 24h
-    };
-
-    // Créer le cookie HTTP Only + Secure
-    res.cookie("sse_token", sseToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Lax",
-      maxAge: 24 * 60 * 60 * 1000,
-      domain: ".bloxrbx.fr",
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(401).json({ error: "Invalid refresh token" });
-  }
-});
-
-app.post("/api/apply-promo", authenticate, async (req, res) => {
-  const uid = req.user.uid;
-  const { code } = req.body;
-
-  if (!code || /[.#$\[\]]/.test(code))
-    return res.status(400).json({ error: "Code invalide" });
-
-  const promoRef = admin.database().ref(`promocodes/${code}`);
-  const userRef = admin.database().ref(`users/${uid}`);
-
-  try {
-    // Transaction atomique — lit et écrit en une seule opération
-    await promoRef.transaction((promo) => {
-      if (!promo) return; // code inexistant → annule
-      if (promo.expiration && new Date(promo.expiration) < new Date()) return;
-      if (promo.usedBy?.[uid]) return; // déjà utilisé
-      if (promo.usesLeft !== undefined && promo.usesLeft <= 0) return;
-      // Applique les modifications atomiquement
-      if (!promo.usedBy) promo.usedBy = {};
-      promo.usedBy[uid] = true;
-      if (promo.usesLeft !== undefined) promo.usesLeft--;
-
-      return promo; // valide la transaction
-    });
-
-    // Récupère le montant et met à jour le solde
-    const promoSnap = await promoRef.get();
-    const promo = promoSnap.val();
-    if (!promo?.usedBy?.[uid])
-      return res.status(400).json({ error: "Code invalide ou déjà utilisé" });
-
-    // ✅ Côté serveur dans /api/apply-promo
-    const amount = promo.amount;
-
-    if (typeof amount !== "number" || amount <= 0 || amount > 10000) {
-      return res.status(400).json({ error: "Montant du code invalide" });
-    }
-
-    await userRef.transaction((user) => {
-      if (!user) return;
-      user.balance = (user.balance || 0) + promo.amount;
-      return user;
-    });
-
-    res.json({ success: true, amount: promo.amount });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-app.post("/update-profile", authenticate, async (req, res) => {
-  try {
-    const { username, robloxName, newPassword, oldUsername, oldPassword } =
-      req.body;
-    const uid = req.user.uid;
-
-    const COOLDOWN = 5 * 60 * 1000;
-
-    if (!username || !robloxName || !newPassword) {
-      return res.status(400).json({ error: "Missing fields" });
-    }
-
-    // 1. récupérer utilisateur actuel (sécurisé)
-    const currentSnap = await db.ref(`users/${uid}`).get();
-    if (!currentSnap.exists()) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const currentUser = currentSnap.val();
-
-    const lastUpdate = userData?.lastProfileUpdate || 0;
-    const elapsed = Date.now() - lastUpdate;
-
-    if (elapsed < COOLDOWN) {
-      const retryAfter = Math.ceil((COOLDOWN - elapsed) / 1000);
-      return res.status(429).json({ error: "Trop de tentatives", retryAfter });
-    }
-
-    // ... ta logique de mise à jour ...
-
-    // Enregistre le timestamp côté serveur
-    await userRef.update({ lastProfileUpdate: Date.now() });
-
-    // 2. check ancien username appartient bien à ce user
-    if (currentUser.username !== oldUsername) {
-      return res.status(403).json({ error: "Username invalide" });
-    }
-
-    // 3. récupérer email via current user (PAS via search)
-    const email = currentUser.email;
-
-    // 4. vérifier password Firebase
-    const response = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
-      {
+      const res = await fetch(`${API_BASE_URL}/api/roblox-user/${robloxName}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
-          password: oldPassword,
-          returnSecureToken: false,
+          usernames: [robloxName],
+          excludeBannedUsers: true,
         }),
-      },
-    );
-
-    if (!response.ok) {
-      return res.status(401).json({ error: "identifiants incorrectes" });
-    }
-
-    // 1. récupérer user actuel
-    const userRef = db.ref(`users/${uid}`);
-    const userSnap = await userRef.get();
-
-    if (!userSnap.exists()) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // 2. check username si changé
-    if (username !== currentUser.username) {
-      const snapshot = await db
-        .ref("users")
-        .orderByChild("username")
-        .equalTo(username)
-        .get();
-
-      if (snapshot.exists()) {
-        return res
-          .status(409)
-          .json({ error: "Nom d'utilisateur déjà utilisé" });
-      }
-    }
-
-    // 3. update DB
-    await userRef.update({
-      username,
-      RobloxName: robloxName,
-    });
-
-    // 4. update auth password
-    await admin.auth().updateUser(uid, {
-      password: newPassword,
-    });
-
-    const customToken = await admin.auth().createCustomToken(uid);
-
-    return res.json({
-      success: true,
-      customToken,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error" });
-  }
-});
-
-app.post("/mediaCheck", authenticate, async (req, res) => {
-  const { type } = req.body;
-  const uid = req.user.uid;
-
-  const allowed = ["discord", "youtube", "instagram", "tiktok"];
-
-  if (!allowed.includes(type)) {
-    return res.status(401).json({ error: "Type invalide" });
-  }
-
-  try {
-    // récupérer user actuel
-    const userSnap = await db.ref(`users/${uid}`).once("value");
-    const currentUser = userSnap.val();
-
-    if (!currentUser || !currentUser.RobloxName) {
-      return res.status(400).json({ error: "Pseudo introuvable" });
-    }
-
-    const RobloxName = currentUser.RobloxName;
-
-    // récupérer tous les users
-    const usersSnap = await db.ref("users").once("value");
-    const users = usersSnap.val() || {};
-
-    // check si un compte avec même pseudo a déjà type=true
-    const alreadyUsed = Object.entries(users).some(([otherUid, user]) => {
-      return (
-        otherUid !== uid &&
-        user.RobloxName === RobloxName &&
-        user[type] === true
-      );
-    });
-
-    if (alreadyUsed) {
-      return res.status(200).json({
-        message: "Un compte avec ce pseudo Roblox a déjà validé ce média",
       });
+      const data = await res.json();
+      if (!data?.data?.length)
+        return showMsg(msg, "❌ Pseudo Roblox inexistant");
+
+      pendingData = { username, password, robloxName };
+      warn.style.display = "flex";
+      requestAnimationFrame(() => warn.classList.add("active"));
+
+    } catch (err) {
+      console.error(err);
+      showMsg(msg, "❌ Erreur inattendue");
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+
+  /* =========================
+       CONFIRMATION (RÉAUTH)
+    ========================== */
+  // ✅ APRÈS — le serveur gère le timer, le client affiche juste l'erreur
+  confirmBtn.addEventListener("click", async () => {
+    confirmBtn.style.display = "none";
+    gif.style.display = "flex";
+
+    const user = auth.currentUser;
+    const oldUsername = document.getElementById("a").value.trim();
+    const oldPassword = document.getElementById("b").value.trim();
+
+    if (!oldUsername || !oldPassword) {
+      gif.style.display = "none";
+      confirmBtn.style.display = "block";
+      return showMsg(msg2, "❌ Informations manquantes");
     }
 
-    // transaction normale
-    const result = await db.ref(`users/${uid}`).transaction((user) => {
-      if (!user) user = {};
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`${API_BASE_URL}/update-profile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username: pendingData.username,
+          robloxName: pendingData.robloxName,
+          newPassword: pendingData.password,
+          oldUsername,
+          oldPassword,
+        }),
+      });
 
-      if (user[type]) {
-        return;
+      const data = await res.json();
+
+      // ✅ Le serveur renvoie le temps restant si rate limit atteint
+      if (res.status === 429) {
+        gif.style.display = "none";
+        confirmBtn.style.display = "block";
+        return showMsg(
+          msg2,
+          `❌ Réessayez dans ${formatTime(data.retryAfter)}`,
+        );
       }
 
-      user[type] = true;
-      user.balance = (user.balance || 0) + 1;
-      user.robuxGagnes = (user.robuxGagnes || 0) + 1;
+      if (!res.ok) throw new Error(data.error || "Erreur backend");
 
-      return user;
-    });
+      await firebase.auth().signInWithCustomToken(data.customToken);
 
-    if (!result.committed) {
-      return res.status(200).json({ message: "already joined" });
+      gif.style.display = "none";
+      confirmBtn.style.display = "block";
+      showMsg(msg, "✅ Profil mis à jour", true);
+
+      ["username", "password", "email", "Roblox", "a", "b"].forEach(
+        (id) => (document.getElementById(id).value = ""),
+      );
+      pendingData = null;
+      warn.classList.remove("active");
+      warn.addEventListener("transitionend", function handleEnd() {
+        warn.style.display = "none";
+        warn.removeEventListener("transitionend", handleEnd);
+      });
+    } catch (err) {
+      gif.style.display = "none";
+      confirmBtn.style.display = "block";
+      console.error(err);
+      showMsg(msg2, "❌ Erreur lors de la mise à jour");
     }
+  });
 
-    return res.status(200).json({ message: "OK" });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error" });
+  /* =========================
+       Fonctions utilitaires
+    ========================== */
+  function showMsg(el, text, success = false) {
+    el.textContent = text;
+    el.style.color = success ? "#00ff6a" : "#ff5555";
+    setTimeout(() => (el.textContent = ""), 3000);
   }
-});
+  /* ----- PROMOCODE ----- */
+  // ✅ APRÈS — le client envoie juste le code, le serveur fait tout
+  document.getElementById("applyPromo").addEventListener("click", async () => {
+    const btn = document.getElementById("applyPromo");
+    if (btn.disabled) return;
+    btn.disabled = true;
 
-// --- Lancement serveur ---
-const PORT = process.env.PORT || 3000;
+    const inputEl = document.getElementById("promoInput");
+    const codeInput = inputEl.value.trim().toUpperCase();
+    const msg = document.getElementById("promoMessage");
+    const user = firebase.auth().currentUser;
 
-app.listen(PORT, () => {
-  console.log(`✅ Serveur en ligne sur le port ${PORT}`);
+    if (!codeInput || /[.#$\[\]]/.test(codeInput))
+      return showMsg(msg, "❌ Code promo invalide.");
+    if (!user) return showMsg(msg, "❌ Vous devez être connecté");
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`${API_BASE_URL}/api/apply-promo`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ code: codeInput }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) return showMsg(msg, `❌ ${data.error}`);
+
+      inputEl.value = "";
+      showMsg(msg, `✔️ +${data.amount} R$ ajouté !`, true);
+    } catch (err) {
+      console.error(err);
+      showMsg(msg, "❌ Une erreur est survenue.");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  const header = document.querySelector("header");
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 50) {
+      header.classList.add("scrolled");
+    } else {
+      header.classList.remove("scrolled");
+    }
+  });
 });
