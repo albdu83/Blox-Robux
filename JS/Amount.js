@@ -225,16 +225,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!amountEl) return showError("Champ montant introuvable");
       const value = parseFloat(amountEl.value);
       if (isNaN(value)) return showError("Montant invalide");
-
+      const token = await auth.currentUser.getIdToken();
       const balanceRes = await fetch(`${API_BASE_URL}/api/getBalance`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: RobloxP, Montant: value }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ Montant: value })
       });
 
       if (!balanceRes.ok) {
         const errData = await balanceRes.json();
-        return showError(errData.error || "Erreur lors de la récupération du solde")
+        return showError(
+          errData.error || "Erreur lors de la récupération du solde",
+        );
       }
 
       finalStep.classList.forEach(
