@@ -1672,9 +1672,13 @@ app.post("/update-profile", authenticate, async (req, res) => {
       req.body;
     const uid = req.user.uid;
 
-        // 1. récupérer user actuel
+    // 1. récupérer user actuel
     const userRef = db.ref(`users/${uid}`);
     const userSnap = await userRef.get();
+
+    if (!userSnap.exists()) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     const COOLDOWN = 5 * 60 * 1000;
 
@@ -1690,7 +1694,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
 
     const currentUser = currentSnap.val();
 
-    const lastUpdate = userData?.lastProfileUpdate || 0;
+    const lastUpdate = userSnap?.lastProfileUpdate || 0;
     const elapsed = Date.now() - lastUpdate;
 
     if (elapsed < COOLDOWN) {
@@ -1727,10 +1731,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
 
     if (!response.ok) {
       return res.status(401).json({ error: "identifiants incorrectes" });
-    }
-
-    if (!userSnap.exists()) {
-      return res.status(404).json({ error: "User not found" });
     }
 
     // 2. check username si changé
