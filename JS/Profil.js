@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ✅ APRÈS — le client envoie juste le code, le serveur fait tout
   document.getElementById("applyPromo").addEventListener("click", async () => {
     const btn = document.getElementById("applyPromo");
-    if (btn.disabled) return;
+    if (btn.disabled) return console.warn("Action en cours, veuillez patienter...");
     btn.disabled = true;
 
     const inputEl = document.getElementById("promoInput");
@@ -211,12 +211,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const user = firebase.auth().currentUser;
 
     if (!codeInput || /[.#$\[\]]/.test(codeInput)) {
-      saveBtn.disabled = false;
+      btn.disabled = false;
       showMsg(msg, "❌ Code promo invalide.");
       return;
     }
     if (!user) {
-      saveBtn.disabled = false;
+      btn.disabled = false;
       showMsg(msg, "❌ Vous devez être connecté");
       return;
     }
@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const data = await res.json();
       if (!res.ok) {
-        saveBtn.disabled = false;
+        btn.disabled = false;
         return showMsg(msg, `❌ ${data.error}`);
       }
 
@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       showMsg(msg, `✔️ +${data.amount} R$ ajouté !`, true);
     } catch (err) {
       console.error(err);
-      saveBtn.disabled = false;
+      btn.disabled = false;
       showMsg(msg, "❌ Une erreur est survenue.");
     } finally {
       btn.disabled = false;
