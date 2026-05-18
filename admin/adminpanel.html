@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blox R$ - Admin</title>
-    <link rel="stylesheet" href="adminpanel.css">
-    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon">
+    <link rel="stylesheet" href="adminpanel.css" />
+    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon" />
   </head>
   <body>
-      <!-- ===== RIDEAU CHARGEMENT ===== -->
+    <!-- ===== RIDEAU CHARGEMENT ===== -->
     <div id="transition" class="fade-transition active">
       <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
       <div class="text" id="text-chargement">Chargement...</div>
@@ -20,7 +20,11 @@
 
           <div class="form-group" id="form-group">
             <label>Code Administrateur</label>
-            <input type="password" id="adminCode" placeholder="Mot de passe admin">
+            <input
+              type="password"
+              id="adminCode"
+              placeholder="Mot de passe admin"
+            />
           </div>
 
           <button id="adminEnter">Se connecter</button>
@@ -28,10 +32,28 @@
         </section>
       </main>
     </div>
-    <script src="https://cdn.tiny.cloud/1/7685pqp1gvvr64gli2idwrco4wktgnhivtx8ot3odkzrelsv/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script
+      src="https://cdn.tiny.cloud/1/7685pqp1gvvr64gli2idwrco4wktgnhivtx8ot3odkzrelsv/tinymce/8/tinymce.min.js"
+      referrerpolicy="origin"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
+      defer
+    ></script>
 
     <script src="../JS/Panel.js" defer></script>
     <script src="../JS/Animation.js" defer></script>
