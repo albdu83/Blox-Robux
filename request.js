@@ -1451,25 +1451,28 @@ app.get("/getmultiplier", async (req, res) => {
   }
 });
 
+// ✅ CORRECTION
 app.post("/api/getBalance", authenticate, async (req, res) => {
   const { Montant } = req.body;
   try {
     if (!Montant)
       return res.status(400).json({ error: "Paramètres manquants" });
+
+    const montantNum = Number(Montant);
+    if (isNaN(montantNum) || montantNum < 25 || montantNum > 375)
+      return res.status(400).json({ error: "Le montant doit être compris entre 25 et 375" });
+
     const uid = req.user.uid;
     const snap = await db.ref("users/" + uid).get();
-    const user = snap.val();
-    const name = user.firstUsername;
-    if (!name)
-      return res.status(400).json({ error: "Paramètre manquant : name" });
-    if (!user)
+    if (!snap.exists())
       return res.status(404).json({ error: "Utilisateur introuvable" });
-    if (user.balance < Number(Montant))
+
+    const user = snap.val();
+    if (!user.firstUsername)
+      return res.status(400).json({ error: "Paramètre manquant : name" });
+    if (user.balance < montantNum)
       return res.status(400).json({ error: "Solde insuffisant" });
-    if (Montant < 25 || Montant > 375)
-      return res
-        .status(400)
-        .json({ error: "Le montant doit être compris entre 25 et 375" });
+
     res.json({ robux: user.balance });
   } catch (err) {
     console.error("Erreur /api/getBalance :", err);
@@ -1855,6 +1858,87 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
   }
+});
+
+// ✅ Dans server.js — toutes protégées par requireAdmin
+
+app.post("/admin/credit", requireAdmin, async (req, res) => {
+  const { uid, amount } = req.body;
+  if (!uid || typeof amount !== "number" || amount <= 0 || amount > 10000)
+    return res.status(400).json({ error: "Paramètres invalides" });
+  await db.ref(`users/${uid}/balance`).transaction((b) => (b || 0) + amount);
+  res.json({ success: true });
+});
+
+app.post("/admin/ban", requireAdmin, async (req, res) => {
+  const { uid, isBanned } = req.body;
+  if (!uid || typeof isBanned !== "boolean")
+    return res.status(400).json({ error: "Paramètres invalides" });
+  await db.ref(`users/${uid}/isBanned`).set(isBanned);
+  res.json({ success: true });
+});
+
+app.post("/admin/promote", requireAdmin, async (req, res) => {
+  const { uid, newRole } = req.body;
+  if (!uid || !["admin", "Utilisateur"].includes(newRole))
+    return res.status(400).json({ error: "Paramètres invalides" });
+  if (uid === req.user.uid)
+    return res.status(403).json({ error: "Auto-modification interdite" });
+  await db.ref(`users/${uid}/role`).set(newRole);
+  res.json({ success: true });
+});
+
+app.post("/admin/promo/create", requireAdmin, async (req, res) => {
+  const { name, amount, uses, expiration } = req.body;
+  if (!name || name.length > 11 || /[.#$\[\]]/.test(name))
+    return res.status(400).json({ error: "Nom invalide" });
+  if (typeof amount !== "number" || amount <= 0 || amount > 10000)
+    return res.status(400).json({ error: "Montant invalide" });
+  await db.ref(`promocodes/${name}`).set({
+    amount, usesLeft: uses,
+    expiration: new Date(expiration).toISOString(),
+    usedBy: {}, enabled: true,
+  });
+  res.json({ success: true });
+});
+
+app.post("/admin/promo/update", requireAdmin, async (req, res) => {
+  const { oldName, newName, enabled, amount, usesLeft, expiration } = req.body;
+  if (!oldName || !newName || newName.length > 11 || /[.#$\[\]]/.test(newName))
+    return res.status(400).json({ error: "Nom invalide" });
+
+  const data = {
+    enabled, amount, usesLeft,
+    expiration: expiration ? new Date(expiration).toISOString() : null,
+    updatedAt: Date.now(),
+  };
+
+  if (newName !== oldName) {
+    const exists = await db.ref(`promocodes/${newName}`).get();
+    if (exists.exists())
+      return res.status(409).json({ error: "Ce nom existe déjà" });
+    await db.ref(`promocodes/${newName}`).set(data);
+    await db.ref(`promocodes/${oldName}`).remove();
+  } else {
+    await db.ref(`promocodes/${oldName}`).update(data);
+  }
+  res.json({ success: true });
+});
+
+app.post("/admin/promo/delete", requireAdmin, async (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: "Code manquant" });
+  await db.ref(`promocodes/${code}`).remove();
+  res.json({ success: true });
+});
+
+app.post("/admin/multiplier", requireAdmin, async (req, res) => {
+  const { percent } = req.body;
+  if (typeof percent !== "number" || percent < 0 || percent > 500)
+    return res.status(400).json({ error: "Valeur invalide (0-500%)" });
+  const multiplier = Number((1 + percent / 100).toFixed(2));
+  await db.ref("settings").update({ gainMultiplier: multiplier, updatedAt: Date.now() });
+  res.json({ success: true, multiplier });
 });
 
 // --- Lancement serveur ---
