@@ -10,10 +10,17 @@ async function fetchCsrfToken() {
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
-    const res = await fetch("https://api.bloxrbx.fr/firebase-config", {
-      method: "POST"
-    });
-    const config = await res.json()
+    const config = {
+      apiKey: "AIzaSyBDGdgx4QJScAHNc-nifcoA8QWmL-wZWsA",
+      authDomain: "blox-robux-officiel.firebaseapp.com",
+      databaseURL:
+        "https://blox-robux-officiel-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "blox-robux-officiel",
+      storageBucket: "blox-robux-officiel.firebasestorage.app",
+      messagingSenderId: "958075329612",
+      appId: "1:958075329612:web:174bf1682a7bf9fba1a8e9",
+      measurementId: "G-36JDXY217P",
+    };
 
     firebase.initializeApp(config);
 
@@ -46,6 +53,22 @@ function loadScriptOnce(src) {
   });
 }
 
+// ✅ Ajoute cette fonction en haut du script
+async function adminAction(endpoint, body) {
+  const token = await firebase.auth().currentUser.getIdToken();
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Erreur serveur");
+  return data;
+}
+
 async function setRoblox_Avatar(robloxName) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/avatar/${robloxName}`);
@@ -70,15 +93,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const codeInput = document.getElementById("adminCode").value;
     const msg = document.getElementById("adminMessage");
     const csrfToken = await fetchCsrfToken();
-    const response = await fetch(
-      `${API_BASE_URL}/checkAdminCode`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
-        credentials: "include",
-        body: JSON.stringify({ code: codeInput }),
+    const response = await fetch(`${API_BASE_URL}/checkAdminCode`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
       },
-    );
+      credentials: "include",
+      body: JSON.stringify({ code: codeInput }),
+    });
 
     const data = await response.json();
 
@@ -93,14 +116,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const { auth, db } = await initFirebase();
 
+      if (!auth || !db) {
+        console.error("Firebase non initialisé");
+      }
+
       const btnprofil = document.getElementById("btn-profil");
       const disco = document.getElementById("disconnect");
       const body = document.getElementById("body");
       const loadinggif = document.getElementById("sous-container-wrapper");
       const loadimg = document.querySelectorAll(".loadimg");
       const elements = document.getElementById("lien-profil");
-      const btnInscription = document.getElementById("btn-inscription");
-      const btnConnexion = document.getElementById("btn-connexion");
       const switch2 = document.getElementById("drawer-disabled");
       const title = document.getElementById("Titre");
       const content = document.getElementById("Contenu");
@@ -120,13 +145,13 @@ document.addEventListener("DOMContentLoaded", async () => {
               if (switch2) {
                 switch2.checked = !!data.messageEnabled;
                 title.value = data.Titre;
-                content.innerHTML = data.Contexte;
+                content.innerHTML = DOMPurify.sanitize(data.Contexte || "");
               }
             } else {
               if (switch2) {
                 switch2.checked = !!data.messageEnabled;
                 title.value = data.Titre;
-                content.innerHTML = data.Contexte;
+                content.innerHTML = DOMPurify.sanitize(data.Contexte || "");
               }
             }
           };
@@ -142,18 +167,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             disco.style.display = "flex";
             body.innerHTML = "";
           }
-          const sign = document.getElementById("signup-image");
-          if (sign) {
-            sign.addEventListener("click", () => {
-              window.location.href = "../Authentification/inscription";
-            });
-          }
           return;
         } else {
-          if (elements && btnInscription && btnConnexion) {
+          if (elements) {
             elements.style.display = "none";
-            btnInscription.style.display = "none";
-            btnConnexion.style.display = "none";
           }
 
           if (loadimg) {
@@ -180,9 +197,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
           }
 
-          const { username, RobloxName, firstUsername } = data;
-          RobloxP = RobloxName;
-          userN = username;
+          const { username, RobloxName } = data;
 
           /* ===== AVATAR ROBLOX ===== */
 
@@ -191,13 +206,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           /* ===== PROFIL HEADER ===== */
           const lienprofil = document.getElementById("lien-profil");
           if (lienprofil) {
-            lienprofil.href = "Pages/Profil";
+            lienprofil.href = "../Pages/Profil";
             lienprofil.style.justifyContent = "center";
             const span = lienprofil.querySelector("span");
-            if (elements && btnInscription && btnConnexion) {
+            if (elements) {
               elements.style.display = "flex";
-              btnInscription.style.display = "flex";
-              btnConnexion.style.display = "flex";
             }
             if (loadimg) {
               loadimg.forEach((img) => {
@@ -205,89 +218,6 @@ document.addEventListener("DOMContentLoaded", async () => {
               });
             }
             if (span) span.textContent = `${username}`;
-          }
-
-          /* ===== CPX REASEARCH ===== */
-          const container3 = document.getElementById("offerwall1");
-          if (container3) {
-            const res = await fetch(`${API_BASE_URL}/CPXHASH`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ firstUsername }),
-            });
-            if (!res) return console.error("Erreur lors du postback CPXHASH");
-            const data = await res.json();
-            container3.innerHTML = "";
-            const offerwall1 = document.getElementById("offerwall1");
-            const iframe = document.createElement("iframe");
-            iframe.src = data.iframeUrl;
-            iframe.width = "100%";
-            iframe.height = "1000";
-            iframe.frameBorder = "0";
-            iframe.loading = "lazy";
-            container3.appendChild(iframe);
-            offerwall1.style.display = "flex";
-            loadinggif.style.display = "none";
-          }
-
-          /* ===== TIMEWALL ===== */
-          const container = document.getElementById("timewall-container");
-          if (container) {
-            container.innerHTML = "";
-            const iframe = document.createElement("iframe");
-            iframe.src = `https://timewall.io/users/login?oid=2578908b35321055&uid=${firstUsername}`;
-            iframe.width = "100%";
-            iframe.height = "1000";
-            iframe.frameBorder = "0";
-            iframe.loading = "lazy";
-            container.appendChild(iframe);
-          }
-
-          /* ===== THEOREME REACH ===== */
-          const container2 = document.getElementById("theoremecontainer");
-          if (container2) {
-            container2.innerHTML = "";
-
-            const transactionId =
-              crypto.randomUUID?.() ||
-              Date.now() + "_" + Math.random().toString(36).slice(2);
-
-            const iframe2 = document.createElement("iframe");
-            iframe2.src =
-              "https://theoremreach.com/respondent_entry/direct" +
-              "?api_key=36131d298e73a7a2bc9bc433de51" +
-              "&user_id=" +
-              encodeURIComponent(firstUsername) +
-              "&transaction_id=" +
-              transactionId;
-
-            iframe2.width = "100%";
-            iframe2.height = "1000";
-            iframe2.frameBorder = "0";
-            iframe2.allow =
-              "accelerometer; gyroscope; magnetometer; camera; microphone";
-
-            container2.appendChild(iframe2);
-          }
-
-          /* ===== BOUTONS ===== */
-          const warn = document.getElementById("warn");
-          if (warn) warn.style.display = "none";
-
-          if (btnInscription && btnConnexion) {
-            btnInscription.textContent = "Déconnexion";
-            btnInscription.removeAttribute("href");
-            btnInscription.style.cursor = "pointer";
-            btnprofil.style.display = "flex";
-            btnprofil.textContent = "Profil";
-            btnConnexion.textContent = "Commencer";
-            btnConnexion.href = "./Pages/Offres";
-
-            btnInscription.onclick = () => {
-              if (warn) warn.style.display = "flex";
-            };
-          } else if (lienprofil) {
-            lienprofil.href = "../Pages/Profil";
           }
         } catch (err) {
           if (err.message && err.message.includes("Permission denied")) {
@@ -301,61 +231,54 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("Erreur chargement profil :", err);
           }
         }
-      });
 
-      const imgage = document.getElementById("roblox");
-      const drawer = document.getElementById("promo-drawer");
+        const imgage = document.getElementById("roblox");
+        const drawer = document.getElementById("promo-drawer");
 
-      if (!auth || !db) {
-        console.error("Firebase non initialisé");
-      }
+        async function setRobloxAvatar(robloxName) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/avatar/${robloxName}`);
+            const data = await res.json();
+            if (!imgage) return;
 
-      async function setRobloxAvatar(robloxName) {
-        try {
-          const res = await fetch(
-            `${API_BASE_URL}/api/avatar/${robloxName}`,
-          );
-          const data = await res.json();
-          if (!imgage) return;
-
-          imgage.src = data.avatarUrl || "../img/default-avatar.png";
-          imgage.style.display = "inline-block";
-        } catch (err) {
-          console.error("Erreur avatar :", err);
+            imgage.src = data.avatarUrl || "../img/default-avatar.png";
+            imgage.style.display = "inline-block";
+          } catch (err) {
+            console.error("Erreur avatar :", err);
+          }
         }
-      }
-      async function updateProfileInfo(uid) {
-        try {
-          const snapshot = await db.ref(`users/${uid}`).get();
-          if (!snapshot.exists()) return;
+        async function updateProfileInfo(uid) {
+          try {
+            const snapshot = await db.ref(`users/${uid}`).get();
+            if (!snapshot.exists()) return;
 
-          const data = snapshot.val();
+            const data = snapshot.val();
 
-          document.getElementById("robuxGagnes").textContent =
-            data.robuxGagnes ?? "0";
-          document.getElementById("retraits").textContent = Object.keys(
-            data.transactions || {},
-          ).length;
-          document.getElementById("balance").textContent = data.balance ?? "0";
-          document.getElementById("statut").textContent =
-            data.role ?? "Utilisateur";
-          document.getElementById("nomRoblox").textContent =
-            data.RobloxName ?? "—";
-          document.getElementById("username").textContent =
-            data.username ?? "—";
-          const date = data.createdAt
-            ? new Date(data.createdAt).toLocaleDateString()
-            : "—";
-          document.getElementById("motdepasse").textContent = date;
-          document.getElementById("nbConnexions").textContent =
-            data.nbConnexions ?? "0";
-        } catch (err) {
-          console.error("Erreur mise à jour profil :", err);
+            document.getElementById("robuxGagnes").textContent =
+              data.robuxGagnes ?? "0";
+            document.getElementById("retraits").textContent = Object.keys(
+              data.transactions || {},
+            ).length;
+            document.getElementById("balance").textContent =
+              data.balance ?? "0";
+            document.getElementById("statut").textContent =
+              data.role ?? "Utilisateur";
+            document.getElementById("nomRoblox").textContent =
+              data.RobloxName ?? "—";
+            document.getElementById("username").textContent =
+              data.username ?? "—";
+            const date = data.createdAt
+              ? new Date(data.createdAt).toLocaleDateString()
+              : "—";
+            document.getElementById("motdepasse").textContent = date;
+            document.getElementById("nbConnexions").textContent =
+              data.nbConnexions ?? "0";
+          } catch (err) {
+            console.error("Erreur mise à jour profil :", err);
+          }
         }
-      }
 
-      let connectedUser = null;
-      auth.onAuthStateChanged(async (user) => {
+        let connectedUser = null;
         if (!user) {
           alert("Vous devez être connecté pour accéder à cette page !");
           window.location.href = "../Pages/Profil";
@@ -439,66 +362,55 @@ document.addEventListener("DOMContentLoaded", async () => {
           const snap = await db.ref(`users/${uid}/RobloxName`).get();
           const robloxName = snap.val();
           if (!robloxName) return alert("alertee");
-          pseudoR.innerHTML = `@${robloxName}`;
+          pseudoR.textContent = `@${robloxName}`;
           setRobloxAvatar(robloxName);
           updateProfileInfo(uid);
         }
 
-        // CRÉDITER
+        // ✅ CRÉDITER
         if (btn.classList.contains("credit")) {
           const amount = prompt("Montant à créditer :");
-          if (!amount || isNaN(amount)) return;
+          if (
+            !amount ||
+            isNaN(amount) ||
+            Number(amount) <= 0 ||
+            Number(amount) > 10000
+          )
+            return alert("Montant invalide (1-10000)");
 
-          await db
-            .ref(`users/${uid}/balance`)
-            .transaction((b) => (b || 0) + Number(amount));
-
+          await adminAction("/admin/credit", { uid, amount: Number(amount) });
           alert("✅ Crédit ajouté");
           loadUsers();
         }
 
-        // BANNIR
+        // ✅ BANNIR
         if (btn.classList.contains("ban")) {
-          const isBanned = tr.dataset.isBanned === "true"; // récupère l'état actuel
-
+          const isBanned = tr.dataset.isBanned === "true";
           const confirmMsg = isBanned
-            ? "Voulez-vous débannir cet utilisateur ?"
+            ? "Voulez-vous débannir ?"
             : "Confirmer le bannissement ?";
-
           if (!confirm(confirmMsg)) return;
 
-          // Mettre à jour la base de données
-          await db.ref(`users/${uid}/isBanned`).set(!isBanned);
-
+          await adminAction("/admin/ban", { uid, isBanned: !isBanned });
           alert(!isBanned ? "🚫 Utilisateur banni" : "✅ Utilisateur débanni");
-
-          loadUsers(); // Recharge la liste pour mettre à jour le bouton et le dataset
+          loadUsers();
         }
 
-        // PROMOUVOIR
+        // ✅ PROMOUVOIR
         if (btn.classList.contains("promote")) {
-          if (uid === connectedUser) {
+          if (uid === connectedUser)
             return alert("❌ Vous ne pouvez pas modifier votre propre rôle.");
-          }
 
           const currentRole = tr.dataset.role;
           const newRole = currentRole === "admin" ? "Utilisateur" : "admin";
-
           const confirmMsg =
             newRole === "admin"
               ? "Promouvoir cet utilisateur en admin ?"
-              : "Retirer le rôle admin à cet utilisateur ?";
-
+              : "Retirer le rôle admin ?";
           if (!confirm(confirmMsg)) return;
 
-          await db.ref(`users/${uid}/role`).set(newRole);
-
-          alert(
-            newRole === "admin"
-              ? "⭐ Utilisateur promu admin"
-              : "⬇️ Rôle admin retiré",
-          );
-
+          await adminAction("/admin/promote", { uid, newRole });
+          alert(newRole === "admin" ? "⭐ Promu admin" : "⬇️ Rôle retiré");
           loadUsers();
         }
       });
@@ -582,43 +494,87 @@ document.addEventListener("DOMContentLoaded", async () => {
       // CODES PROMOS CREATIONS
       // ------------------------
 
+      // ✅ CRÉER
       document
         .getElementById("createPromo")
         .addEventListener("click", async () => {
-          const nameInput = document.getElementById("promoName");
-          const amountInput = document.getElementById("promoAmount");
-          const usesInput = document.getElementById("promoUses");
-          const expirationInput = document.getElementById("promoExpiration");
-
-          const name = nameInput.value.trim().toUpperCase();
-          const amount = parseInt(amountInput.value);
-          const uses = parseInt(usesInput.value);
-          const expiration = expirationInput.value; // yyyy-mm-dd
+          const name = document
+            .getElementById("promoName")
+            .value.trim()
+            .toUpperCase();
+          const amount = parseInt(document.getElementById("promoAmount").value);
+          const uses = parseInt(document.getElementById("promoUses").value);
+          const expiration = document.getElementById("promoExpiration").value;
 
           if (!name || !amount || isNaN(uses) || !expiration)
             return alert("Remplissez tous les champs");
-          if (name.length > 11)
-            return alert("11 caractères maximum pour le promocode !");
+          if (name.length > 11) return alert("11 caractères maximum !");
+
           try {
-            await db.ref(`promocodes/${name}`).set({
-              amount: amount,
-              usesLeft: uses,
-              expiration: new Date(expiration).toISOString(),
-              usedBy: {},
-              enabled: true,
+            await adminAction("/admin/promo/create", {
+              name,
+              amount,
+              uses,
+              expiration,
             });
             alert("✔️ Code promo créé !");
-
-            // ✅ Réinitialiser les champs correctement
-            nameInput.value = "";
-            amountInput.value = "";
-            usesInput.value = "";
-            expirationInput.value = "";
-
+            [
+              "promoName",
+              "promoAmount",
+              "promoUses",
+              "promoExpiration",
+            ].forEach((id) => (document.getElementById(id).value = ""));
             loadPromocodes();
           } catch (err) {
-            console.error(err);
-            alert("❌ Erreur lors de la création du code");
+            alert("❌ " + err.message);
+          }
+        });
+
+      // ✅ SAUVEGARDER
+      document
+        .getElementById("saveDrawer")
+        .addEventListener("click", async () => {
+          if (!currentPromo) return;
+          const newName = document
+            .getElementById("drawer-name")
+            .value.trim()
+            .toUpperCase();
+          if (!newName) return alert("Nom invalide");
+          if (newName.length > 11) return alert("11 caractères maximum !");
+
+          const data = {
+            newName,
+            oldName: currentPromo,
+            enabled: document.getElementById("drawer-enabled").checked,
+            amount: Number(document.getElementById("drawer-amount").value),
+            usesLeft: Number(document.getElementById("drawer-uses").value),
+            expiration:
+              document.getElementById("drawer-expiration").value || null,
+          };
+
+          try {
+            await adminAction("/admin/promo/update", data);
+            closeDrawer();
+            loadPromocodes();
+            alert("✅ Code promo mis à jour");
+          } catch (err) {
+            alert("❌ " + err.message);
+          }
+        });
+
+      // ✅ SUPPRIMER
+      document
+        .getElementById("deleteDrawer")
+        .addEventListener("click", async () => {
+          if (!currentPromo) return;
+          if (!confirm(`Supprimer "${currentPromo}" ?`)) return;
+
+          try {
+            await adminAction("/admin/promo/delete", { code: currentPromo });
+            closeDrawer();
+            loadPromocodes();
+          } catch (err) {
+            alert("❌ " + err.message);
           }
         });
       const promoTableBody = document.querySelector(
@@ -697,75 +653,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         drawer.classList.remove("hidden");
       });
 
-      document
-        .getElementById("saveDrawer")
-        .addEventListener("click", async () => {
-          if (!currentPromo) return;
-
-          const newName = document
-            .getElementById("drawer-name")
-            .value.trim()
-            .toUpperCase();
-
-          if (!newName) return alert("Nom du code invalide");
-
-          const data = {
-            enabled: document.getElementById("drawer-enabled").checked,
-            amount: Number(document.getElementById("drawer-amount").value),
-            usesLeft: Number(document.getElementById("drawer-uses").value),
-            expiration: document.getElementById("drawer-expiration").value
-              ? new Date(
-                  document.getElementById("drawer-expiration").value,
-                ).toISOString()
-              : null,
-            updatedAt: Date.now(),
-          };
-
-          try {
-            if (newName !== currentPromo) {
-              if (newName.length > 11)
-                return alert("11 caractère maximum pour le nom !");
-              // 🔁 vérifier si le nouveau nom existe déjà
-              const exists = await db.ref(`promocodes/${newName}`).get();
-              if (exists.exists()) {
-                return alert("❌ Ce nom de code existe déjà");
-              }
-
-              // 🔁 créer le nouveau
-              await db.ref(`promocodes/${newName}`).set(data);
-
-              // 🗑 supprimer l’ancien
-              await db.ref(`promocodes/${currentPromo}`).remove();
-
-              currentPromo = newName;
-            } else {
-              // ✏️ simple update
-              await db.ref(`promocodes/${currentPromo}`).update(data);
-            }
-
-            closeDrawer();
-            loadPromocodes();
-            alert("✅ Code promo mis à jour");
-          } catch (err) {
-            console.error(err);
-            alert("❌ Erreur lors de la modification");
-          }
-        });
-
-      document
-        .getElementById("deleteDrawer")
-        .addEventListener("click", async () => {
-          if (!currentPromo) return;
-
-          if (!confirm(`Supprimer définitivement le code "${currentPromo}" ?`))
-            return;
-
-          await db.ref(`promocodes/${currentPromo}`).remove();
-
-          closeDrawer();
-          loadPromocodes();
-        });
-
       function closeDrawer() {
         drawer.classList.add("hidden");
         currentPromo = null;
@@ -789,24 +676,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       applyMultiplierBtn.addEventListener("click", async () => {
         const percent = Number(multiplierInput.value);
 
-        if (isNaN(percent) || percent < 0) {
-          alert("❌ Pourcentage invalide");
-          return;
-        }
-
-        const multiplier = 1 + percent / 100;
+        if (isNaN(percent) || percent < 0 || percent > 500)
+          return alert("❌ Valeur invalide (0 - 500%)");
 
         try {
-          await db.ref("settings").update({
-            gainMultiplier: Number(multiplier.toFixed(2)),
-            updatedAt: Date.now(),
-          });
-
-          alert(`✅ Multiplicateur mis à jour : x${multiplier.toFixed(2)}`);
+          await adminAction("/admin/multiplier", { percent });
+          alert(`✅ Multiplicateur mis à jour`);
           multiplierInput.value = "";
         } catch (err) {
-          console.error("Erreur multiplicateur :", err);
-          alert("❌ Erreur lors de la mise à jour");
+          alert("❌ " + err.message);
         }
       });
 
@@ -826,15 +704,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const clearbtn = document.querySelector(".btn.clear-input");
       const checkbox = document.getElementById("drawer-disabled");
 
-      checkbox.addEventListener("change", async () => {
-        const statue = checkbox.checked;
-        const res = await fetch(`${API_BASE_URL}/discord/statuemessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ statue }),
-        });
-      });
-
       clearbtn.addEventListener("click", () => {
         const editor = tinymce.get("Contenu");
         title.value = "";
@@ -851,26 +720,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         SendDiscordMessage(title.value, editor.getContent());
       });
 
-      async function SendDiscordMessage(title, content) {
-        if (title === null || title === null) return;
-
+      // ✅ STATUT MESSAGE
+      checkbox.addEventListener("change", async () => {
         try {
-          const res = await fetch(`${API_BASE_URL}/discord/annouce`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, content }),
+          await adminAction("/discord/statuemessage", {
+            statue: checkbox.checked,
           });
-          const status = await res.status;
-          const json = res.json();
-          if (status !== 200) {
-            alert("❌ Echec de l'envoie", json.error);
-            return;
-          } else {
-            alert("✅ Message envoyé avec succès !");
-          }
         } catch (err) {
-          console.error("Erreur d'envoie :", err);
-          alert("❌ Erreur lors de l'envoie de l'annonce");
+          console.error("Erreur statut message :", err);
+        }
+      });
+
+      // ✅ ENVOYER ANNONCE
+      async function SendDiscordMessage(title, content) {
+        if (!title || !content) return;
+        try {
+          await adminAction("/discord/annouce", { title, content });
+          alert("✅ Message envoyé avec succès !");
+        } catch (err) {
+          alert("❌ Erreur lors de l'envoi : " + err.message);
         }
       }
       tinymce.init({
