@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
 
 /* ===== RESET ===== */
 
@@ -9,13 +9,12 @@
 }
 
 :root {
-
   --bg-1: #0f172a;
   --bg-2: #1e1b4b;
 
   --card: rgba(15, 23, 42, 0.74);
 
-  --border: rgba(255,255,255,0.08);
+  --border: rgba(255, 255, 255, 0.08);
 
   --text: #ffffff;
   --muted: #94a3b8;
@@ -25,14 +24,12 @@
 
   --radius: 24px;
 
-  --shadow:
-    0 12px 40px rgba(0,0,0,0.35);
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* ===== BODY ===== */
 
 body {
-
   min-height: 100dvh;
 
   display: flex;
@@ -45,7 +42,7 @@ body {
 
   position: relative;
 
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 
   background:
     radial-gradient(circle at top left, #312e81, transparent 30%),
@@ -56,43 +53,30 @@ body {
 /* ===== BACKGROUND GLOW ===== */
 
 body::before {
-
   content: "";
 
-  position: absolute;
+  position: fixed;
 
-  width: 500px;
-  height: 500px;
+  width: 280px;
+  height: 280px;
 
-  top: -180px;
-  right: -120px;
+  top: -80px;
+  right: -80px;
 
   border-radius: 50%;
 
-  background: rgba(59,130,246,0.18);
+  background: rgba(59, 130, 246, 0.12);
 
-  filter: blur(110px);
+  filter: blur(70px);
 
   pointer-events: none;
 
-  animation: floatGlow 8s ease-in-out infinite alternate;
-}
-
-@keyframes floatGlow {
-
-  from {
-    transform: translateY(0px);
-  }
-
-  to {
-    transform: translateY(40px);
-  }
+  z-index: 0;
 }
 
 /* ===== LOADING SCREEN ===== */
 
 .fade-transition {
-
   position: fixed;
   inset: 0;
 
@@ -103,13 +87,7 @@ body::before {
   justify-content: center;
   gap: 18px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #0f172a,
-      #1e1b4b,
-      #2563eb
-    );
+  background: linear-gradient(135deg, #0f172a, #1e1b4b, #2563eb);
 
   transition:
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
@@ -117,24 +95,21 @@ body::before {
 }
 
 .fade-transition::before {
-
   content: "";
 
   position: absolute;
   inset: 0;
 
-  background:
-    radial-gradient(
-      circle at center,
-      rgba(255,255,255,0.08),
-      transparent 70%
-    );
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.08),
+    transparent 70%
+  );
 
   animation: pulseBG 2s infinite alternate;
 }
 
 @keyframes pulseBG {
-
   from {
     transform: scale(1);
     opacity: 0.5;
@@ -147,7 +122,6 @@ body::before {
 }
 
 .fade-transition.slide-down {
-
   transform: translateY(100%);
 
   opacity: 0;
@@ -156,7 +130,6 @@ body::before {
 }
 
 .fade-transition .text {
-
   color: white;
 
   font-size: clamp(20px, 4vw, 32px);
@@ -167,7 +140,6 @@ body::before {
 }
 
 #image {
-
   width: clamp(34px, 6vw, 46px);
 
   z-index: 2;
@@ -176,7 +148,6 @@ body::before {
 /* ===== FORM ===== */
 
 form {
-
   position: relative;
   z-index: 2;
 
@@ -206,7 +177,6 @@ form {
 /* subtle top shine */
 
 form::before {
-
   content: "";
 
   position: absolute;
@@ -214,12 +184,11 @@ form::before {
 
   border-radius: inherit;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,0.08),
-      transparent 25%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08),
+    transparent 25%
+  );
 
   pointer-events: none;
 }
@@ -227,7 +196,6 @@ form::before {
 /* ===== TITLES ===== */
 
 h4 {
-
   text-align: center;
 
   color: var(--text);
@@ -237,7 +205,6 @@ h4 {
 }
 
 h2 {
-
   text-align: center;
 
   color: var(--muted);
@@ -251,24 +218,21 @@ h2 {
 /* ===== DIVIDER ===== */
 
 hr {
-
   border: none;
 
   height: 1px;
 
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(255,255,255,0.12),
-      transparent
-    );
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.12),
+    transparent
+  );
 }
 
 /* ===== LABEL ===== */
 
 label {
-
   color: #e2e8f0;
 
   font-size: 14px;
@@ -279,7 +243,6 @@ label {
 
 .user-field,
 .password-field {
-
   display: flex;
   flex-direction: column;
 
@@ -292,16 +255,15 @@ label {
 
 input[type="text"],
 input[type="password"] {
-
   width: 100%;
 
   padding: 14px 16px;
 
   border-radius: 14px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
 
   color: white;
 
@@ -314,20 +276,17 @@ input[type="password"] {
 }
 
 input::placeholder {
-
   color: #94a3b8;
 }
 
 input:focus {
-
   outline: none;
 
-  border-color: rgba(59,130,246,0.7);
+  border-color: rgba(59, 130, 246, 0.7);
 
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 
-  box-shadow:
-    0 0 0 4px rgba(59,130,246,0.12);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 
 /* ===== PASSWORD TOGGLE ===== */
@@ -362,7 +321,6 @@ input:focus {
 /* ===== BUTTON ===== */
 
 input[type="submit"] {
-
   margin-top: 8px;
 
   padding: 14px;
@@ -370,12 +328,7 @@ input[type="submit"] {
   border: none;
   border-radius: 14px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #3b82f6,
-      #2563eb
-    );
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
 
   color: white;
 
@@ -391,31 +344,29 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
-
   transform: translateY(-2px);
 
-  box-shadow:
-    0 12px 30px rgba(37,99,235,0.35);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.35);
 }
 
 input[type="submit"]:active {
-
   transform: scale(0.98);
 }
 
 /* ===== CAPTCHA ===== */
 
 .g-recaptcha {
-
   align-self: center;
 
+  transform-origin: center;
+
+  transform: scale(1);
   transform-origin: center;
 }
 
 /* ===== LINKS ===== */
 
 p {
-
   text-align: center;
 
   color: var(--muted);
@@ -424,7 +375,6 @@ p {
 }
 
 p a {
-
   color: #60a5fa;
 
   text-decoration: none;
@@ -433,14 +383,12 @@ p a {
 }
 
 p a:hover {
-
   opacity: 0.8;
 }
 
 /* ===== CHECKBOX ===== */
 
 .checkbox-group {
-
   display: flex;
   align-items: center;
   gap: 10px;
@@ -449,14 +397,13 @@ p a:hover {
 
   border-radius: 14px;
 
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .checkbox-group label,
 #r {
-
   cursor: pointer;
 
   color: #e2e8f0;
@@ -468,7 +415,6 @@ p a:hover {
 /* ===== LOADING ===== */
 
 #loading {
-
   display: none;
 
   width: 42px;
@@ -480,38 +426,31 @@ p a:hover {
 /* ===== MOBILE ===== */
 
 @media (max-width: 480px) {
-
   body {
-
     align-items: flex-start;
 
     padding-top: 8vh;
   }
 
   form {
-
     padding: 26px;
 
     border-radius: 20px;
   }
 
   h4 {
-
     font-size: 24px;
   }
 
   h2 {
-
     font-size: 13px;
   }
 
   input[type="submit"] {
-
     padding: 13px;
   }
 
   .g-recaptcha {
-
-    transform: scale(0.92);
+    transform: scale(0.87);
   }
 }
