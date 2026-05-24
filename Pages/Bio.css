@@ -744,6 +744,7 @@ header ul li a.active {
     font-size: clamp(2rem, 5vw, 3rem);
 
     background: linear-gradient(90deg, #60a5fa, #818cf8);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 
@@ -805,6 +806,7 @@ header ul li a.active {
     font-size: clamp(3rem, 10vw, 5rem);
 
     background: linear-gradient(90deg, #60a5fa, #818cf8);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
