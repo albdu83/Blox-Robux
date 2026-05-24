@@ -649,6 +649,7 @@ header.scrolled {
 .hero-title .line2 {
   display: block;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
