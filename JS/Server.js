@@ -106,6 +106,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let evtSource;
 
+  let lastCount = null;
+  let lastRobux = null;
+
   function LoadMessage() {
     if (evtSource) evtSource.close();
 
@@ -115,43 +118,83 @@ document.addEventListener("DOMContentLoaded", async () => {
       evtSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        // COUNT animation
-        if (data.count && countmember) {
-          countmember.dataset.value = data.count;
-          robuxnumber.dataset.value = data.Robux;
-          const rect = countmember.getBoundingClientRect();
-          const inView = rect.top < window.innerHeight && rect.bottom > 0;
-          const rect2 = countmember.getBoundingClientRect();
-          const inView2 = rect2.top < window.innerHeight && rect2.bottom > 0;
+        // =========================
+        // COUNT
+        // =========================
 
-          if (inView) {
-            scrambleText(countmember, data.count);
+        if (countmember && data.count != null) {
+          const newCount = String(data.count);
+          const newRobux = String(data.Robux);
+
+          // COUNT
+          if (newCount !== lastCount) {
+            lastCount = newCount;
+
+            countmember.dataset.value = newCount;
+
+            requestAnimationFrame(() => {
+              const rect = countmember.getBoundingClientRect();
+
+              const inView = rect.top < window.innerHeight && rect.bottom > 0;
+
+              if (inView) {
+                scrambleText(countmember, newCount);
+              } else {
+                countmember.textContent = newCount;
+              }
+            });
           }
-          if (inView2) {
-            scrambleText(robuxnumber, data.Robux);
+
+          // ROBUX
+          if (newRobux !== lastRobux) {
+            lastRobux = newRobux;
+
+            robuxnumber.dataset.value = newRobux;
+
+            requestAnimationFrame(() => {
+              const rect2 = robuxnumber.getBoundingClientRect();
+
+              const inView2 =
+                rect2.top < window.innerHeight && rect2.bottom > 0;
+
+              if (inView2) {
+                scrambleText(robuxnumber, newRobux);
+              } else {
+                robuxnumber.textContent = newRobux;
+              }
+            });
           }
         }
 
-        // MESSAGE ON/OFF
+        // =========================
+        // MESSAGE
+        // =========================
+
         if (messageContainer) {
           messageContainer.style.display = data.messageEnabled
             ? "flex"
             : "none";
         }
 
-        // SWITCH SAFE
         if (switch2) {
           switch2.checked = !!data.messageEnabled;
         }
 
-        // TITRE / CONTENU SAFE
-        if (title) title.value = data.Titre || "";
-        if (content)
-          content.innerHTML = DOMPurify.sanitize(data.Contexte || "");
+        if (title) {
+          title.value = data.Titre || "";
+        }
 
-        if (distitre) distitre.textContent = data.Titre || "";
-        if (discontexte)
+        if (content) {
+          content.innerHTML = DOMPurify.sanitize(data.Contexte || "");
+        }
+
+        if (distitre) {
+          distitre.textContent = data.Titre || "";
+        }
+
+        if (discontexte) {
           discontexte.innerHTML = DOMPurify.sanitize(data.Contexte || "");
+        }
       };
 
       evtSource.onerror = () => {
