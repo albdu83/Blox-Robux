@@ -1,472 +1,236 @@
+<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blox R$</title>
-    <meta
-      name="description"
-      content="Gagnez des R$ en complétant des offres, en répondant à des sondages et en jouant à des jeux. Retraits instantanés !"
-    />
-    <link rel="stylesheet" href="style - Copie.css" />
-    <link rel="icon" href="img/Bloxlogo.png" type="image/x-icon" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blox R$</title>
+  <link rel="stylesheet" href="style - Copie.css" />
+</head>
+<body>
 
-  <body>
-    <div id="transition" class="fade-transition active">
-      <img src="img/Robux.png" id="image" alt="Logo Blox Robux" />
-      <div class="text" id="text-chargement">Chargement...</div>
+  <!-- TRANSITION (inchangé) -->
+  <div id="transition" class="fade-transition active">
+    <img src="img/Robux.png" id="image" alt="Logo Blox Robux" />
+    <div class="text" id="text-chargement">Chargement...</div>
+  </div>
+
+  <!-- HEADER (inchangé) -->
+  <header class="header">
+    <a href="/" class="logo"><img src="img/logo.png" alt="Logo De Blox Robux" /></a>
+    <div class="title">Blox R$</div>
+    <div class="logo2"><img src="img/Barres.png" alt="Barres" id="barres" /></div>
+  </header>
+
+  <!-- NAVIGATION (inchangé) -->
+  <div class="navigation" id="navigation">
+    <div class="nav-panel" id="nav-panel">
+      <div class="logo2" id="logo2"><img src="img/Back.png" alt="Barres" id="barres2" /></div>
+      <ul class="nave">
+        <li><a id="lien-profil" href="#"><span>Aucun compte</span><img id="avatar-roblox" src="img/default-avatar.png" /></a></li>
+        <li><a id="btn-connexion" href="Authentification/connexion">Connexion</a></li>
+        <li><a id="btn-inscription" href="Authentification/inscription">Inscription</a></li>
+        <li><a id="btn-profil" href="Pages/Profil"></a></li>
+      </ul>
+      <div class="loadimg"></div>
     </div>
-    <header class="header">
-      <a href="/" class="logo">
-        <img src="img/logo.png" alt="Logo De Blox Robux" />
-      </a>
-      <div class="title">Blox R$</div>
-      <div class="logo2">
-        <img src="img/Barres.png" alt="Barres" id="barres" />
-      </div>
-    </header>
-    <div class="header-shadow"></div>
+  </div>
 
-    <div class="navigation" id="navigation">
-      <div class="nav-panel" id="nav-panel">
-        <div class="logo2" id="logo2">
-          <img src="img/Back.png" alt="Barres" id="barres2" />
-        </div>
-        <ul class="nave">
-          <li>
-            <a id="lien-profil" href="#">
-              <span>Aucun compte</span>
-              <img id="avatar-roblox" src="img/default-avatar.png" />
-            </a>
-          </li>
-          <li>
-            <a id="btn-connexion" href="Authentification/connexion"
-              >Connexion</a
-            >
-          </li>
-          <li>
-            <a id="btn-inscription" href="Authentification/inscription"
-              >Inscription</a
-            >
-          </li>
-          <li><a id="btn-profil" href="Pages/Profil"></a></li>
-        </ul>
-        <div class="loadimg"></div>
+  <!-- WARN (inchangé) -->
+  <div id="warn">
+    <div>
+      <div id="z">Êtes-vous sûr de vouloir vous déconnecter de votre compte BloxRobux ?</div>
+      <div class="actions">
+        <button id="a">Se déconnecter</button>
+        <button id="b">Annuler</button>
       </div>
     </div>
+  </div>
 
-    <div id="warn">
-      <div>
-        <div id="z"
-          >Êtes-vous sûr de vouloir vous déconnecter de votre compte BloxRobux
-          ?</div
-        >
-        <div class="actions">
-          <button id="a">Se déconnecter</button>
-          <button id="b">Annuler</button>
-        </div>
+  <!-- ═══ HERO ═══ -->
+  <section class="hero-section">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="hero-badge">
+      <span></span>
+      Site en ligne · Retraits inactifs
+    </div>
+
+    <h1 class="hero-title">
+      <span class="line1">Gagne des R$</span>
+      <span class="line2">gratuitement</span>
+    </h1>
+
+    <p class="hero-sub">
+      Complète des offres simples, réponds à des sondages et retire tes Robux directement sur ton compte Roblox.
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn-primary start">Commencer maintenant</button>
+      <button class="btn-secondary" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">Comment ça marche ?</button>
+    </div>
+
+    <div class="stats-strip fade-in">
+      <div class="stat-item">
+        <div class="stat-num" id="countmember">...</div>
+        <div class="stat-label">Comptes créés</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="robuxnumber">...</div>
+        <div class="stat-label">R$ gagnés</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">40+</div>
+        <div class="stat-label">Retraits effectués</div>
       </div>
     </div>
-    <div class="Bienvenue">
-      <h1 class="titrebienvenue fade-in">Bienvenue sur Blox R$</h1>
-      <div
-        style="
-          min-width: 60%;
-          height: 30vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        "
-      >
-        <h3
-          style="
-            text-align: center;
-            max-width: 100%;
-            font-size: clamp(0.75rem, 2vw, 1.2rem);
-          "
-          class="fade-in"
-        >
-          Bienvenue sur Blox R$, un site où vous pouvez gagner des R$
-          gratuitement en complétant des offres, en répondant à des sondages et
-          en jouant à des jeux ! Créez un compte gratuitement pour commencer dès
-          maintenant. Rejoignez notre serveur Discord pour toute question !
-        </h3>
+  </section>
+
+  <!-- ═══ HOW IT WORKS ═══ -->
+  <div class="section how-section fade-in">
+    <div class="section-label">Processus</div>
+    <h2 class="section-title">En 3 étapes simples</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon">👤</div>
+        <h3>S'inscrire</h3>
+        <p>Crée ton compte en quelques secondes avec ton pseudo Roblox. Aucune carte bancaire requise.</p>
       </div>
-      <div class="cards fade-in">
-        <div class="carde">
-          <div class="icon">💰</div>
-
-          <h3>Gagne des R$</h3>
-          <p>
-            Complète des offres et des sondages pour gagner des récompenses.
-          </p>
-
-          <button class="cta start">Commencer</button>
-        </div>
-        <div class="carde">
-          <div class="icon">⚡</div>
-
-          <h3>Simple & rapide</h3>
-          <p>
-            ⏱ 2 minutes pour commencer<br />👥 +10 utilisateurs actifs<br />📈
-            Gains instantanés
-          </p>
-          <button class="cta start">Voir les offres</button>
-        </div>
-        <div class="carde">
-          <div class="icon">🛡️</div>
-
-          <h3>100% sécurisé</h3>
-          <p>
-            🔒 Données chiffrées<br />🚫 Anti-fraude actif<br />✔ Paiements
-            vérifiés
-          </p>
-          <button class="cta" data-href="Pages/Security">En savoir plus</button>
-        </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon">⚡</div>
+        <h3>Compléter des offres</h3>
+        <p>Accède à des dizaines d'offres partenaires et gagne des R$ à chaque mission accomplie.</p>
       </div>
-      <h1 style="text-align: center; opacity: 0">.</h1>
-      <h1 style="text-align: center; opacity: 0">.</h1>
-      <h1 style="text-align: center" class="fade-in" id="nextbutton">
-        Suite ⬇
-      </h1>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon">💸</div>
+        <h3>Retirer</h3>
+        <p>Retire tes R$ directement sur ton compte Roblox. Traitement sécurisé et vérifié.</p>
+      </div>
     </div>
-    <div class="hero-wrapper fade-in">
-      <div class="hero">
-        <h2 style="text-align: center">Comment utiliser BloxR$ ?</h2>
-        <div class="separator"></div>
-        <div class="welcome">
-          <div class="présentation" id="acceuil">
-            <img
-              src="img/step1.png"
-              alt="Image Inscription"
-              class="signup-image"
-              id="signup-image"
-            />
-            <div>
-              <p>
-                1. Inscrivez-vous sur notre site à l'aide de votre nom
-                d'utilisateur Roblox.
-              </p>
-            </div>
-            <img src="img/pièces.png" alt="Image Pièces" id="pièce-image" />
-            <div>
-              <p>
-                2. Complétez des offres rapides et simples sur les sites
-                partenaires.
-              </p>
-            </div>
-            <img
-              src="img/carte_bancaire.png"
-              alt="Image Retrait"
-              id="carte-image"
-            />
-            <div>
-              <p>3. Retirez vos R$ directement sur votre compte Roblox !</p>
-            </div>
-            <div class="separator"></div>
-          </div>
-        </div>
+  </div>
+
+  <!-- ═══ FEATURES ═══ -->
+  <div class="features fade-in">
+    <div class="section-label">Pourquoi nous ?</div>
+    <h2 class="section-title">Tout ce qu'il te faut</h2>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <span class="feat-emoji">🔒</span>
+        <h3>100 % sécurisé</h3>
+        <p>Données chiffrées, système anti-fraude actif et paiements vérifiés à chaque retrait.</p>
       </div>
-      <div
-        class="separatorcnt"
-        style="display: flex; align-items: center; height: 10%; width: 100%"
-      >
-        <div class="separator" style="width: 75%"></div>
+      <div class="feat-card">
+        <span class="feat-emoji">⚡</span>
+        <h3>Gains instantanés</h3>
+        <p>Tes R$ sont crédités immédiatement après validation de chaque offre complétée.</p>
       </div>
-      <div class="container fade-in" id="signupcontainer">
-        <div class="card left">
-          <h2>01 - S’inscrire</h2>
-          <p>Crée ton compte en quelques secondes avec ton pseudo Roblox.</p>
-          <button class="start">Commencer</button>
-        </div>
-        <div
-          class="infocontainer"
-          style="
-            width: 15vw;
-            height: 20vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: dashed 6px white;
-            flex-direction: column;
-          "
-        >
-          <h1 style="font-size: 60px" id="countmember" data-text="bonjour">
-            ...
-          </h1>
-          <h3 style="color: rgb(0, 0, 0); font-weight: bolder">
-            comptes créés
-          </h3>
-        </div>
+      <div class="feat-card">
+        <span class="feat-emoji">🎯</span>
+        <h3>Offres variées</h3>
+        <p>Sondages, jeux, inscriptions — des dizaines d'offres disponibles à tout moment.</p>
       </div>
-      <div
-        class="separatorcnt"
-        style="
-          display: flex;
-          justify-content: end;
-          align-items: center;
-          height: 10%;
-          width: 100%;
-        "
-      >
-        <div class="separator" style="width: 75%"></div>
+      <div class="feat-card">
+        <span class="feat-emoji">📱</span>
+        <h3>Compatible mobile</h3>
+        <p>Le site fonctionne parfaitement sur téléphone, tablette et ordinateur.</p>
       </div>
-      <div class="container fade-in" id="offerscontainer">
-        <div
-          class="infocontainer"
-          style="
-            width: 15vw;
-            height: 20vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: dashed 6px white;
-            flex-direction: column;
-          "
-        >
-          <h1 style="font-size: 60px" id="robuxnumber">3650</h1>
-          <h3
-            style="color: rgb(0, 0, 0); font-weight: bolder; text-align: center"
-          >
-            R$ Gagnés sur le site
-          </h3>
-        </div>
-        <div class="card right">
-          <h2>02 - Compléter des offres</h2>
-          <p>Gagne des R$ en réalisant des missions simples.</p>
-          <button class="start">Voir les offres</button>
-        </div>
+      <div class="feat-card">
+        <span class="feat-emoji">🤝</span>
+        <h3>Support actif</h3>
+        <p>Une équipe disponible sur Discord pour répondre à toutes tes questions rapidement.</p>
       </div>
-      <div
-        class="separatorcnt"
-        style="
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 10%;
-          width: 100%;
-        "
-      >
-        <div class="separator" style="width: 75%"></div>
+      <div class="feat-card">
+        <span class="feat-emoji">🏆</span>
+        <h3>Communauté</h3>
+        <p>Rejoins +10 utilisateurs actifs qui gagnent des R$ chaque jour sur la plateforme.</p>
       </div>
-      <div
-        class="container fade-in"
-        id="Retraitcontainer"
-        style="grid-template-columns: repeat(3, 1fr)"
-      >
-        <div
-          class="infocontainer"
-          style="
-            width: 15vw;
-            height: 20vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: dashed 6px white;
-            flex-direction: column;
-            text-align: center;
-          "
-        >
-          <h1 style="font-size: 40px">Sécurisé</h1>
-          <h3 style="color: rgb(145, 145, 145); font-weight: bolder">
-            Retraits sous haute protection
-          </h3>
+    </div>
+  </div>
+
+  <!-- ═══ CTA BAND ═══ -->
+  <div class="cta-band fade-in">
+    <h2>Prêt à gagner tes premiers R$ ?</h2>
+    <p>Inscription gratuite · Aucun abonnement · Retraits réels</p>
+    <button class="btn-primary start">Créer mon compte gratuitement</button>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="support">
+    <img src="img/discordlogo.png" alt="Logo Discord" />
+    <p><strong>Besoin d'aide ?</strong> Rejoignez <a href="https://discord.gg/QQMRtfBXpq" target="_blank" rel="noopener noreferrer">notre serveur Discord</a> !</p>
+  </div>
+
+  <!-- FOOTER #Block (inchangé) -->
+  <div class="separator" style="width:100%;height:1px;background:rgba(255,255,255,0.06)"></div>
+  <div id="Block">
+    <div class="side"><img src="img/BloxImg.png" alt="BloxRobuxLogo" /></div>
+    <div id="BlockBottom">
+      <div class="infos">
+        <div class="col">
+          <h2>A propos de nous</h2>
+          <ul>
+            <li><a href="Pages/Bio">Biographie du site</a></li>
+            <li><a href="Pages/Security">Paiements sécurisés</a></li>
+            <li><a href="">Support actif</a></li>
+          </ul>
         </div>
-        <div class="card center">
-          <h2>03 - Retirer</h2>
-          <p>Retire tes R$ directement sur ton compte Roblox.</p>
-          <button class="notallowed">Retirer</button>
+        <div class="col">
+          <h2>Mentions légales</h2>
+          <ul>
+            <li><a href="Legal/CGU">Conditions d'utilisations</a></li>
+            <li><a href="Legal/PCF">Politique de confidentialité</a></li>
+          </ul>
         </div>
-        <div
-          class="infocontainer"
-          style="
-            width: 15vw;
-            height: 20vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: dashed 6px white;
-            flex-direction: column;
-            text-align: center;
-          "
-        >
-          <h1 style="font-size: 40px">Fiable</h1>
-          <h3 style="color: rgb(145, 145, 145); font-weight: bolder">
-            Plus de 40 retour des retraits effectués
-          </h3>
+        <div class="col">
+          <h2>Réseaux sociaux</h2>
+          <ul>
+            <li><a href="https://discord.gg/QQMRtfBXpq" target="_blank" rel="noopener noreferrer">Discord</a></li>
+            <li><a href="https://youtube.com/@bloxrbx00" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+            <li><a href="https://www.instagram.com/bloxrbx/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+            <li><a href="https://www.tiktok.com/@bloxrbx.fr" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+          </ul>
         </div>
       </div>
     </div>
-    <div class="Crédits" id="support">
-      <img src="img/discordlogo.png" alt="Logo Discord" />
-      <div>
-        <p>
-          <strong>Besoin d'aide ?</strong> Rejoignez
-          <a
-            href="https://discord.gg/QQMRtfBXpq"
-            target="_blank"
-            rel="noopener noreferrer"
-            >notre serveur Discord</a
-          >
-          !
-        </p>
-      </div>
-    </div>
-    <div class="separator"></div>
-    <div id="Block">
-      <!-- COLONNE GAUCHE -->
-      <div class="side">
-        <img src="img/BloxImg.png" alt="BloxRobuxLogo" />
-      </div>
+    <div class="side empty"></div>
+  </div>
 
-      <!-- COLONNE CENTRALE -->
-      <div id="BlockBottom">
-        <div class="infos">
-          <div class="col">
-            <h2>A propos de nous</h2>
-            <ul>
-              <li><a href="Pages/Bio">Biographie du site</a></li>
-              <li><a href="Pages/Security">Paiements sécurisés</a></li>
-              <li><a href="">Support actif</a></li>
-            </ul>
-          </div>
+  <script>
+    document.getElementById("a").addEventListener("click", async () => {
+      document.getElementById("warn").style.display = "none";
+      try { await firebase.auth().signOut(); window.location.reload(); } catch(e) {}
+    });
+    document.getElementById("b").addEventListener("click", () => {
+      document.getElementById("warn").style.display = "none";
+    });
 
-          <div class="col">
-            <h2>Mentions légales</h2>
-            <ul>
-              <li><a href="Legal/CGU">Conditions d'utilisations</a></li>
-              <li><a href="Legal/PCF">Politique de confidentialité</a></li>
-            </ul>
-          </div>
+    const header = document.querySelector("header");
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("scrolled", window.scrollY > 50);
+    });
 
-          <div class="col">
-            <h2>Réseaux sociaux</h2>
-            <ul>
-              <li>
-                <a
-                  href="https://discord.gg/QQMRtfBXpq"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Discord</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://youtube.com/@bloxrbx00"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >YouTube</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.instagram.com/bloxrbx/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Instagram</a
-                >
-              </li>
-              <li>
-                <a
-                  href="https://www.tiktok.com/@bloxrbx.fr"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >TikTok</a
-                >
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+    // Fade in scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("show"); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll(".fade-in").forEach(el => observer.observe(el));
 
-      <!-- COLONNE DROITE VIDE -->
-      <div class="side empty"></div>
-    </div>
-    <script>
-      if ("scrollRestoration" in history) {
-        history.scrollRestoration = "manual";
-      }
+    // boutons notallowed
+    document.querySelectorAll(".notallowed").forEach(el => {
+      el.addEventListener("click", () => alert("Page indisponible pour le moment. Le site est encore en cours de développement."));
+    });
+  </script>
 
-      window.addEventListener("load", () => {
-        window.scrollTo(0, 0);
-      });
-
-      document.getElementById("a").addEventListener("click", async () => {
-        const frame = document.getElementById("warn");
-        frame.style.display = "none";
-
-        try {
-          await firebase.auth().signOut(); // 🔴 LE PLUS IMPORTANT
-          window.location.reload();
-        } catch (err) {
-          console.error("Erreur déconnexion :", err);
-        }
-      });
-
-      document.getElementById("b").addEventListener("click", () => {
-        const frame = document.getElementById("warn");
-        frame.style.display = "none";
-      });
-
-      const header = document.querySelector("header");
-
-      window.addEventListener("scroll", () => {
-        if (window.scrollY > 50) {
-          header.classList.add("scrolled");
-        } else {
-          header.classList.remove("scrolled");
-        }
-      });
-      document.getElementById("signup-image").addEventListener("click", () => {
-        document.getElementById("signupcontainer").scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      });
-      document.getElementById("pièce-image").addEventListener("click", () => {
-        document.getElementById("offerscontainer").scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      });
-      document.getElementById("carte-image").addEventListener("click", () => {
-        document.getElementById("Retraitcontainer").scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      });
-      document.getElementById("nextbutton").addEventListener("click", () => {
-        document.querySelector(".hero").scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      });
-      const notallowed = document.querySelectorAll(".notallowed");
-      notallowed.forEach((element) => {
-        element.addEventListener("click", () => {
-          alert(
-            "Page indisponible pour le moment. Le site WEB est encore en cours de développement. Merci pour votre compréhension !",
-          );
-        });
-      });
-    </script>
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
-      defer
-    ></script>
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
-      defer
-    ></script>
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"
-      defer
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
-      defer
-    ></script>
-    <script src="JS/Animation.js" defer></script>
-    <script src="JS/Server.js" defer></script>
-  </body>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js" defer></script>
+  <script src="JS/Animation.js" defer></script>
+  <script src="JS/Server.js" defer></script>
+</body>
 </html>
