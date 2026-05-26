@@ -1195,7 +1195,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     if (cooldown && Date.now() - cooldown < 60_000) {
       return res.status(429).json({
         success: false,
-        error: `Attends ${remaining}s avant un autre retrait`,
+        error: `Attendez ${remaining}s avant un nouveau retrait`,
       });
     }
 
@@ -1212,7 +1212,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     const num = Number(amount);
 
     if (isNaN(num)) {
-      throw new Error("Amount invalide");
+      throw new Error("Montant invalide");
     }
 
     const Price = Math.round(num / 0.7);
@@ -1243,6 +1243,8 @@ app.post("/api/payServer", authenticate, async (req, res) => {
     const job_id = crypto.randomUUID();
 
     jobs[job_id] = {
+      user: req.user.uid,
+      montant: Price,
       status: "pending",
       error: null,
       updatedAt: Date.now(),
@@ -1313,7 +1315,7 @@ app.post("/api/payServer", authenticate, async (req, res) => {
   }
 });
 
-app.post("/callback", (req, res) => {
+app.post("/callback", async (req, res) => {
   try {
     let raw = req.rawBody;
 
@@ -1401,6 +1403,54 @@ app.post("/callback", (req, res) => {
     jobs[job_id].status = status;
     if (error) jobs[job_id].error = error;
 
+    if (status === "success") {
+      const snap = await db.ref("users/" + jobs[job_id].user).get();
+
+      const userData = snap.val() || {};
+
+      const username = userData.username || "Unknown";
+
+      const RobloxName = userData.RobloxName || "Unknown";
+
+      let avatarUrl = null;
+
+      try {
+        avatarUrl = await getRobloxAvatar(RobloxName);
+      } catch (e) {
+        console.log("Avatar fetch failed:", e);
+      }
+
+      await sendWebhook({
+        embeds: [
+          {
+            title: `Retrait effectué`,
+
+            description: `**${username}** a retiré **${jobs[job_id].montant} R$**.`,
+
+            color: 0x00ff99,
+
+            thumbnail: avatarUrl ? { url: avatarUrl } : undefined,
+
+            fields: [
+              {
+                name: "Job ID",
+                value: String(job_id),
+                inline: true,
+              },
+
+              {
+                name: "Status",
+                value: status,
+                inline: true,
+              },
+            ],
+
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      });
+    }
+
     console.log(`✅ Job ${job_id} => ${status}`);
 
     return res.sendStatus(200);
@@ -1460,7 +1510,9 @@ app.post("/api/getBalance", authenticate, async (req, res) => {
 
     const montantNum = Number(Montant);
     if (isNaN(montantNum) || montantNum < 25 || montantNum > 375)
-      return res.status(400).json({ error: "Le montant doit être compris entre 25 et 375" });
+      return res
+        .status(400)
+        .json({ error: "Le montant doit être compris entre 25 et 375" });
 
     const uid = req.user.uid;
     const snap = await db.ref("users/" + uid).get();
@@ -1719,12 +1771,19 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
 
 app.post("/update-profile", authenticate, async (req, res) => {
   try {
-    const { username, robloxName, newPassword, oldUsername, oldPassword } = req.body;
+    const { username, robloxName, newPassword, oldUsername, oldPassword } =
+      req.body;
     const uid = req.user.uid;
     const COOLDOWN = 5 * 60 * 1000;
 
     // 1. Validation des champs
-    if (!username || !robloxName || !newPassword || !oldUsername || !oldPassword)
+    if (
+      !username ||
+      !robloxName ||
+      !newPassword ||
+      !oldUsername ||
+      !oldPassword
+    )
       return res.status(400).json({ error: "Missing fields" });
 
     // 2. Récupérer l'utilisateur (une seule fois)
@@ -1759,7 +1818,7 @@ app.post("/update-profile", authenticate, async (req, res) => {
           password: oldPassword,
           returnSecureToken: false,
         }),
-      }
+      },
     );
 
     if (!response.ok)
@@ -1767,12 +1826,15 @@ app.post("/update-profile", authenticate, async (req, res) => {
 
     // 6. Vérifier l'unicité du nouveau username si changé
     if (username !== currentUser.username) {
-      const snapshot = await db.ref("users")
+      const snapshot = await db
+        .ref("users")
         .orderByChild("username")
         .equalTo(username)
         .get();
       if (snapshot.exists())
-        return res.status(409).json({ error: "Nom d'utilisateur déjà utilisé" });
+        return res
+          .status(409)
+          .json({ error: "Nom d'utilisateur déjà utilisé" });
     }
 
     // 7. Mettre à jour la DB
@@ -1789,7 +1851,6 @@ app.post("/update-profile", authenticate, async (req, res) => {
     const customToken = await admin.auth().createCustomToken(uid);
 
     return res.json({ success: true, customToken });
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
@@ -1895,9 +1956,11 @@ app.post("/admin/promo/create", requireAdmin, async (req, res) => {
   if (typeof amount !== "number" || amount <= 0 || amount > 10000)
     return res.status(400).json({ error: "Montant invalide" });
   await db.ref(`promocodes/${name}`).set({
-    amount, usesLeft: uses,
+    amount,
+    usesLeft: uses,
     expiration: new Date(expiration).toISOString(),
-    usedBy: {}, enabled: true,
+    usedBy: {},
+    enabled: true,
   });
   res.json({ success: true });
 });
@@ -1908,7 +1971,9 @@ app.post("/admin/promo/update", requireAdmin, async (req, res) => {
     return res.status(400).json({ error: "Nom invalide" });
 
   const data = {
-    enabled, amount, usesLeft,
+    enabled,
+    amount,
+    usesLeft,
     expiration: expiration ? new Date(expiration).toISOString() : null,
     updatedAt: Date.now(),
   };
@@ -1937,7 +2002,9 @@ app.post("/admin/multiplier", requireAdmin, async (req, res) => {
   if (typeof percent !== "number" || percent < 0 || percent > 500)
     return res.status(400).json({ error: "Valeur invalide (0-500%)" });
   const multiplier = Number((1 + percent / 100).toFixed(2));
-  await db.ref("settings").update({ gainMultiplier: multiplier, updatedAt: Date.now() });
+  await db
+    .ref("settings")
+    .update({ gainMultiplier: multiplier, updatedAt: Date.now() });
   res.json({ success: true, multiplier });
 });
 
