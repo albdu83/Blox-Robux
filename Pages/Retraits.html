@@ -40,6 +40,17 @@
           </ul>
         </div>
       </div>
+      <div class="back">
+        <div id="summary-frame" class="summary-box"></div>
+      </div>
+      <div class="back">
+        <div id="hacker-frame">
+          <pre id="hacker-text">
+            <span class="typing-cursor">▌</span>
+          </pre>
+          <span id="hacker-timer"> 0.0s </span>
+        </div>
+      </div>
       <div class="background" id="background">
         <div class="Interface" id="finalStep">
           <p class="explain" id="explain">
@@ -237,17 +248,28 @@
       <script src="../JS/Amount.js" defer></script>
       <script>
         document.addEventListener("DOMContentLoaded", () => {
-          const barres = document.getElementById("barres");
-          const logo2 = document.getElementById("logo3");
+          const barres = document.getElementById("logo3");
           const btns = document.getElementById("btns");
-          const soldebox = document.getElementById("solde-box");
-          if (window.innerWidth >= 1024) {
-            barres.style.display = "none";
-            logo2.style.position = "absolute";
-          } else {
-            soldebox.style.display = "none";
-            btns.style.display = "none";
+          const soldeBox = document.getElementById("solde-box");
+          const navBtns = document.getElementById("btns");
+
+          function handleResponsive() {
+            if (!barres || !navBtns || !soldeBox) return;
+
+            if (window.innerWidth >= 1024) {
+              barres.style.display = "none";
+              navBtns.style.display = "flex";
+              soldeBox.style.display = "flex";
+            } else {
+              barres.style.display = "block";
+              navBtns.style.display = "none";
+              soldeBox.style.display = "none";
+            }
           }
+
+          handleResponsive();
+          window.addEventListener("resize", handleResponsive);
+          
           const header = document.querySelector("header");
 
           window.addEventListener("scroll", () => {
