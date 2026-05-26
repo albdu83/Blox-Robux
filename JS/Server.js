@@ -1359,10 +1359,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("resize", updateInterfaceSize);
   updateInterfaceSize();
 
-  const btn = document.getElementById("buttonretrait");
+const btn = document.getElementById("buttonretrait");
   const finalStep = document.getElementById("finalStep");
   const select = document.getElementById("public-places");
   const frame = document.getElementById("hacker-frame");
+  const hackerText = document.getElementById("hacker-text");
 
   if (!btn || !select) return;
 
@@ -1370,6 +1371,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (btn.disabled) return;
     btn.disabled = true;
     finalStep.classList.remove("show");
+    hackerText.innerHTML = "";
     startHackerTimer();
     await hackerType("[SYSTEM] Initialisation de la demande...\n");
 
@@ -1378,7 +1380,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const rootID = rootIdMap[selectedGameID];
       if (!rootID) {
         btn.disabled = false;
-        hackerType(
+        await hackerType(
           "[SYSTEM] Erreur : ID de jeu introuvable, annulation de la demande...",
         );
         stopHackerTimer();
@@ -1395,9 +1397,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       }
 
+      await hackerType("[SYSTEM] Vérification de la place sélectionnée...\n");
+
       if (!selectedGameID) {
         btn.disabled = false;
-        hackerType(
+        await hackerType(
           "[SYSTEM] Erreur : aucune place sélectionnée, annulation de la demande...",
         );
         return hideHackerFrame(
@@ -1416,9 +1420,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const amountEl = document.getElementById("amount");
       const amount = parseFloat(amountEl.value);
 
+      await hackerType("[SYSTEM] Vérification du montant...\n");
+
       if (!amount) {
         btn.disabled = false;
-        hackerType(
+        await hackerType(
           "[SYSTEM] Erreur : montant invalide, annulation de la demande...",
         );
         return hideHackerFrame(
@@ -1437,6 +1443,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const token = await user.getIdToken();
 
+      await hackerType("[SYSTEM] Vérification du solde...\n");
+
       // 1️⃣ Vérifier le solde
       const balanceRes = await fetch(`${API_BASE_URL}/api/getBalance`, {
         method: "POST",
@@ -1447,10 +1455,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         body: JSON.stringify({ Montant: amount }),
       });
 
+      await hackerType("[SYSTEM] Récupération du solde...\n");
+
       if (!balanceRes.ok) {
         const errData = await balanceRes.json();
         btn.disabled = false;
-        hackerType(
+        await hackerType(
           `[SYSTEM] Erreur lors de la vérification du solde : ${errData.error || "Erreur inconnue"}, annulation de la demande...`,
         );
         return hideHackerFrame(
@@ -1466,7 +1476,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       }
 
-      // 2️⃣ Payer le serveur privé
+      await hackerType(
+        "[SYSTEM] Solde vérifié ✅\n" + "[SYSTEM] Envoie du paiement...\n",
+      );
 
       const payRes = await fetch(`${API_BASE_URL}/api/payServer`, {
         method: "POST",
@@ -1480,10 +1492,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           amount,
         }),
       });
+
+      await hackerType("[SYSTEM] Récupération de la réponse...\n");
+
       const payData = await payRes.json();
       if (!payData.success) {
         btn.disabled = false;
-        hackerType(
+        await hackerType(
           `[SYSTEM] Erreur lors du paiement : ${payData.error || "Erreur inconnue"}, annulation de la demande...`,
         );
         return hideHackerFrame(
@@ -1500,6 +1515,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       }
 
+      await hackerType(
+        "[SYSTEM] Paiement accepté ✅\n" +
+          "[SYSTEM] Paiement du serveur privé en cours...\n",
+      );
+
       // 3️⃣ Polling du job toutes les 3 secondes
       const job_id = payData.job_id;
 
@@ -1515,7 +1535,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const statusData = await statusRes.json();
 
         if (statusData.status === "success") {
-          hackerType("[SYSTEM] 🎉 Serveur privé créé avec succès !");
+          await hackerType("[SYSTEM] 🎉 Serveur privé créé avec succès !");
           clearInterval(pollJob);
           addTransaction(amount);
           btn.disabled = false;
@@ -1558,6 +1578,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       }, 3000);
     } catch (err) {
       console.error(err);
+      hackerType(
+        `[SYSTEM] Erreur inattendue : ${err.message || err}\n` +
+          "[SYSTEM] Aucune somme n'a été débitée de votre compte.\n" +
+          "Merci de réessayer plus tard ou de contacter le support si le problème persiste.",
+      );
       hideHackerFrame(
         5000,
         false,
