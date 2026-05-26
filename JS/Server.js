@@ -1292,15 +1292,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `${finalTime}s`;
   }
 
-  function hackerType(text, speed = 12) {
+    function hackerType(text, speed = 12) {
     return new Promise((resolve) => {
       const textBox = document.getElementById("hacker-text");
 
-      textBox.innerHTML = "";
-
       showHackerFrame();
 
+      /* ancien contenu */
+
+      const previous = textBox.innerHTML.replace(
+        /<span class="typing-cursor">█<\/span>/g,
+        "",
+      );
+
       let current = "";
+
       let index = 0;
 
       let last = performance.now();
@@ -1312,7 +1318,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           current += text[index];
 
           textBox.innerHTML =
-            colorize(current) + '<span class="typing-cursor">█</span>';
+            previous +
+            colorize(current) +
+            '<span class="typing-cursor">█</span>';
 
           textBox.parentElement.scrollTop = textBox.parentElement.scrollHeight;
 
@@ -1324,6 +1332,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (index < text.length) {
           requestAnimationFrame(loop);
         } else {
+          textBox.innerHTML =
+            previous +
+            colorize(current) +
+            '<span class="typing-cursor">█</span>';
+
           resolve();
         }
       }
