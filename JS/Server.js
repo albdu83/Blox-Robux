@@ -1254,6 +1254,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           template.classList.remove("active");
           setTimeout(() => {
             frame.style.display = "none";
+            template.style.display = "none";
           }, 300);
         });
     } else {
