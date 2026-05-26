@@ -1095,6 +1095,242 @@ document.addEventListener("DOMContentLoaded", async () => {
       logoimg.style.display = "none";
     }
   }
+  function showHackerFrame() {
+    const frame = document.getElementById("hacker-frame");
+    frame.classList.remove("fadeOut");
+    frame.style.display = "block"; // nécessaire une seule fois
+    // force reflow pour que la transition joue
+    void frame.offsetWidth;
+    frame.classList.add("visible");
+  }
+
+  function ShowFinalStep() {
+    const finalStep = document.getElementById("finalStep");
+    finalStep.classList.add("show");
+  }
+
+  function hideHackerFrame(
+    delay = 5000,
+    success,
+    title,
+    message,
+    duration,
+    logs,
+    issues,
+  ) {
+    const frame = document.getElementById("hacker-frame");
+    setTimeout(() => {
+      frame.classList.remove("visible");
+      frame.classList.add("fadeOut");
+
+      // on ne met plus display:none immédiatement
+      setTimeout(() => {
+        showSummaryFrame({ success, title, message, duration, logs, issues });
+        frame.classList.remove("fadeOut");
+      }, 400);
+    }, delay);
+  }
+
+  // Coloration syntaxique légère
+  function colorize(text) {
+    return text
+      .replace(/(\[SYSTEM\])/g, '<span class="keyword-system">$1</span>')
+      .replace(/(✅[^\n]*)/g, '<span class="keyword-success">$1</span>')
+      .replace(
+        /(❌[^\n]*|Erreur[^\n]*)/g,
+        '<span class="keyword-error">$1</span>',
+      )
+      .replace(/(\d+\s*R\$)/g, '<span class="keyword-info">$1</span>');
+  }
+
+  function showSummaryFrame({
+    success,
+    title,
+    message,
+    duration,
+    logs,
+    issues,
+  }) {
+    const frame = document.getElementById("summary-frame");
+    const template = document.getElementById("background");
+
+    frame.className = `summary-frame ${
+      success ? "summary-success" : "summary-error"
+    }`;
+
+    void frame.offsetWidth;
+
+    frame.style.display = "block";
+    frame.classList.add("visible");
+
+    frame.innerHTML = `
+  <div class="summary-top" style="margin-bottom: 0px;">
+
+    <div>
+      <div class="summary-title">
+        ${title}
+      </div>
+    </div>
+
+    <div class="summary-status">
+      ${success ? "SUCCESS" : "ERROR"}
+    </div>
+
+  </div>
+
+  <div class="summary-top">
+    <div class="summary-message">
+      ${message}
+    </div>
+  </div>
+
+  <div class="summary-grid">
+
+    <div class="summary-block">
+      <div class="summary-label">
+        Temps d'exécution
+      </div>
+
+      <div class="summary-value">
+        ${duration}
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <div class="summary-label">
+        Logs traités
+      </div>
+
+      <div class="summary-value">
+        ${logs}
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <div class="summary-label">
+        Analyse
+      </div>
+
+      <div class="summary-list">
+
+        ${issues
+          .map(
+            (issue) => `
+          <div class="summary-item">
+            <div class="summary-dot"></div>
+
+            <div>
+              ${issue}
+            </div>
+          </div>
+        `,
+          )
+          .join("")}
+      </div>
+    </div>
+  </div>    
+  <div class="summary-actions">
+
+      ${
+        success
+          ? `
+          <button class="summary-btn success-btn" id="closeSummaryBtn">
+            Fermer
+          </button>
+        `
+          : `
+          <button class="summary-btn error-btn" id="backSummaryBtn">
+            Retour
+          </button>
+        `
+      }
+    </div>
+  `;
+    if (success) {
+      document
+        .getElementById("closeSummaryBtn")
+        ?.addEventListener("click", () => {
+          frame.classList.remove("visible");
+          template.classList.remove("active");
+          setTimeout(() => {
+            frame.style.display = "none";
+          }, 300);
+        });
+    } else {
+      document
+        .getElementById("backSummaryBtn")
+        ?.addEventListener("click", () => {
+          frame.classList.remove("visible");
+          finalStep.classList.add("show");
+          setTimeout(() => {
+            frame.style.display = "none";
+          }, 300);
+        });
+    }
+  }
+
+  let hackerStartTime = 0;
+  let hackerTimerInterval = null;
+
+  function startHackerTimer() {
+    hackerStartTime = Date.now();
+
+    const timer = document.getElementById("hacker-timer");
+
+    hackerTimerInterval = setInterval(() => {
+      const elapsed = ((Date.now() - hackerStartTime) / 1000).toFixed(1);
+
+      timer.textContent = `${elapsed}s`;
+    }, 100);
+  }
+
+  function stopHackerTimer() {
+    clearInterval(hackerTimerInterval);
+
+    const finalTime = ((Date.now() - hackerStartTime) / 1000).toFixed(1);
+
+    return `${finalTime}s`;
+  }
+
+  function hackerType(text, speed = 12) {
+    return new Promise((resolve) => {
+      const textBox = document.getElementById("hacker-text");
+
+      textBox.innerHTML = "";
+
+      showHackerFrame();
+
+      let current = "";
+      let index = 0;
+
+      let last = performance.now();
+
+      function loop(now) {
+        const delta = now - last;
+
+        if (delta >= speed) {
+          current += text[index];
+
+          textBox.innerHTML =
+            colorize(current) + '<span class="typing-cursor">█</span>';
+
+          textBox.parentElement.scrollTop = textBox.parentElement.scrollHeight;
+
+          index++;
+
+          last = now;
+        }
+
+        if (index < text.length) {
+          requestAnimationFrame(loop);
+        } else {
+          resolve();
+        }
+      }
+
+      requestAnimationFrame(loop);
+    });
+  }
 
   async function addTransaction(amount) {
     try {
@@ -1124,25 +1360,76 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateInterfaceSize();
 
   const btn = document.getElementById("buttonretrait");
+  const finalStep = document.getElementById("finalStep");
   const select = document.getElementById("public-places");
+  const frame = document.getElementById("hacker-frame");
 
   if (!btn || !select) return;
 
   btn.addEventListener("click", async () => {
     if (btn.disabled) return;
     btn.disabled = true;
+    finalStep.classList.remove("show");
+    startHackerTimer();
+    await hackerType("[SYSTEM] Initialisation de la demande...\n");
+
     try {
       const selectedGameID = select.value;
       const rootID = rootIdMap[selectedGameID];
-      if (!rootID) return alert("Place introuvable !");
+      if (!rootID) {
+        btn.disabled = false;
+        hackerType(
+          "[SYSTEM] Erreur : ID de jeu introuvable, annulation de la demande...",
+        );
+        stopHackerTimer();
+        return hideHackerFrame(
+          5000,
+          false,
+          "ID de jeu introuvable.",
+          "Erreur : ID de jeu introuvable. Veuillez réessayer.",
+          stopHackerTimer(),
+          [
+            `[SYSTEM] Erreur : ID de jeu introuvable, annulation de la demande...`,
+          ],
+          ["ID de jeu introuvable"],
+        );
+      }
 
-      if (!selectedGameID) return alert("Sélectionne un jeu");
+      if (!selectedGameID) {
+        btn.disabled = false;
+        hackerType(
+          "[SYSTEM] Erreur : aucune place sélectionnée, annulation de la demande...",
+        );
+        return hideHackerFrame(
+          5000,
+          false,
+          "Aucune place sélectionnée.",
+          "Erreur : aucune place sélectionnée. Veuillez réessayer.",
+          stopHackerTimer(),
+          [
+            `[SYSTEM] Erreur : aucune place sélectionnée, annulation de la demande...`,
+          ],
+          ["Aucune place sélectionnée"],
+        );
+      }
 
       const amountEl = document.getElementById("amount");
       const amount = parseFloat(amountEl.value);
 
       if (!amount) {
-        return alert("Utilisateur ou montant invalide");
+        btn.disabled = false;
+        hackerType(
+          "[SYSTEM] Erreur : montant invalide, annulation de la demande...",
+        );
+        return hideHackerFrame(
+          5000,
+          false,
+          "Montant invalide.",
+          "Erreur : montant invalide. Veuillez réessayer.",
+          stopHackerTimer(),
+          [`[SYSTEM] Erreur : montant invalide, annulation de la demande...`],
+          ["Montant invalide"],
+        );
       }
 
       const user = firebase.auth().currentUser; // ← utilisateur déjà connu
@@ -1162,8 +1449,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (!balanceRes.ok) {
         const errData = await balanceRes.json();
-        return alert(
-          errData.error || "Erreur lors de la récupération du solde",
+        btn.disabled = false;
+        hackerType(
+          `[SYSTEM] Erreur lors de la vérification du solde : ${errData.error || "Erreur inconnue"}, annulation de la demande...`,
+        );
+        return hideHackerFrame(
+          5000,
+          false,
+          "Echec lors de la vérification du solde.",
+          "Erreur lors de la vérification du solde. Veuillez réessayer plus tard.",
+          stopHackerTimer(),
+          [
+            `[SYSTEM] Erreur lors de la vérification du solde : ${errData.error || "Erreur inconnue"}, annulation de la demande...`,
+          ],
+          ["Erreur lors de la vérification du solde"],
         );
       }
 
@@ -1182,10 +1481,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         }),
       });
       const payData = await payRes.json();
-      if (!payData.success)
-        return alert(payData.error || "❌ Erreur lors du lancement du job");
-
-      alert("✅ Job lancé, le serveur privé sera créé sous peu !");
+      if (!payData.success) {
+        btn.disabled = false;
+        hackerType(
+          `[SYSTEM] Erreur lors du paiement : ${payData.error || "Erreur inconnue"}, annulation de la demande...`,
+        );
+        return hideHackerFrame(
+          5000,
+          false,
+          "Erreur de paiement.",
+          payData.error ||
+            "Erreur lors du paiement. Veuillez réessayer plus tard.",
+          stopHackerTimer(),
+          [
+            `[SYSTEM] Erreur lors du paiement : ${payData.error || "Erreur inconnue"}, annulation de la demande...`,
+          ],
+          ["Erreur lors du paiement"],
+        );
+      }
 
       // 3️⃣ Polling du job toutes les 3 secondes
       const job_id = payData.job_id;
@@ -1202,24 +1515,63 @@ document.addEventListener("DOMContentLoaded", async () => {
         const statusData = await statusRes.json();
 
         if (statusData.status === "success") {
-          alert("🎉 Serveur privé créé avec succès !");
+          hackerType("[SYSTEM] 🎉 Serveur privé créé avec succès !");
           clearInterval(pollJob);
           addTransaction(amount);
           btn.disabled = false;
+          return setTimeout(() => {
+            hideHackerFrame(
+              5000,
+              true,
+              "Serveur privé créé avec succès !",
+              `Votre serveur privé a été créé avec succès !\nMontant débité : ${amount} R$\nMerci d'avoir utilisé notre service.`,
+              stopHackerTimer(),
+              ["[SYSTEM] 🎉 Serveur privé créé avec succès !"],
+              ["Serveur privé créé avec succès !"],
+            );
+          }, 2000);
         } else if (statusData.status === "error") {
-          alert(
-            `❌ Erreur lors de la création du serveur : ${statusData.error}`,
-          );
           clearInterval(pollJob);
-          btn.disabled = false;
+
+          setTimeout(async () => {
+            await hackerType(
+              `[SYSTEM] Erreur lors de la création du serveur privé : ${statusData.error}\n` +
+                "[SYSTEM] Aucune somme n'a été débitée de votre compte.\n" +
+                "Merci de réessayer plus tard ou de contacter le support si le problème persiste.",
+            );
+
+            hideHackerFrame(
+              5000,
+              false,
+              "Erreur lors de la création du serveur privé.",
+              `${statusData.error || "Erreur lors de la création du serveur privé. Veuillez réessayer plus tard."} Si le problème persiste, contactez le support.`,
+              stopHackerTimer(),
+              [
+                `[SYSTEM] Erreur lors de la création du serveur privé : ${statusData.error}`,
+              ],
+              ["Erreur lors de la création du serveur privé"],
+            );
+
+            btn.disabled = false;
+          }, 400);
         }
       }, 3000);
     } catch (err) {
       console.error(err);
-      alert("Erreur inattendue");
+      hideHackerFrame(
+        5000,
+        false,
+        "Erreur du processus de payement du serveur privé.",
+        err ||
+          "Erreur lors de la création du serveur privé. Veuillez réessayer plus tard.",
+        stopHackerTimer(),
+        [`[SYSTEM] Erreur du processus de payement du serveur privé : ${err}`],
+        ["Erreur lors de la création du serveur privé"],
+      );
       btn.disabled = false; // ← et en cas d'erreur avant le polling
     }
   });
+
   async function checkAndFixRobloxName(user) {
     if (!user) return;
 
