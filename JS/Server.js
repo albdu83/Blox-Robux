@@ -1537,57 +1537,75 @@ const btn = document.getElementById("buttonretrait");
       // 3️⃣ Polling du job toutes les 3 secondes
       const job_id = payData.job_id;
 
+      let isFinished = false;
+
       const pollJob = setInterval(async () => {
-        const statusRes = await fetch(`${API_BASE_URL}/api/jobStatus`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ job_id }),
-        });
-        const statusData = await statusRes.json();
+        // Empêche plusieurs traitements
+        if (isFinished) return;
 
-        if (statusData.status === "success") {
-          await hackerType("[SYSTEM] 🎉 Serveur privé créé avec succès !");
-          clearInterval(pollJob);
-          addTransaction(amount);
-          btn.disabled = false;
-          return setTimeout(() => {
-            hideHackerFrame(
-              5000,
-              true,
-              "Serveur privé créé avec succès !",
-              `Votre serveur privé a été créé avec succès !\nMontant débité : ${amount} R$\nMerci d'avoir utilisé notre service.`,
-              stopHackerTimer(),
-              ["[SYSTEM] 🎉 Serveur privé créé avec succès !"],
-              ["Serveur privé créé avec succès !"],
-            );
-          }, 2000);
-        } else if (statusData.status === "error") {
-          clearInterval(pollJob);
+        try {
+          const statusRes = await fetch(`${API_BASE_URL}/api/jobStatus`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ job_id }),
+          });
 
-          setTimeout(async () => {
-            await hackerType(
-              `[SYSTEM] Erreur lors de la création du serveur privé : ${statusData.error}\n` +
-                "[SYSTEM] Aucune somme n'a été débitée de votre compte.\n" +
-                "Merci de réessayer plus tard ou de contacter le support si le problème persiste.",
-            );
+          const statusData = await statusRes.json();
 
-            hideHackerFrame(
-              5000,
-              false,
-              "Erreur lors de la création du serveur privé.",
-              `${statusData.error || "Erreur lors de la création du serveur privé. Veuillez réessayer plus tard."} Si le problème persiste, contactez le support.`,
-              stopHackerTimer(),
-              [
-                `[SYSTEM] Erreur lors de la création du serveur privé : ${statusData.error}`,
-              ],
-              ["Erreur lors de la création du serveur privé"],
-            );
+          if (statusData.status === "success") {
+            isFinished = true; // verrou immédiat
+            clearInterval(pollJob);
+
+            await hackerType("[SYSTEM] 🎉 Serveur privé créé avec succès !");
+
+            addTransaction(amount);
 
             btn.disabled = false;
-          }, 400);
+
+            return setTimeout(() => {
+              hideHackerFrame(
+                5000,
+                true,
+                "Serveur privé créé avec succès !",
+                `Votre serveur privé a été créé avec succès !\nMontant débité : ${amount} R$\nMerci d'avoir utilisé notre service.`,
+                stopHackerTimer(),
+                ["[SYSTEM] 🎉 Serveur privé créé avec succès !"],
+                ["Serveur privé créé avec succès !"],
+              );
+            }, 2000);
+          }
+
+          if (statusData.status === "error") {
+            isFinished = true; // verrou immédiat
+            clearInterval(pollJob);
+
+            setTimeout(async () => {
+              await hackerType(
+                `[SYSTEM] Erreur lors de la création du serveur privé : ${statusData.error}\n` +
+                  "[SYSTEM] Aucune somme n'a été débitée de votre compte.\n" +
+                  "Merci de réessayer plus tard ou de contacter le support si le problème persiste.",
+              );
+
+              hideHackerFrame(
+                5000,
+                false,
+                "Erreur lors de la création du serveur privé.",
+                `${statusData.error || "Erreur lors de la création du serveur privé. Veuillez réessayer plus tard."} Si le problème persiste, contactez le support.`,
+                stopHackerTimer(),
+                [
+                  `[SYSTEM] Erreur lors de la création du serveur privé : ${statusData.error}`,
+                ],
+                ["Erreur lors de la création du serveur privé"],
+              );
+
+              btn.disabled = false;
+            }, 400);
+          }
+        } catch (err) {
+          console.error(err);
         }
       }, 3000);
     } catch (err) {
