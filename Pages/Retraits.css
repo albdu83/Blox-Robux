@@ -1087,22 +1087,26 @@ button:hover {
 }
 
 /* scrollbar moderne */
+#hacker-frame::-webkit-scrollbar,
 .summary-frame::-webkit-scrollbar,
 .tutocontainer::-webkit-scrollbar {
   width: 8px;
 }
 
+#hacker-frame::-webkit-scrollbar-track,
 .summary-frame::-webkit-scrollbar-track,
 .tutocontainer::-webkit-scrollbar-track {
   background: transparent;
 }
 
+#hacker-frame::-webkit-scrollbar-thumb,
 .summary-frame::-webkit-scrollbar-thumb,
 .tutocontainer::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.15);
   border-radius: 20px;
 }
 
+#hacker-frame::-webkit-scrollbar-thumb:hover,
 .summary-frame::-webkit-scrollbar-thumb:hover,
 .tutocontainer::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.25);
