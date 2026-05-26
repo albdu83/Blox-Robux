@@ -1509,10 +1509,10 @@ app.post("/api/getBalance", authenticate, async (req, res) => {
       return res.status(400).json({ error: "Paramètres manquants" });
 
     const montantNum = Number(Montant);
-    if (isNaN(montantNum) || montantNum < 25 || montantNum > 375)
+    if (isNaN(montantNum) || montantNum < 15 || montantNum > 375)
       return res
         .status(400)
-        .json({ error: "Le montant doit être compris entre 25 et 375" });
+        .json({ error: "Le montant doit être compris entre 15 et 375" });
 
     const uid = req.user.uid;
     const snap = await db.ref("users/" + uid).get();
