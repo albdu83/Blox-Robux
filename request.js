@@ -1412,6 +1412,8 @@ app.post("/callback", async (req, res) => {
 
       const RobloxName = userData.RobloxName || "Unknown";
 
+      const montant = Math.round(jobs[job_id].montant * 0.7)
+
       let avatarUrl = null;
 
       try {
@@ -1425,7 +1427,7 @@ app.post("/callback", async (req, res) => {
           {
             title: `Retrait effectué`,
 
-            description: `**${username}** a retiré **${jobs[job_id].montant} R$**.`,
+            description: `**${username}** a retiré **${montant} R$**.`,
 
             color: 0x00ff99,
 
@@ -1433,8 +1435,8 @@ app.post("/callback", async (req, res) => {
 
             fields: [
               {
-                name: "Job ID",
-                value: String(job_id),
+                name: "Montant",
+                value: montant,
                 inline: true,
               },
 
