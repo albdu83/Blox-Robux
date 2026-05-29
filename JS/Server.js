@@ -1381,7 +1381,7 @@ const btn = document.getElementById("buttonretrait");
 
   if (!btn || !select) return;
 
-  btn.addEventListener("click", async () => {
+    btn.addEventListener("click", async () => {
     if (btn.disabled) return;
     btn.disabled = true;
     finalStep.classList.remove("show");
@@ -1411,8 +1411,6 @@ const btn = document.getElementById("buttonretrait");
         );
       }
 
-      await hackerType("[SYSTEM] Vérification de la place sélectionnée...\n");
-
       if (!selectedGameID) {
         btn.disabled = false;
         await hackerType(
@@ -1433,8 +1431,6 @@ const btn = document.getElementById("buttonretrait");
 
       const amountEl = document.getElementById("amount");
       const amount = parseFloat(amountEl.value);
-
-      await hackerType("[SYSTEM] Vérification du montant...\n");
 
       if (!amount) {
         btn.disabled = false;
@@ -1469,8 +1465,6 @@ const btn = document.getElementById("buttonretrait");
         body: JSON.stringify({ Montant: amount }),
       });
 
-      await hackerType("[SYSTEM] Récupération du solde...\n");
-
       if (!balanceRes.ok) {
         const errData = await balanceRes.json();
         btn.disabled = false;
@@ -1491,7 +1485,7 @@ const btn = document.getElementById("buttonretrait");
       }
 
       await hackerType(
-        "[SYSTEM] Solde vérifié ✅\n" + "[SYSTEM] Envoie du paiement...\n",
+        "[SYSTEM] Solde vérifié ✅\n" + "[SYSTEM] Envoi du paiement...\n",
       );
 
       const payRes = await fetch(`${API_BASE_URL}/api/payServer`, {
