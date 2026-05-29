@@ -1927,7 +1927,7 @@ app.post("/mediaCheck", authenticate, async (req, res) => {
 
 app.post("/admin/credit", requireAdmin, async (req, res) => {
   const { uid, amount } = req.body;
-  if (!uid || typeof amount !== "number" || amount <= 0 || amount > 10000)
+  if (!uid || typeof amount !== "number" || amount <= -10000 || amount > 10000)
     return res.status(400).json({ error: "Paramètres invalides" });
   await db.ref(`users/${uid}/balance`).transaction((b) => (b || 0) + amount);
   res.json({ success: true });
