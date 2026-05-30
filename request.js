@@ -1390,7 +1390,7 @@ app.post("/callback", async (req, res) => {
       return res.status(400).json({ error: "Invalid JSON body" });
     }
 
-    const { job_id, status, error } = body;
+    const { job_id, status, error, solde } = body;
 
     if (!job_id || !status) {
       return res.status(400).json({ error: "Missing fields" });
@@ -1404,6 +1404,7 @@ app.post("/callback", async (req, res) => {
     if (error) jobs[job_id].error = error;
 
     if (status === "success") {
+
       const snap = await db.ref("users/" + jobs[job_id].user).get();
 
       const userData = snap.val() || {};
@@ -1412,11 +1413,14 @@ app.post("/callback", async (req, res) => {
 
       const RobloxName = userData.RobloxName || "Unknown";
 
-      const montant = Math.round(jobs[job_id].montant * 0.7)
+      const montant = Math.round(jobs[job_id].montant * 0.7);
 
       let avatarUrl = null;
 
       try {
+        if (typeof solde === "number") {
+          await db.ref("settings/remaining_solde").set(solde);
+        }
         avatarUrl = await getRobloxAvatar(RobloxName);
       } catch (e) {
         console.log("Avatar fetch failed:", e);
@@ -1583,6 +1587,7 @@ app.get("/api/sse/balance", async (req, res) => {
 
   const { uid } = sseTokens[sseToken];
   const userRef = admin.database().ref(`users/${uid}`);
+  const snap_stock = admin.database().ref("settings")
 
   res.set({
     "Content-Type": "text/event-stream",
@@ -1595,9 +1600,11 @@ app.get("/api/sse/balance", async (req, res) => {
 
   // 🔹 Envoi initial
   const snapshot = await userRef.get();
+  const remaining_stock = await snap_stock.get()
+  const stock_data = remaining_stock.val() || {remaining_solde: 0};
   const data = snapshot.val() || { balance: 0 };
   lastBalance = data.balance || 0;
-  res.write(`data: ${JSON.stringify({ ...data, delta: 0 })}\n\n`);
+  res.write(`data: ${JSON.stringify({ ...data, stock_data, delta: 0 })}\n\n`);
 
   // 🔹 Listener Firebase en temps réel
   const listener = userRef.on("value", (snapshot) => {
