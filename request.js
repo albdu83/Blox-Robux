@@ -1404,7 +1404,6 @@ app.post("/callback", async (req, res) => {
     if (error) jobs[job_id].error = error;
 
     if (status === "success") {
-
       const snap = await db.ref("users/" + jobs[job_id].user).get();
 
       const userData = snap.val() || {};
@@ -1606,7 +1605,7 @@ app.get("/api/sse/balance", async (req, res) => {
         ...userData,
         stock_data: stockData,
         delta,
-      })}\n\n`
+      })}\n\n`,
     );
   };
 
@@ -1749,7 +1748,12 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
   const uid = req.user.uid;
   const { code } = req.body;
 
-  if (!code || typeof code !== "string" || code.length > 32 || /[.#$\[\]]/.test(code)) {
+  if (
+    !code ||
+    typeof code !== "string" ||
+    code.length > 32 ||
+    /[.#$\[\]]/.test(code)
+  ) {
     return res.status(400).json({ error: "Code invalide" });
   }
 
@@ -1766,7 +1770,11 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
       if (promo.usedBy?.[uid]) return;
       if (promo.usesLeft !== undefined && promo.usesLeft <= 0) return;
 
-      if (typeof promo.amount !== "number" || promo.amount <= 0 || promo.amount > 10000) {
+      if (
+        typeof promo.amount !== "number" ||
+        promo.amount <= 0 ||
+        promo.amount > 10000
+      ) {
         return;
       }
 
@@ -1780,6 +1788,14 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
       }
 
       return promo;
+    });
+
+    console.log("Promo transaction:", {
+      code,
+      uid,
+      committed: result.committed,
+      reason,
+      promo: result.snapshot?.val(),
     });
 
     if (!result.committed || promoAmount === null) {
@@ -1982,7 +1998,12 @@ app.post("/admin/promote", requireAdmin, async (req, res) => {
 app.post("/admin/promo/create", requireAdmin, async (req, res) => {
   const { name, amount, uses, expiration } = req.body;
 
-  if (!name || typeof name !== "string" || name.length > 11 || /[.#$\[\]]/.test(name)) {
+  if (
+    !name ||
+    typeof name !== "string" ||
+    name.length > 11 ||
+    /[.#$\[\]]/.test(name)
+  ) {
     return res.status(400).json({ error: "Nom invalide" });
   }
 
