@@ -1553,7 +1553,7 @@ const btn = document.getElementById("buttonretrait");
             isFinished = true; // verrou immédiat
             clearInterval(pollJob);
 
-            await hackerType("[SYSTEM] 🎉 Serveur privé créé avec succès !");
+            await hackerType("[SYSTEM] 🎉 Payement effectué avec succès !");
 
             addTransaction(amount);
 
@@ -1566,8 +1566,8 @@ const btn = document.getElementById("buttonretrait");
                 "Serveur privé créé avec succès !",
                 `Votre serveur privé a été créé avec succès !\nMontant débité : ${amount} R$\nMerci d'avoir utilisé notre service.`,
                 stopHackerTimer(),
-                ["[SYSTEM] 🎉 Serveur privé créé avec succès !"],
-                ["Serveur privé créé avec succès !"],
+                ["[SYSTEM] 🎉 Payement effectué avec succès !"],
+                ["Payement effectué avec succès !"],
               );
             }, 2000);
           }
