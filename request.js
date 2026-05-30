@@ -431,23 +431,6 @@ if (!admin.apps.length) {
   });
 }
 
-async function resetAllBalances() {
-  const usersRef = admin.database().ref('users');
-  const snapshot = await usersRef.once('value');
-
-  const updates = {};
-
-  snapshot.forEach(userSnap => {
-    updates[`/${userSnap.key}/balance`] = 0;
-  });
-
-  await usersRef.update(updates);
-
-  console.log(`${Object.keys(updates).length} balances reset to 0`);
-}
-
-resetAllBalances().catch(console.error);
-
 const db = admin.database();
 
 app.get("/timewall", async (req, res) => {
