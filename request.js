@@ -1794,7 +1794,6 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
       code,
       uid,
       committed: result.committed,
-      reason,
       promo: result.snapshot?.val(),
     });
 
