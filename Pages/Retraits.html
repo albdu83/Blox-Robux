@@ -45,8 +45,7 @@
       </div>
       <div class="back">
         <div id="hacker-frame">
-          <pre id="hacker-text">
-          </pre>
+          <pre id="hacker-text"></pre>
           <span id="hacker-timer"> 0.0s </span>
         </div>
       </div>
@@ -220,6 +219,14 @@
 
           <div id="error" class="error" style="display: none"></div>
 
+                    <div class="stock-card">
+            <div class="stock-icon">R$</div>
+            <div class="stock-content">
+              <span>Stock restant</span>
+              <strong><span id="remainingStock">0</span> R$</strong>
+            </div>
+          </div>
+
           <h2>Historique des retraits</h2>
           <div class="template" id="transactions">
             aucun retrait effectué...
@@ -268,7 +275,7 @@
 
           handleResponsive();
           window.addEventListener("resize", handleResponsive);
-          
+
           const header = document.querySelector("header");
 
           window.addEventListener("scroll", () => {
