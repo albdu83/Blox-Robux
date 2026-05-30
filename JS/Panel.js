@@ -290,10 +290,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (
           !amount ||
           isNaN(amount) ||
-          Number(amount) <= 0 ||
+          Number(amount) <= -10000 ||
           Number(amount) > 10000
         )
-          return alert("Montant invalide (1-10000)");
+          return alert("Montant invalide (-10000/10000)");
         try {
           await adminAction("/admin/credit", { uid, amount: Number(amount) });
           alert("✅ Crédit ajouté");
