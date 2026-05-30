@@ -1765,25 +1765,11 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
   const userRef = db.ref(`users/${uid}`);
 
   try {
-    const rootSnap = await db.ref("promocodes").get();
-    console.log("PROMOCODES ROOT:", rootSnap.val());
-
-    const directSnap = await db.ref("promocodes/RETRAITLIVE").get();
-    console.log("DIRECT RETRAITLIVE:", directSnap.val());
-
-    const receivedSnap = await db.ref(`promocodes/${code}`).get();
-    console.log("RECEIVED CODE SNAP:", {
-      code,
-      path: `promocodes/${code}`,
-      value: receivedSnap.val(),
-    });
-
-    console.log("DATABASE URL:", admin.app().options.databaseURL);
 
     let promoAmount = null;
 
     const result = await promoRef.transaction((promo) => {
-      if (!promo) return;
+      if (promo === null) return promo;
       if (promo.enabled === false) return;
       if (promo.expiration && new Date(promo.expiration) < new Date()) return;
       if (promo.usedBy?.[uid]) return;
@@ -1807,14 +1793,6 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
       }
 
       return promo;
-    });
-
-    console.log("Promo transaction:", {
-      code,
-      uid,
-      committed: result.committed,
-      promoAmount,
-      promo: result.snapshot?.val(),
     });
 
     if (!result.committed || promoAmount === null) {
