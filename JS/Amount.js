@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closenotif = document.getElementById("closenotif");
   const closenotif2 = document.getElementById("closenotif2");
   const sousnotifbackground = document.getElementById("sous-notifbackground");
+  const remainingStockEl = document.getElementById("remainingStock");
 
   /* =====================================================
        3️⃣ ÉTAT LOCAL
@@ -191,11 +192,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       evtSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-
+        const data_stock = JSON.parse(event.data_stock);
         const oldBalance = state.balance;
         state.balance = data.balance || 0;
         state.transactions = data.transactions || [];
         render();
+
+        if (remainingStockEl) {
+          remainingStockEl.textContent = Number(data_stock.remaining_solde).toLocaleString("fr-FR");
+        }
 
         const delta = data.delta ?? state.balance - oldBalance;
 
@@ -232,7 +237,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ Montant: value })
+        body: JSON.stringify({ Montant: value }),
       });
 
       if (!balanceRes.ok) {
