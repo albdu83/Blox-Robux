@@ -1587,7 +1587,7 @@ app.get("/api/sse/balance", async (req, res) => {
 
   const { uid } = sseTokens[sseToken];
   const userRef = admin.database().ref(`users/${uid}`);
-  const snap_stock = admin.database().ref("settings")
+  const settingsRef = admin.database().ref("settings");
 
   res.set({
     "Content-Type": "text/event-stream",
@@ -1597,30 +1597,48 @@ app.get("/api/sse/balance", async (req, res) => {
   res.flushHeaders();
 
   let lastBalance = 0;
+  let userData = { balance: 0 };
+  let stockData = { remaining_solde: 0 };
 
-  // 🔹 Envoi initial
-  const snapshot = await userRef.get();
-  const remaining_stock = await snap_stock.get()
-  const stock_data = remaining_stock.val() || {remaining_solde: 0};
-  const data = snapshot.val() || { balance: 0 };
-  lastBalance = data.balance || 0;
-  res.write(`data: ${JSON.stringify({ ...data, stock_data, delta: 0 })}\n\n`);
+  const sendSse = (delta = 0) => {
+    res.write(
+      `data: ${JSON.stringify({
+        ...userData,
+        stock_data: stockData,
+        delta,
+      })}\n\n`
+    );
+  };
 
-  // 🔹 Listener Firebase en temps réel
-  const listener = userRef.on("value", (snapshot) => {
-    const data = snapshot.val() || { balance: 0 };
-    const balance = data.balance || 0;
+  const userSnapshot = await userRef.get();
+  userData = userSnapshot.val() || { balance: 0 };
+  lastBalance = userData.balance || 0;
+
+  const settingsSnapshot = await settingsRef.get();
+  stockData = settingsSnapshot.val() || { remaining_solde: 0 };
+
+  sendSse(0);
+
+  const userListener = userRef.on("value", (snapshot) => {
+    userData = snapshot.val() || { balance: 0 };
+
+    const balance = userData.balance || 0;
     const delta = balance - lastBalance;
     lastBalance = balance;
-    res.write(`data: ${JSON.stringify({ ...data, delta })}\n\n`);
+
+    sendSse(delta);
   });
 
-  // 🔹 Keep-alive ping toutes les 20s
+  const settingsListener = settingsRef.on("value", (snapshot) => {
+    stockData = snapshot.val() || { remaining_solde: 0 };
+    sendSse(0);
+  });
+
   const keepAlive = setInterval(() => res.write(": ping\n\n"), 20000);
 
-  // 🔹 Cleanup si client ferme la connexion
   req.on("close", () => {
-    userRef.off("value", listener);
+    userRef.off("value", userListener);
+    settingsRef.off("value", settingsListener);
     clearInterval(keepAlive);
     res.end();
   });
