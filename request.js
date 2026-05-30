@@ -1748,6 +1748,10 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
   const uid = req.user.uid;
   const { code } = req.body;
 
+  if (typeof code === "string") {
+    code = code.trim().toUpperCase();
+  }
+
   if (
     !code ||
     typeof code !== "string" ||
@@ -1790,12 +1794,20 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
       return promo;
     });
 
-    console.log("Promo transaction:", {
+    const rootSnap = await db.ref("promocodes").get();
+    console.log("PROMOCODES ROOT:", rootSnap.val());
+
+    const directSnap = await db.ref("promocodes/RETRAITLIVE").get();
+    console.log("DIRECT RETRAITLIVE:", directSnap.val());
+
+    const receivedSnap = await db.ref(`promocodes/${code}`).get();
+    console.log("RECEIVED CODE SNAP:", {
       code,
-      uid,
-      committed: result.committed,
-      promo: result.snapshot?.val(),
+      path: `promocodes/${code}`,
+      value: receivedSnap.val(),
     });
+
+    console.log("DATABASE URL:", admin.app().options.databaseURL);
 
     if (!result.committed || promoAmount === null) {
       return res.status(400).json({ error: "Code invalide ou déjà utilisé" });
