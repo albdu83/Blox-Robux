@@ -81,9 +81,15 @@ body > * {
   gap: 4px;
 }
 
-.stock-content span {
+.stock-content h4 {
   color: #6b7280;
   font-size: 14px;
+  font-weight: 600;
+}
+
+.stock-content span {
+  color: #26fab3;
+  font-size: 23px;
   font-weight: 600;
 }
 
