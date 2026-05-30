@@ -1749,47 +1749,50 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
   const uid = req.user.uid;
   const { code } = req.body;
 
-  if (!code || /[.#$\[\]]/.test(code))
+  if (!code || typeof code !== "string" || code.length > 32 || /[.#$\[\]]/.test(code)) {
     return res.status(400).json({ error: "Code invalide" });
+  }
 
   const promoRef = admin.database().ref(`promocodes/${code}`);
   const userRef = admin.database().ref(`users/${uid}`);
 
   try {
-    // Transaction atomique — lit et écrit en une seule opération
-    await promoRef.transaction((promo) => {
-      if (!promo) return; // code inexistant → annule
+    let promoAmount = null;
+
+    const result = await promoRef.transaction((promo) => {
+      if (!promo) return;
+      if (promo.enabled === false) return;
       if (promo.expiration && new Date(promo.expiration) < new Date()) return;
-      if (promo.usedBy?.[uid]) return; // déjà utilisé
+      if (promo.usedBy?.[uid]) return;
       if (promo.usesLeft !== undefined && promo.usesLeft <= 0) return;
-      // Applique les modifications atomiquement
+
+      if (typeof promo.amount !== "number" || promo.amount <= 0 || promo.amount > 10000) {
+        return;
+      }
+
+      promoAmount = promo.amount;
+
       if (!promo.usedBy) promo.usedBy = {};
       promo.usedBy[uid] = true;
-      if (promo.usesLeft !== undefined) promo.usesLeft--;
 
-      return promo; // valide la transaction
+      if (promo.usesLeft !== undefined) {
+        promo.usesLeft--;
+      }
+
+      return promo;
     });
 
-    // Récupère le montant et met à jour le solde
-    const promoSnap = await promoRef.get();
-    const promo = promoSnap.val();
-    if (!promo?.usedBy?.[uid])
+    if (!result.committed || promoAmount === null) {
       return res.status(400).json({ error: "Code invalide ou déjà utilisé" });
-
-    // ✅ Côté serveur dans /api/apply-promo
-    const amount = promo.amount;
-
-    if (typeof amount !== "number" || amount <= 0 || amount > 10000) {
-      return res.status(400).json({ error: "Montant du code invalide" });
     }
 
     await userRef.transaction((user) => {
-      if (!user) return;
-      user.balance = (user.balance || 0) + promo.amount;
+      if (!user) user = {};
+      user.balance = (user.balance || 0) + promoAmount;
       return user;
     });
 
-    res.json({ success: true, amount: promo.amount });
+    res.json({ success: true, amount: promoAmount });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
@@ -1978,17 +1981,32 @@ app.post("/admin/promote", requireAdmin, async (req, res) => {
 
 app.post("/admin/promo/create", requireAdmin, async (req, res) => {
   const { name, amount, uses, expiration } = req.body;
-  if (!name || name.length > 11 || /[.#$\[\]]/.test(name))
+
+  if (!name || typeof name !== "string" || name.length > 11 || /[.#$\[\]]/.test(name)) {
     return res.status(400).json({ error: "Nom invalide" });
-  if (typeof amount !== "number" || amount <= 0 || amount > 10000)
+  }
+
+  if (typeof amount !== "number" || amount <= 0 || amount > 10000) {
     return res.status(400).json({ error: "Montant invalide" });
+  }
+
+  if (uses !== undefined && (!Number.isInteger(uses) || uses <= 0)) {
+    return res.status(400).json({ error: "Nombre d'utilisations invalide" });
+  }
+
+  const expirationDate = new Date(expiration);
+  if (!expiration || Number.isNaN(expirationDate.getTime())) {
+    return res.status(400).json({ error: "Expiration invalide" });
+  }
+
   await db.ref(`promocodes/${name}`).set({
     amount,
     usesLeft: uses,
-    expiration: new Date(expiration).toISOString(),
+    expiration: expirationDate.toISOString(),
     usedBy: {},
     enabled: true,
   });
+
   res.json({ success: true });
 });
 
