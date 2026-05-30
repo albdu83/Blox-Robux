@@ -1746,7 +1746,7 @@ app.post("/setSseCookie", async (req, res) => {
 
 app.post("/api/apply-promo", authenticate, async (req, res) => {
   const uid = req.user.uid;
-  const { code } = req.body;
+  let { code } = req.body;
 
   if (typeof code === "string") {
     code = code.trim().toUpperCase();
@@ -1761,10 +1761,25 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
     return res.status(400).json({ error: "Code invalide" });
   }
 
-  const promoRef = admin.database().ref(`promocodes/${code}`);
-  const userRef = admin.database().ref(`users/${uid}`);
+  const promoRef = db.ref(`promocodes/${code}`);
+  const userRef = db.ref(`users/${uid}`);
 
   try {
+    const rootSnap = await db.ref("promocodes").get();
+    console.log("PROMOCODES ROOT:", rootSnap.val());
+
+    const directSnap = await db.ref("promocodes/RETRAITLIVE").get();
+    console.log("DIRECT RETRAITLIVE:", directSnap.val());
+
+    const receivedSnap = await db.ref(`promocodes/${code}`).get();
+    console.log("RECEIVED CODE SNAP:", {
+      code,
+      path: `promocodes/${code}`,
+      value: receivedSnap.val(),
+    });
+
+    console.log("DATABASE URL:", admin.app().options.databaseURL);
+
     let promoAmount = null;
 
     const result = await promoRef.transaction((promo) => {
@@ -1794,20 +1809,13 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
       return promo;
     });
 
-    const rootSnap = await db.ref("promocodes").get();
-    console.log("PROMOCODES ROOT:", rootSnap.val());
-
-    const directSnap = await db.ref("promocodes/RETRAITLIVE").get();
-    console.log("DIRECT RETRAITLIVE:", directSnap.val());
-
-    const receivedSnap = await db.ref(`promocodes/${code}`).get();
-    console.log("RECEIVED CODE SNAP:", {
+    console.log("Promo transaction:", {
       code,
-      path: `promocodes/${code}`,
-      value: receivedSnap.val(),
+      uid,
+      committed: result.committed,
+      promoAmount,
+      promo: result.snapshot?.val(),
     });
-
-    console.log("DATABASE URL:", admin.app().options.databaseURL);
 
     if (!result.committed || promoAmount === null) {
       return res.status(400).json({ error: "Code invalide ou déjà utilisé" });
