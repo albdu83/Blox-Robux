@@ -808,7 +808,7 @@ app.post("/signup", verifyCsrf, async (req, res) => {
     return res.status(201).json({ success: true, uid, customToken });
   } catch (err) {
     // Gestion des doublons / erreurs Firebase
-    if (err.code === "auth/email-already-in-use") {
+    if (err.code === "auth/email-already-exists") {
       return res.status(409).json({ error: "Nom d'utilisateur déjà pris" });
     }
     console.error(err);
