@@ -358,6 +358,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       let currentUrl = null;
       let currentMode = null;
+      const loadedTabs = new Set();
 
       /* =========================
    IFRAME FACTORY
@@ -572,9 +573,15 @@ document.addEventListener("DOMContentLoaded", async () => {
    DESKTOP LOADER
 ========================= */
       function loadDesktopOffers() {
-        loadCPX(document.getElementById("offerwall1"));
-        loadTimeWall(document.getElementById("timewall-container"));
-        loadTheoremReach(document.getElementById("theoremecontainer"));
+        loadTabOffer("cpx");
+
+        // Charge les autres à la demande au clic sur le tab
+        document.querySelectorAll(".tab-btn").forEach((tab) => {
+          tab.addEventListener("click", () => {
+            loadTabOffer(tab.dataset.tab);
+          });
+        });
+
         const deskmedia_grid = document.getElementById("deskmedia-grid");
         if (deskmedia_grid) {
           const mediaClickHandler = handleImgClick(".Desk_media_img");
@@ -582,6 +589,31 @@ document.addEventListener("DOMContentLoaded", async () => {
           deskmedia_grid.removeEventListener("click", mediaClickHandler);
           deskmedia_grid.addEventListener("click", mediaClickHandler);
         }
+      }
+
+      async function loadTabOffer(tabName) {
+        if (loadedTabs.has(tabName)) return; // déjà chargé → ne recharge pas
+        loadedTabs.add(tabName);
+
+        if (tabName === "cpx") {
+          await loadCPX(document.getElementById("offerwall1"));
+        } else if (tabName === "timewall") {
+          await loadTimeWall(document.getElementById("timewall-container"));
+        } else if (tabName === "theoremreach") {
+          await loadTheoremReach(document.getElementById("theoremecontainer"));
+        }
+      }
+
+      function activateTab(tabName) {
+        tabs.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tab === tabName);
+        });
+        panels.forEach((panel) => {
+          panel.classList.toggle("active", panel.dataset.panel === tabName);
+        });
+
+        // ✅ Charge l'offre seulement quand on clique dessus
+        if (!isMobile()) loadTabOffer(tabName);
       }
 
       /* =========================
@@ -594,6 +626,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         currentMode = mobile;
 
         document.querySelectorAll("iframe").forEach((i) => i.remove());
+        loadedTabs.clear();
 
         if (mobile) {
           initMobileOffers();
