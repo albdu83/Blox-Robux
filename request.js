@@ -2061,6 +2061,46 @@ app.post("/admin/multiplier", requireAdmin, async (req, res) => {
   res.json({ success: true, multiplier });
 });
 
+app.post("/api/support/tickets", authenticate, async (req, res) => {
+  try {
+    const uid = req.user.uid;
+
+    const { type, message } = req.body;
+
+    if (!type || !message) {
+      return res.status(400).json({ error: "Champs manquants" });
+    }
+
+    const userSnap = await admin.database().ref(`users/${uid}`).get();
+    const userData = userSnap.val() || {};
+
+    const ticketRef = admin.database().ref("supportTickets").push();
+
+    const ticket = {
+      id: ticketRef.key,
+      uid,
+      username: userData.username || null,
+      robloxName: userData.robloxName || null,
+      type,
+      message,
+      status: "open",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      replies: {},
+    };
+
+    await ticketRef.set(ticket);
+
+    return res.json({
+      success: true,
+      ticketId: ticketRef.key,
+    });
+  } catch (err) {
+    console.error("Erreur création ticket:", err);
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
