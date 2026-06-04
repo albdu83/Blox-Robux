@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blox R$ - Support actif</title>
+    <link rel="stylesheet" href="Support.css" />
+    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon" />
+  </head>
+  <body>
+    <div id="transition" class="fade-transition active">
+      <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+      <div class="text" id="text-chargement">Chargement...</div>
+    </div>
+
+    <header class="header">
+      <a href="../" class="logo">
+        <img src="../img/logo.png" alt="Logo De Blox Robux" />
+      </a>
+      <div class="text">Blox R$</div>
+      <div class="logo2">
+        <img src="../img/Barres.png" alt="Barres" id="barres" />
+      </div>
+    </header>
+
+    <div class="header-shadow"></div>
+    <div class="navigation" id="navigation">
+      <div class="nav-panel" id="nav-panel">
+        <div class="logo2" id="logo2">
+          <img src="../img/Back.png" alt="Barres" id="barres2" />
+        </div>
+        <ul class="nave">
+          <li>
+            <a id="lien-profil" href="#">
+              <span>Aucun compte</span>
+              <img id="avatar-roblox" src="../img/default-avatar.png" />
+            </a>
+          </li>
+          <li><a id="btn-Retour" href="../">Retour</a></li>
+        </ul>
+        <div class="loadimg"></div>
+      </div>
+    </div>
+
+    <main>
+      <section class="support-hero">
+        <div class="hero-content">
+          <span class="hero-badge">Support en ligne</span>
+          <h1>Besoin d'aide ? Le support est actif.</h1>
+          <p class="hero-description">
+            Signale un souci de retrait, de solde, de code promo ou de compte.
+            On te guide vers la bonne solution sans te faire chercher partout.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#ticket" class="primary-action">Créer un ticket</a>
+            <a href="#solutions" class="secondary-action">Voir les solutions</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="support-status">
+        <article class="stat-card live">
+          <span class="status-dot"></span>
+          <h2>Actif</h2>
+          <p>Support ouvert aujourd'hui</p>
+        </article>
+        <article class="stat-card">
+          <h2>Réponse assurée</h2>
+          <p>Réponse garantie dans les meilleurs délais</p>
+        </article>
+        <article class="stat-card">
+          <h2>4 sujets</h2>
+          <p>Aide rapide disponible</p>
+        </article>
+      </section>
+
+      <section class="container">
+        <article class="card" id="solutions">
+          <span class="badge">Aide rapide</span>
+          <h2>Choisis ton problème</h2>
+          <div class="support-grid">
+            <div class="mini-card">
+              <h3>Retrait bloqué</h3>
+              <p>Ton retrait reste en attente ou ne s'affiche pas encore.</p>
+              <a href="#ticket">Signaler</a>
+            </div>
+            <div class="mini-card">
+              <h3>Solde incorrect</h3>
+              <p>Ton nombre de Robux ne correspond pas à tes gains.</p>
+              <a href="#ticket">Corriger</a>
+            </div>
+            <div class="mini-card">
+              <h3>Code promo</h3>
+              <p>Un promocode est expiré, invalide ou déjà utilisé.</p>
+              <a href="#ticket">Vérifier</a>
+            </div>
+            <div class="mini-card">
+              <h3>Compte Roblox</h3>
+              <p>Ton pseudo, ton avatar ou ton lien de compte pose problème.</p>
+              <a href="#ticket">Aider</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card status-card">
+          <span class="badge">État des services</span>
+          <h2>Tout fonctionne normalement</h2>
+          <div class="service-list">
+            <div>
+              <span>Connexion</span>
+              <strong class="ok">Opérationnel</strong>
+            </div>
+            <div>
+              <span>Retraits</span>
+              <strong class="ok">Opérationnel</strong>
+            </div>
+            <div>
+              <span>Promocodes</span>
+              <strong class="ok">Opérationnel</strong>
+            </div>
+            <div>
+              <span>Annonces</span>
+              <strong class="ok">Opérationnel</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" id="ticket">
+          <span class="badge">Ticket support</span>
+          <h2>Créer une demande</h2>
+          <form class="support-form">
+            <label>
+              Sujet
+              <select id="supportType">
+                <option>Retrait bloqué</option>
+                <option>Solde incorrect</option>
+                <option>Code promo</option>
+                <option>Compte Roblox</option>
+                <option>Autre problème</option>
+              </select>
+            </label>
+
+            <label>
+              Message
+              <textarea
+                id="supportMessage"
+                placeholder="Explique le problème avec le plus de détails possible."
+              ></textarea>
+            </label>
+
+            <button type="button" id="sendSupport">Envoyer la demande</button>
+            <p class="form-note" id="supportFeedback">
+              Aucune demande envoyée pour le moment.
+            </p>
+          </form>
+        </article>
+
+        <article class="card" id="myTicketsCard">
+          <span class="badge">Mes demandes</span>
+          <h2>Suivi de mes tickets</h2>
+          <div id="myTickets">
+            <p class="form-note">Chargement de tes tickets...</p>
+          </div>
+        </article>
+
+        <article class="card faq-card">
+          <span class="badge">Questions fréquentes</span>
+          <h2>Avant de contacter le support</h2>
+
+          <details>
+            <summary>Pourquoi mon retrait est encore en attente ?</summary>
+            <p>
+              Certains retraits peuvent prendre un peu de temps selon la file
+              d'attente et les vérifications du compte.
+            </p>
+          </details>
+
+          <details>
+            <summary>Pourquoi mon code promo ne marche pas ?</summary>
+            <p>
+              Le code peut être expiré, désactivé, limité en utilisations ou
+              déjà utilisé sur ton compte.
+            </p>
+          </details>
+
+          <details>
+            <summary>Mon solde n'a pas changé, que faire ?</summary>
+            <p>
+              Actualise la page, reconnecte-toi, puis crée un ticket si le solde
+              reste incorrect.
+            </p>
+          </details>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <p>Blox R$ - Support actif</p>
+    </footer>
+
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
+      defer
+    ></script>
+    <script src="../JS/Animation.js" defer></script>
+    <script src="../JS/Server.js" defer></script>
+    <script src="../JS/Support.js" defer></script>
+
+    <div id="Block">
+      <!-- COLONNE GAUCHE -->
+      <div class="side">
+        <img src="../img/BloxImg.png" alt="BloxRobuxLogo" />
+      </div>
+
+      <!-- COLONNE CENTRALE -->
+      <div id="BlockBottom">
+        <div class="infos">
+          <div class="col">
+            <h2>A propos de nous</h2>
+            <ul>
+              <li><a href="Bio">Biographie du site</a></li>
+              <li><a href="Security">Paiements sécurisés</a></li>
+              <li><a href="">Support actif</a></li>
+            </ul>
+          </div>
+
+          <div class="col">
+            <h2>Mentions légales</h2>
+            <ul>
+              <li><a href="../Legal/CGU">Conditions d'utilisations</a></li>
+              <li><a href="../Legal/PCF">Politique de confidentialité</a></li>
+            </ul>
+          </div>
+
+          <div class="col">
+            <h2>Réseaux sociaux</h2>
+            <ul>
+              <li>
+                <a
+                  href="https://discord.gg/QQMRtfBXpq"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Discord</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://youtube.com/@bloxrbx00"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >YouTube</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/bloxrbx/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Instagram</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.tiktok.com/@bloxrbx.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >TikTok</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="side empty"></div>
+    </div>
+  </body>
+</html>
