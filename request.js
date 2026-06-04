@@ -1755,7 +1755,6 @@ app.post("/api/apply-promo", authenticate, async (req, res) => {
   const userRef = db.ref(`users/${uid}`);
 
   try {
-
     let promoAmount = null;
 
     const result = await promoRef.transaction((promo) => {
@@ -2101,74 +2100,106 @@ app.post("/api/support/tickets", authenticate, async (req, res) => {
   }
 });
 
-app.get("/api/admin/support/tickets", authenticate, requireAdmin, async (req, res) => {
-  try {
-    const status = req.query.status || "open";
-    const snap = await admin.database().ref("supportTickets").orderByChild("updatedAt").limitToLast(100).get();
-    let tickets = [];
+app.get(
+  "/api/admin/support/tickets",
+  authenticate,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const status = req.query.status || "open";
+      const snap = await admin
+        .database()
+        .ref("supportTickets")
+        .orderByChild("updatedAt")
+        .limitToLast(100)
+        .get();
+      let tickets = [];
 
-    snap.forEach((child) => {
-      tickets.push({ id: child.key, ...child.val() });
-    });
+      snap.forEach((child) => {
+        tickets.push({ id: child.key, ...child.val() });
+      });
 
-    tickets = tickets.reverse();
+      tickets = tickets.reverse();
 
-    if (status !== "all") {
-      tickets = tickets.filter((ticket) => ticket.status === status);
+      if (status !== "all") {
+        tickets = tickets.filter((ticket) => ticket.status === status);
+      }
+
+      res.json({ tickets });
+    } catch (err) {
+      res.status(500).json({ error: "Erreur chargement tickets." });
     }
+  },
+);
 
-    res.json({ tickets });
-  } catch (err) {
-    res.status(500).json({ error: "Erreur chargement tickets." });
-  }
-});
+app.patch(
+  "/api/admin/support/tickets/:ticketId/status",
+  authenticate,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const ticketId = req.params.ticketId;
+      const allowed = ["open", "pending", "closed"];
+      const status = cleanText(req.body.status, 20);
 
-app.patch("/api/admin/support/tickets/:ticketId/status", authenticate, requireAdmin, async (req, res) => {
-  try {
-    const ticketId = req.params.ticketId;
-    const allowed = ["open", "pending", "closed"];
-    const status = cleanText(req.body.status, 20);
+      if (!allowed.includes(status)) {
+        return res.status(400).json({ error: "Statut invalide." });
+      }
 
-    if (!allowed.includes(status)) {
-      return res.status(400).json({ error: "Statut invalide." });
+      await admin.database().ref(`supportTickets/${ticketId}`).update({
+        status,
+        updatedAt: Date.now(),
+      });
+
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: "Erreur changement statut." });
     }
+  },
+);
 
-    await admin.database().ref(`supportTickets/${ticketId}`).update({
-      status,
-      updatedAt: Date.now(),
-    });
+app.post(
+  "/api/admin/support/tickets/:ticketId/reply",
+  authenticate,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const ticketId = req.params.ticketId;
+      const message = cleanText(req.body.message, 2000);
 
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: "Erreur changement statut." });
-  }
-});
+      if (!message) {
+        return res.status(400).json({ error: "Réponse vide." });
+      }
 
-app.post("/api/admin/support/tickets/:ticketId/reply", authenticate, requireAdmin, async (req, res) => {
-  try {
-    const ticketId = req.params.ticketId;
-    const message = cleanText(req.body.message, 2000);
-    if (!message) return res.status(400).json({ error: "Réponse vide." });
+      const ticketRef = admin.database().ref(`supportTickets/${ticketId}`);
+      const ticketSnap = await ticketRef.get();
 
-    const replyRef = admin.database().ref(`supportTickets/${ticketId}/replies`).push();
-    await replyRef.set({
-      id: replyRef.key,
-      authorUid: req.user.uid,
-      authorRole: "admin",
-      message,
-      createdAt: Date.now(),
-    });
+      if (!ticketSnap.exists()) {
+        return res.status(404).json({ error: "Ticket introuvable." });
+      }
 
-    await admin.database().ref(`supportTickets/${ticketId}`).update({
-      status: "pending",
-      updatedAt: Date.now(),
-    });
+      const replyRef = ticketRef.child("replies").push();
 
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: "Erreur envoi réponse." });
-  }
-});
+      await replyRef.set({
+        id: replyRef.key,
+        authorUid: req.user.uid,
+        authorRole: "admin",
+        message,
+        createdAt: Date.now(),
+      });
+
+      await ticketRef.update({
+        status: "pending",
+        updatedAt: Date.now(),
+      });
+
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Erreur envoi réponse:", err);
+      res.status(500).json({ error: "Erreur envoi réponse." });
+    }
+  },
+);
 
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
