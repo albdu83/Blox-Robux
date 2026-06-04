@@ -88,7 +88,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const { auth, db } = await initFirebase();
     if (!auth || !db) return console.error("Firebase non initialisé");
 
-    /* ===== ÉLÉMENTS UI ===== */
     const btnprofil = document.getElementById("btn-profil");
     const disco = document.getElementById("disconnect");
     const body = document.getElementById("body");
@@ -340,6 +339,182 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       }
     });
+
+    let selectedTicketId = null;
+    let currentTickets = [];
+
+    async function loadTickets() {
+      const filter = document.getElementById("ticketFilter").value;
+      const list = document.getElementById("ticketList");
+      list.innerHTML = '<p class="empty-state">Chargement des tickets...</p>';
+
+      try {
+        const token = await firebase.auth().currentUser.getIdToken();
+        const res = await fetch(
+          `${API_BASE_URL}/api/admin/support/tickets?status=${filter}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        const data = await res.json();
+
+        if (!res.ok)
+          throw new Error(data.error || "Impossible de charger les tickets.");
+
+        currentTickets = data.tickets || [];
+
+        if (!currentTickets.length) {
+          list.innerHTML =
+            '<p class="empty-state">Aucun ticket pour ce filtre.</p>';
+          return;
+        }
+
+        list.innerHTML = currentTickets
+          .map((ticket) => {
+            const date = new Date(
+              ticket.createdAt || Date.now(),
+            ).toLocaleString("fr-FR");
+            return `
+            <button class="ticket-row ${ticket.id === selectedTicketId ? "active" : ""}" data-ticket-id="${ticket.id}">
+              <span>
+                <strong>${escapeHTML(ticket.type)}</strong>
+                <small>${escapeHTML(ticket.username || ticket.robloxName || "Utilisateur")}</small>
+              </span>
+              <em>${ticket.status}</em>
+              <small>${date}</small>
+            </button>
+          `;
+          })
+          .join("");
+      } catch (err) {
+        list.innerHTML = `<p class="empty-state error">${escapeHTML(err.message)}</p>`;
+      }
+    }
+
+    function openTicket(ticketId) {
+      selectedTicketId = ticketId;
+      const ticket = currentTickets.find((item) => item.id === ticketId);
+      const detail = document.getElementById("ticketDetail");
+
+      if (!ticket) return;
+
+      const replies = Object.values(ticket.replies || {});
+
+      detail.innerHTML = `
+      <div class="ticket-top">
+        <div>
+          <h3>${escapeHTML(ticket.type)}</h3>
+          <p>${escapeHTML(ticket.username || "Utilisateur")} - ${escapeHTML(ticket.robloxName || "")}</p>
+        </div>
+        <span class="ticket-status">${ticket.status}</span>
+      </div>
+
+      <div class="ticket-message">
+        ${escapeHTML(ticket.message)}
+      </div>
+
+      <div class="reply-list">
+        ${
+          replies.length
+            ? replies
+                .map(
+                  (reply) => `
+              <div class="reply ${reply.authorRole === "admin" ? "admin" : ""}">
+                <strong>${reply.authorRole === "admin" ? "Admin" : "Utilisateur"}</strong>
+                <p>${escapeHTML(reply.message)}</p>
+              </div>
+            `,
+                )
+                .join("")
+            : '<p class="empty-state">Aucune réponse pour le moment.</p>'
+        }
+      </div>
+
+      <textarea id="replyMessage" placeholder="Réponse à envoyer..."></textarea>
+
+      <div class="ticket-actions">
+        <button class="btn" id="replyTicket">Répondre</button>
+        <button class="btn secondary" id="pendingTicket">Mettre en attente</button>
+        <button class="btn danger" id="closeTicket">Fermer</button>
+      </div>
+    `;
+
+      document
+        .getElementById("replyTicket")
+        .addEventListener("click", replyTicket);
+      document
+        .getElementById("pendingTicket")
+        .addEventListener("click", () => updateTicketStatus("pending"));
+      document
+        .getElementById("closeTicket")
+        .addEventListener("click", () => updateTicketStatus("closed"));
+
+      loadTickets();
+    }
+
+    async function replyTicket() {
+      const message = document.getElementById("replyMessage").value.trim();
+      if (!selectedTicketId || !message) return;
+
+      const token = await firebase.auth().currentUser.getIdToken();
+      const res = await fetch(
+        `${API_BASE_URL}/api/admin/support/tickets/${selectedTicketId}/reply`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ message }),
+        },
+      );
+
+      if (res.ok) {
+        await loadTickets();
+        openTicket(selectedTicketId);
+      }
+    }
+
+    async function updateTicketStatus(status) {
+      if (!selectedTicketId) return;
+
+      const token = await firebase.auth().currentUser.getIdToken();
+      const res = await fetch(
+        `${API_BASE_URL}/api/admin/support/tickets/${selectedTicketId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status }),
+        },
+      );
+
+      if (res.ok) {
+        await loadTickets();
+        openTicket(selectedTicketId);
+      }
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    document
+      .getElementById("ticketFilter")
+      .addEventListener("change", loadTickets);
+    document.getElementById("ticketList").addEventListener("click", (event) => {
+      const row = event.target.closest("[data-ticket-id]");
+      if (row) openTicket(row.dataset.ticketId);
+    });
+
+    loadTickets();
 
     /* ===== CHARGER LES UTILISATEURS ===== */
     let allUsers = [];
