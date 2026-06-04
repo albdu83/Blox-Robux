@@ -2101,6 +2101,75 @@ app.post("/api/support/tickets", authenticate, async (req, res) => {
   }
 });
 
+app.get("/api/admin/support/tickets", authenticate, requireAdmin, async (req, res) => {
+  try {
+    const status = req.query.status || "open";
+    const snap = await admin.database().ref("supportTickets").orderByChild("updatedAt").limitToLast(100).get();
+    let tickets = [];
+
+    snap.forEach((child) => {
+      tickets.push({ id: child.key, ...child.val() });
+    });
+
+    tickets = tickets.reverse();
+
+    if (status !== "all") {
+      tickets = tickets.filter((ticket) => ticket.status === status);
+    }
+
+    res.json({ tickets });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur chargement tickets." });
+  }
+});
+
+app.patch("/api/admin/support/tickets/:ticketId/status", authenticate, requireAdmin, async (req, res) => {
+  try {
+    const ticketId = req.params.ticketId;
+    const allowed = ["open", "pending", "closed"];
+    const status = cleanText(req.body.status, 20);
+
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: "Statut invalide." });
+    }
+
+    await admin.database().ref(`supportTickets/${ticketId}`).update({
+      status,
+      updatedAt: Date.now(),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur changement statut." });
+  }
+});
+
+app.post("/api/admin/support/tickets/:ticketId/reply", authenticate, requireAdmin, async (req, res) => {
+  try {
+    const ticketId = req.params.ticketId;
+    const message = cleanText(req.body.message, 2000);
+    if (!message) return res.status(400).json({ error: "Réponse vide." });
+
+    const replyRef = admin.database().ref(`supportTickets/${ticketId}/replies`).push();
+    await replyRef.set({
+      id: replyRef.key,
+      authorUid: req.user.uid,
+      authorRole: "admin",
+      message,
+      createdAt: Date.now(),
+    });
+
+    await admin.database().ref(`supportTickets/${ticketId}`).update({
+      status: "pending",
+      updatedAt: Date.now(),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur envoi réponse." });
+  }
+});
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
