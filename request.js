@@ -2060,6 +2060,32 @@ app.post("/admin/multiplier", requireAdmin, async (req, res) => {
   res.json({ success: true, multiplier });
 });
 
+app.get("/support/tickets", authenticate, async (req, res) => {
+  try {
+    const uid = req.user.uid;
+
+    const snap = await admin
+      .database()
+      .ref("supportTickets")
+      .orderByChild("uid")
+      .equalTo(uid)
+      .get();
+
+    const tickets = [];
+
+    snap.forEach((child) => {
+      tickets.push({ id: child.key, ...child.val() });
+    });
+
+    tickets.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+    res.json({ tickets });
+  } catch (err) {
+    console.error("Erreur chargement tickets user:", err);
+    res.status(500).json({ error: "Erreur chargement tickets." });
+  }
+});
+
 app.post("/api/support/tickets", authenticate, async (req, res) => {
   try {
     const uid = req.user.uid;
