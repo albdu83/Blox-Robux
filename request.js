@@ -2100,37 +2100,36 @@ app.post("/api/support/tickets", authenticate, async (req, res) => {
   }
 });
 
-app.get(
-  "/api/admin/support/tickets",
-  authenticate,
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const status = req.query.status || "open";
-      const snap = await admin
-        .database()
-        .ref("supportTickets")
-        .orderByChild("updatedAt")
-        .limitToLast(100)
-        .get();
-      let tickets = [];
+app.get("/api/admin/support/tickets", authenticate, requireAdmin, async (req, res) => {
+  try {
+    const status = req.query.status || "open";
 
-      snap.forEach((child) => {
-        tickets.push({ id: child.key, ...child.val() });
-      });
+    const snap = await admin.database().ref("supportTickets").get();
 
-      tickets = tickets.reverse();
+    console.log("status demandé:", status);
+    console.log("tickets exists:", snap.exists());
+    console.log("tickets raw:", snap.val());
 
-      if (status !== "all") {
-        tickets = tickets.filter((ticket) => ticket.status === status);
-      }
+    let tickets = [];
 
-      res.json({ tickets });
-    } catch (err) {
-      res.status(500).json({ error: "Erreur chargement tickets." });
+    snap.forEach((child) => {
+      tickets.push({ id: child.key, ...child.val() });
+    });
+
+    tickets = tickets.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+    if (status !== "all") {
+      tickets = tickets.filter((ticket) => ticket.status === status);
     }
-  },
-);
+
+    console.log("tickets envoyés:", tickets.length);
+
+    res.json({ tickets });
+  } catch (err) {
+    console.error("Erreur chargement tickets:", err);
+    res.status(500).json({ error: "Erreur chargement tickets." });
+  }
+});
 
 app.patch(
   "/api/admin/support/tickets/:ticketId/status",
