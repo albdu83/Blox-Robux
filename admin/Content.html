@@ -267,4 +267,29 @@
       </button>
     </div>
   </section>
+
+  <section class="card support-admin">
+    <div class="support-admin-head">
+      <div>
+        <h2>Tickets utilisateurs</h2>
+      </div>
+
+      <select id="ticketFilter">
+        <option value="open">Tickets ouverts</option>
+        <option value="pending">En attente</option>
+        <option value="closed">Fermés</option>
+        <option value="all">Tous</option>
+      </select>
+    </div>
+
+    <div class="ticket-layout">
+      <div class="ticket-list" id="ticketList">
+        <p class="empty-state">Chargement des tickets...</p>
+      </div>
+
+      <article class="ticket-detail" id="ticketDetail">
+        <p class="empty-state">Sélectionne un ticket pour répondre.</p>
+      </article>
+    </div>
+  </section>
 </main>
