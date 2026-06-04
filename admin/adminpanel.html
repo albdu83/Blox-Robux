@@ -8,53 +8,51 @@
     <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon" />
   </head>
   <body>
-    <!-- ===== RIDEAU CHARGEMENT ===== -->
     <div id="transition" class="fade-transition active">
       <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
       <div class="text" id="text-chargement">Chargement...</div>
     </div>
+
     <div id="app">
-      <main>
-        <section class="card">
-          <h2>🔐 Accès au panel admin</h2>
+      <main class="login-shell">
+        <section class="login-card" aria-labelledby="admin-title">
+          <div class="login-brand">
+            <img src="../img/Bloxlogo.png" alt="" />
+            <span>Blox R$</span>
+          </div>
+
+          <div class="login-copy">
+            <p class="eyebrow">Panel administrateur</p>
+            <h1 id="admin-title">Accès sécurisé</h1>
+            <p>Entre ton code admin pour ouvrir les outils de gestion.</p>
+          </div>
 
           <div class="form-group" id="form-group">
-            <label>Code Administrateur</label>
+            <label for="adminCode">Code administrateur</label>
             <input
               type="password"
               id="adminCode"
               placeholder="Mot de passe admin"
+              autocomplete="current-password"
             />
           </div>
 
-          <button id="adminEnter">Se connecter</button>
-          <p id="adminMessage" class="msg"></p>
+          <button id="adminEnter" type="button">Se connecter</button>
+          <p id="adminMessage" class="msg" aria-live="polite"></p>
         </section>
       </main>
     </div>
+
     <script
       src="https://cdn.tiny.cloud/1/7685pqp1gvvr64gli2idwrco4wktgnhivtx8ot3odkzrelsv/tinymce/8/tinymce.min.js"
       referrerpolicy="origin"
       crossorigin="anonymous"
       defer
     ></script>
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
-      defer
-    ></script>
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
-      defer
-    ></script>
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"
-      defer
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
-      defer
-    ></script>
-
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js" defer></script>
     <script src="../JS/Panel.js" defer></script>
     <script src="../JS/Animation.js" defer></script>
   </body>
