@@ -2139,19 +2139,27 @@ app.patch(
     try {
       const ticketId = req.params.ticketId;
       const allowed = ["open", "pending", "closed"];
-      const status = cleanText(req.body.status, 20);
+      const status = String(req.body.status || "").trim();
 
       if (!allowed.includes(status)) {
         return res.status(400).json({ error: "Statut invalide." });
       }
 
-      await admin.database().ref(`supportTickets/${ticketId}`).update({
+      const ticketRef = admin.database().ref(`supportTickets/${ticketId}`);
+      const ticketSnap = await ticketRef.get();
+
+      if (!ticketSnap.exists()) {
+        return res.status(404).json({ error: "Ticket introuvable." });
+      }
+
+      await ticketRef.update({
         status,
         updatedAt: Date.now(),
       });
 
       res.json({ success: true });
     } catch (err) {
+      console.error("Erreur changement statut:", err);
       res.status(500).json({ error: "Erreur changement statut." });
     }
   },
