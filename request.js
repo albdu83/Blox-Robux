@@ -2086,6 +2086,55 @@ app.get("/support/tickets", authenticate, async (req, res) => {
   }
 });
 
+app.post("/support/tickets/:ticketId/reply", authenticate, async (req, res) => {
+  try {
+    const uid = req.user.uid;
+    const ticketId = req.params.ticketId;
+    const message = String(req.body.message || "").trim().slice(0, 2000);
+
+    if (!message) {
+      return res.status(400).json({ error: "Réponse vide." });
+    }
+
+    const ticketRef = admin.database().ref(`supportTickets/${ticketId}`);
+    const ticketSnap = await ticketRef.get();
+
+    if (!ticketSnap.exists()) {
+      return res.status(404).json({ error: "Ticket introuvable." });
+    }
+
+    const ticket = ticketSnap.val();
+
+    if (ticket.uid !== uid) {
+      return res.status(403).json({ error: "Accès refusé à ce ticket." });
+    }
+
+    if (ticket.status === "closed") {
+      return res.status(400).json({ error: "Ce ticket est fermé." });
+    }
+
+    const replyRef = ticketRef.child("replies").push();
+
+    await replyRef.set({
+      id: replyRef.key,
+      authorUid: uid,
+      authorRole: "user",
+      message,
+      createdAt: Date.now(),
+    });
+
+    await ticketRef.update({
+      status: "open",
+      updatedAt: Date.now(),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Erreur réponse utilisateur:", err);
+    res.status(500).json({ error: "Erreur envoi réponse." });
+  }
+});
+
 app.post("/api/support/tickets", authenticate, async (req, res) => {
   try {
     const uid = req.user.uid;
