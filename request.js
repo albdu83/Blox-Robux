@@ -2106,10 +2106,6 @@ app.get("/api/admin/support/tickets", authenticate, requireAdmin, async (req, re
 
     const snap = await admin.database().ref("supportTickets").get();
 
-    console.log("status demandé:", status);
-    console.log("tickets exists:", snap.exists());
-    console.log("tickets raw:", snap.val());
-
     let tickets = [];
 
     snap.forEach((child) => {
@@ -2121,8 +2117,6 @@ app.get("/api/admin/support/tickets", authenticate, requireAdmin, async (req, re
     if (status !== "all") {
       tickets = tickets.filter((ticket) => ticket.status === status);
     }
-
-    console.log("tickets envoyés:", tickets.length);
 
     res.json({ tickets });
   } catch (err) {
