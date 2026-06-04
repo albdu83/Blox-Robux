@@ -2172,7 +2172,7 @@ app.post(
   async (req, res) => {
     try {
       const ticketId = req.params.ticketId;
-      const message = cleanText(req.body.message, 2000);
+      const message = String(req.body.message || "").trim().slice(0, 2000);
 
       if (!message) {
         return res.status(400).json({ error: "Réponse vide." });
@@ -2203,7 +2203,10 @@ app.post(
       res.json({ success: true });
     } catch (err) {
       console.error("Erreur envoi réponse:", err);
-      res.status(500).json({ error: "Erreur envoi réponse." });
+      res.status(500).json({
+        error: "Erreur envoi réponse.",
+        details: err.message,
+      });
     }
   },
 );
