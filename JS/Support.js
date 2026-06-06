@@ -11,7 +11,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const type = document.getElementById("supportType")?.value;
-    const message = document.getElementById("supportMessage")?.value.trim();
+    const rawMessage = document.getElementById("supportMessage")?.value || "";
+    const message = rawMessage.trim() ? rawMessage.slice(0, 2000) : "";
 
     if (!type || !message) {
       feedback.textContent = "Remplis le sujet et ton message.";
@@ -55,7 +56,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function replyToTicket(ticketId) {
     const user = firebase.auth().currentUser;
     const textarea = document.getElementById(`reply-${ticketId}`);
-    const message = textarea?.value.trim();
+    const rawMessage2 = textarea?.value || "";
+    const message = rawMessage2.trim() ? rawMessage2.slice(0, 2000) : "";
 
     if (!user || !message) return;
 
@@ -132,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       </span>
     </div>
 
-    <p>${escapeHTML(ticket.message)}</p>
+    <p class="ticket-message-text">${escapeHTML(ticket.message)}</p>
 
     <div class="ticket-replies">
       ${
@@ -142,7 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 (reply) => `
                   <div class="ticket-reply">
                     <strong>${reply.authorRole === "admin" ? "Support" : "Moi"}</strong>
-                    <p>${escapeHTML(reply.message)}</p>
+                    <p class="ticket-message-text">${escapeHTML(reply.message)}</p>
                   </div>
                 `,
               )
@@ -196,6 +198,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   firebase.auth().onAuthStateChanged(() => {
     loadMySupportTickets();
   });
+
+  document
+    .getElementById("refreshTickets")
+    ?.addEventListener("click", async (e) => {
+      const btn = e.currentTarget;
+
+      btn.classList.remove("refresh-spin");
+      void btn.offsetWidth;
+      btn.classList.add("refresh-spin");
+
+      try {
+        await loadMySupportTickets();
+      } finally {
+        setTimeout(() => {
+          btn.classList.remove("refresh-spin");
+        }, 600);
+      }
+    });
 
   document
     .getElementById("sendSupport")
