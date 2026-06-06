@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await initFirebase();
   async function sendSupportTicket() {
     const user = firebase.auth().currentUser;
     const feedback = document.getElementById("supportFeedback");
