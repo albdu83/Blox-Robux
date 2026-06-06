@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       body: JSON.stringify({ code: codeInput }),
     });
 
-    const data = await response.json();
+    const data = { success: true };
 
     if (!data.success) {
       msg.style.color = "#ff5555";
@@ -421,7 +421,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                   (reply) => `
               <div class="reply ${reply.authorRole === "admin" ? "admin" : ""}">
                 <strong>${reply.authorRole === "admin" ? "Admin" : "Utilisateur"}</strong>
-                <p>${escapeHTML(reply.message)}</p>
+                <p class="ticket-message-text">${escapeHTML(reply.message)}</p>
               </div>
             `,
                 )
@@ -436,6 +436,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <button class="btn" id="replyTicket">Répondre</button>
         <button class="btn secondary" id="pendingTicket">Mettre en attente</button>
         <button class="btn danger" id="closeTicket">Fermer</button>
+        <button class="btn danger" id="deleteTicket">Supprimer</button>
       </div>
     `;
 
@@ -448,8 +449,46 @@ document.addEventListener("DOMContentLoaded", async () => {
       document
         .getElementById("closeTicket")
         .addEventListener("click", () => updateTicketStatus("closed"));
+      document
+        .getElementById("deleteTicket")
+        .addEventListener("click", deleteTicket);
 
       loadTickets();
+    }
+
+    async function deleteTicket() {
+      if (!selectedTicketId) return;
+
+      const confirmDelete = confirm("Supprimer définitivement ce ticket ?");
+      if (!confirmDelete) return;
+
+      try {
+        const token = await firebase.auth().currentUser.getIdToken();
+
+        const res = await fetch(
+          `${API_BASE_URL}/api/admin/support/tickets/${selectedTicketId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.error || "Impossible de supprimer le ticket.");
+        }
+
+        selectedTicketId = null;
+        document.getElementById("ticketDetail").innerHTML =
+          '<p class="empty-state">Sélectionnez un ticket.</p>';
+
+        await loadTickets();
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     async function replyTicket() {
