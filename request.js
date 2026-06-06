@@ -2071,22 +2071,6 @@ app.get("/support/tickets", authenticate, async (req, res) => {
       .equalTo(uid)
       .get();
 
-    let hasActiveTicket = false;
-
-    snap.forEach((child) => {
-      const ticket = child.val();
-
-      if (ticket.status !== "closed") {
-        hasActiveTicket = true;
-      }
-    });
-
-    if (hasActiveTicket) {
-      return res.status(409).json({
-        error: "Vous avez déjà un ticket actif.",
-      });
-    }
-
     const tickets = [];
 
     snap.forEach((child) => {
@@ -2161,6 +2145,29 @@ app.post("/api/support/tickets", authenticate, async (req, res) => {
 
     if (!type || !message) {
       return res.status(400).json({ error: "Champs manquants" });
+    }
+
+    let hasActiveTicket = false;
+
+    const snap = await admin
+      .database()
+      .ref("supportTickets")
+      .orderByChild("uid")
+      .equalTo(uid)
+      .get();
+
+    snap.forEach((child) => {
+      const ticket = child.val();
+
+      if (ticket.status !== "closed") {
+        hasActiveTicket = true;
+      }
+    });
+
+    if (hasActiveTicket) {
+      return res.status(409).json({
+        error: "Vous avez déjà un ticket actif.",
+      });
     }
 
     const userSnap = await admin.database().ref(`users/${uid}`).get();
