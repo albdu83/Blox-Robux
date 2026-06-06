@@ -1123,6 +1123,34 @@ footer {
   color: white;
 }
 
+#refreshTickets {
+  height: 30px;
+  border: 0;
+  cursor: pointer;
+}
+
+.refresh-spin {
+  animation: refreshSpin 0.6s ease;
+}
+
+@keyframes refreshSpin {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) scale(1.05);
+  }
+
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.ticket-message-text {
+  white-space: pre-wrap;
+}
+
 /* MOBILE */
 
 @media (max-width: 900px) {
