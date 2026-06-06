@@ -2280,6 +2280,25 @@ app.post(
   },
 );
 
+app.delete("/api/admin/support/tickets/:ticketId", requireAdmin, authenticate, async (req, res) => {
+  const { ticketId } = req.params;
+
+  if (!ticketId || /[.#$\[\]/]/.test(ticketId)) {
+    return res.status(400).json({ error: "Ticket invalide" });
+  }
+
+  const ticketRef = db.ref(`supportTickets/${ticketId}`);
+  const snap = await ticketRef.get();
+
+  if (!snap.exists()) {
+    return res.status(404).json({ error: "Ticket introuvable" });
+  }
+
+  await ticketRef.remove();
+
+  res.json({ success: true });
+});
+
 // --- Lancement serveur ---
 const PORT = process.env.PORT || 3000;
 
