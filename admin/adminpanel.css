@@ -1066,6 +1066,10 @@ textarea {
   background: rgba(3, 7, 18, 0.62);
 }
 
+.ticket-message-text {
+  white-space: pre-wrap;
+}
+
 .ticket-actions {
   display: flex;
   gap: 10px;
