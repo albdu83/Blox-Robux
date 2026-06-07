@@ -1066,6 +1066,34 @@ textarea {
   background: rgba(3, 7, 18, 0.62);
 }
 
+#refreshTickets {
+  height: 25px;
+  border: 0;
+  cursor: pointer;
+}
+
+.refresh-spin {
+  animation: refreshSpin 0.6s ease;
+}
+
+.ticket-message-text {
+  white-space: pre-wrap;
+}
+
+@keyframes refreshSpin {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) scale(1.05);
+  }
+
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
 .ticket-message-text {
   white-space: pre-wrap;
 }
@@ -1089,6 +1117,23 @@ textarea {
 
 .empty-state.error {
   color: #fca5a5;
+}
+
+.ticket-reply,
+.ticket-message-text,
+.user-ticket,
+.ticket-replies {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ticket-message-text,
+.ticket-reply p,
+.user-ticket p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 @media (max-width: 820px) {
