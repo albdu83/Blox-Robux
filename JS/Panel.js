@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       body: JSON.stringify({ code: codeInput }),
     });
 
-    const data = { success: true };
+    const data = await response.json();
 
     if (!data.success) {
       msg.style.color = "#ff5555";
@@ -408,6 +408,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
         <span class="ticket-status">${ticket.status}</span>
       </div>
+      <img src="../img/Refresh.png" alt="Rafraîchir" id="refreshTickets" title="Rafraîchir mes tickets" />
 
       <div class="ticket-message">
         ${escapeHTML(ticket.message)}
@@ -452,6 +453,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       document
         .getElementById("deleteTicket")
         .addEventListener("click", deleteTicket);
+      document.getElementById("refreshTickets").addEventListener("click", () => {
+        document.getElementById("refreshTickets").classList.add("refresh-spin");
+        loadTickets();
+        openTicket(ticketId);
+      });
 
       loadTickets();
     }
