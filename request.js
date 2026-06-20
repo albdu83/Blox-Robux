@@ -689,8 +689,20 @@ app.post("/CPXHASH", authenticate, async (req, res) => {
 });
 
 //---------------------------------------------------------------------------------------------------------------------------//
-// ✅ CSRF lié au cookie de session — le Double Submit Cookie pattern
-// C'est la méthode la plus robuste sans état serveur
+
+app.post("/LOOTABLYHASH", authenticate, async (req, res) => {
+  const uid = req.user.uid;
+  const snap = await db.ref("users/" + uid).get();
+  if (!snap.exists())
+    return res.status(404).json({ error: "Utilisateur introuvable" });
+  const user = snap.val();
+  const firstUsername = user.firstUsername;
+
+  const url = new URL("https://wall.lootably.com");
+  url.searchParams.set("placementID", process.env.LOOTABLY_ID); // ← dans .env
+  url.searchParams.set("sid", firstUsername);
+  res.json({ url: url.toString() });
+});
 
 app.get("/getCsrfToken", (req, res) => {
   // Génère un token lié à un secret serveur + un identifiant de session
