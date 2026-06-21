@@ -561,6 +561,161 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     loadTickets();
 
+        async function loadMatches() {
+      const snap = await db.ref("eventFootball2026/matches").get();
+      const tbody = document.getElementById("football-matches-list");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      if (!snap.exists()) {
+        tbody.innerHTML = "<tr><td colspan='5'>Aucun match.</td></tr>";
+        return;
+      }
+
+      const matches = snap.val();
+      Object.entries(matches).forEach(([id, m]) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+      <td>${m.homeTeam} vs ${m.awayTeam}</td>
+      <td>${new Date(m.date).toLocaleDateString("fr-FR")}</td>
+      <td>${m.reward || 20} R$</td>
+      <td>${m.result ? "✅ " + m.result : "⏳ En attente"}</td>
+      <td class="actions">
+        ${
+          !m.result
+            ? `
+          <button class="btn football-result" data-match="${id}" data-home="${m.homeTeam}" data-away="${m.awayTeam}">Résultat</button>
+        `
+            : ""
+        }
+      </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document
+      .getElementById("football-create-match")
+      ?.addEventListener("click", async () => {
+        const home = document.getElementById("football-home").value.trim();
+        const away = document.getElementById("football-away").value.trim();
+        const date = document.getElementById("football-date").value;
+        const reward =
+          parseInt(document.getElementById("football-reward").value) || 20;
+
+        if (!home || !away || !date) return alert("Remplissez tous les champs");
+
+        try {
+          const token = await firebase.auth().currentUser.getIdToken();
+          const res = await fetch(
+            `${API_BASE_URL}/api/admin/football2026/create-match`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                homeTeam: home,
+                awayTeam: away,
+                date,
+                reward,
+              }),
+            },
+          );
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error);
+          alert("✅ Match créé !");
+          ["football-home", "football-away", "football-date"].forEach(
+            (id) => (document.getElementById(id).value = ""),
+          );
+          loadMatches();
+        } catch (err) {
+          alert("❌ " + err.message);
+        }
+      });
+
+    document
+      .getElementById("football-matches-list")
+      ?.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".football-result");
+        if (!btn) return;
+
+        const matchId = btn.dataset.match;
+        const home = btn.dataset.home;
+        const away = btn.dataset.away;
+
+        const choice = prompt(
+          `Résultat du match ${home} vs ${away} ?\n\n"home" = ${home}\n"draw" = Nul\n"away" = ${away}`,
+        );
+        if (!["home", "draw", "away"].includes(choice))
+          return alert("Valeur invalide. Tapez home, draw ou away.");
+
+        try {
+          const token = await firebase.auth().currentUser.getIdToken();
+          const res = await fetch(
+            `${API_BASE_URL}/api/admin/football2026/set-result`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ matchId, result: choice }),
+            },
+          );
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error);
+          alert(
+            `✅ Résultat enregistré ! ${data.winnersCount} gagnant(s) récompensé(s).`,
+          );
+          loadMatches();
+        } catch (err) {
+          alert("❌ " + err.message);
+        }
+      });
+
+    document
+      .getElementById("football-end-event")
+      ?.addEventListener("click", async () => {
+        const bonus = parseInt(
+          prompt(
+            "Montant du bonus pour chaque membre de l'équipe gagnante (en R$) :",
+          ),
+        );
+        if (!bonus || isNaN(bonus) || bonus <= 0)
+          return alert("Montant invalide");
+        if (
+          !confirm(
+            `Distribuer ${bonus} R$ à tous les membres de l'équipe gagnante ? Cette action est irréversible.`,
+          )
+        )
+          return;
+
+        try {
+          const token = await firebase.auth().currentUser.getIdToken();
+          const res = await fetch(
+            `${API_BASE_URL}/api/admin/football2026/end-event`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ bonusAmount: bonus }),
+            },
+          );
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error);
+          alert(
+            `🏆 Événement terminé ! Équipe gagnante : ${data.winner} — ${data.membersRewarded} membres récompensés.`,
+          );
+        } catch (err) {
+          alert("❌ " + err.message);
+        }
+      });
+
+    loadMatches();
+
     /* ===== CHARGER LES UTILISATEURS ===== */
     let allUsers = [];
 
