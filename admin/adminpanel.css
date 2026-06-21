@@ -1099,6 +1099,11 @@ textarea {
   white-space: pre-wrap;
 }
 
+/* Football 2026 — résultat match */
+.match-result-home { color: var(--green); font-weight: 700; }
+.match-result-draw { color: var(--gold); font-weight: 700; }
+.match-result-away { color: var(--blue); font-weight: 700; }
+
 @keyframes refreshSpin {
   from {
     transform: rotate(0deg) scale(1);
