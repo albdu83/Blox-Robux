@@ -87,7 +87,125 @@
         </div>
       </div>
 
+      <!-- Modal -->
+      <div class="overlay" id="overlay">
+        <div class="modal">
+          <span id="closeModal" class="close"> &times; </span>
+
+          <h3>Détails de l'évènement</h3>
+
+          <div class="modal-content">
+            <div class="event">
+              <p class="title">⚽ ÉVÉNEMENT FOOTBALL 2026</p>
+
+              <p class="text">
+                Salut à tous ! 👋<br />
+                À l’occasion de la Coupe du Monde 2026, participe à l’événement
+                du
+                <strong>22 juin au 19 juillet 2026</strong>.
+              </p>
+
+              <p class="section">🌍 Choisis ton équipe</p>
+              <p class="text">
+                🇫🇷 France · 🇧🇷 Brésil · 🇦🇷 Argentine · 🇩🇪 Allemagne · 🇪🇸 Espagne
+                · 🇺🇸 États-Unis<br />
+                <strong>⚠️ Choix définitif</strong>
+              </p>
+
+              <p class="section">⚽ Progression</p>
+              <p class="text">
+                Gagne des <strong>Supporter Points</strong> en participant :
+              </p>
+              <ul class="list">
+                <li>🏅 Niveaux</li>
+                <li>🎁 Récompenses</li>
+                <li>🏆 Classement individuel</li>
+                <li>🌍 Classement des équipes</li>
+              </ul>
+
+              <p class="section">📋 Activités</p>
+              <ul class="list">
+                <li>Compléter des offres</li>
+                <li>Gagner des Robux</li>
+                <li>Accomplir des missions</li>
+              </ul>
+
+              <p class="section">🏅 Niveaux</p>
+              <p class="text small">
+                Recrue → Supporter → Animateur → Ultras → Fanatique → Légende →
+                Icône → Roi du Monde
+              </p>
+
+              <p class="section">🔥 Série quotidienne</p>
+              <p class="text">
+                Connecte-toi chaque jour pour augmenter tes récompenses.
+              </p>
+
+              <p class="section">📦 Coffres</p>
+              <p class="text">
+                10 · 25 · 50 · 100 offres → Robux, boosters, surprises
+              </p>
+
+              <p class="section">🔮 Pronostics</p>
+              <p class="text">
+                Prédits les matchs et gagne des récompenses si tu es correct.
+              </p>
+
+              <p class="section">🏆 Classements</p>
+              <p class="text">
+                Individuel + équipes (bonus pour l’équipe gagnante)
+              </p>
+
+              <p class="footer">
+                Prépare-toi à représenter ton pays et grimper au sommet ⚽🔥<br />
+                <strong>Rendez-vous le 22 juin 2026</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="app-desktop">
+        <div class="contenu">
+          <div class="event-card" data-event>
+            <div class="ring"></div>
+            <img src="../img/BloxImg.png" alt="BloxRobux" class="logo-bg" />
+
+            <span class="badge">ÉVÉNEMENT LIMITÉ</span>
+
+            <h2 class="title">Event Football 2026</h2>
+
+            <p class="description">
+              La Coupe du Monde 2026 bat son plein ! Soutiens ton équipe
+              favorite et participe à des défis exclusifs sur BloxRbx.
+            </p>
+
+            <div class="buttons">
+              <button class="join-btn" data-join disabled>Rejoindre</button>
+              <button class="details-btn" data-details>Voir les détails</button>
+            </div>
+
+            <h4>L'évènement ouvre dans :</h4>
+
+            <div class="timer">
+              <div class="time-box">
+                <span data-hours>05</span>
+                <small>Heures</small>
+              </div>
+
+              <div class="time-box">
+                <span data-minutes>00</span>
+                <small>Minutes</small>
+              </div>
+
+              <div class="time-box">
+                <span data-seconds>00</span>
+                <small>Secondes</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div id="message-dis-container">
           <div id="messageDis">
             <h3 id="distitre">...</h3>
@@ -217,6 +335,43 @@
         </div>
       </div>
       <div id="app-mobile">
+        <div class="contenu">
+          <div class="event-card" data-event>
+            <div class="ring"></div>
+
+            <img src="../img/BloxImg.png" class="logo-bg" />
+
+            <span class="badge">ÉVÉNEMENT LIMITÉ</span>
+
+            <h2>Event Football 2026</h2>
+
+            <p class="description">La Coupe du Monde 2026 bat son plein !</p>
+
+            <div class="buttons">
+              <button class="join-btn" data-join disabled>Rejoindre</button>
+              <button class="details-btn" data-details>Voir les détails</button>
+            </div>
+
+            <h4>L'évènement ouvre dans :</h4>
+
+            <div class="timer">
+              <div class="time-box">
+                <span data-hours>00</span>
+                <small>Heures</small>
+              </div>
+
+              <div class="time-box">
+                <span data-minutes>00</span>
+                <small>Minutes</small>
+              </div>
+
+              <div class="time-box">
+                <span data-seconds>00</span>
+                <small>Secondes</small>
+              </div>
+            </div>
+          </div>
+        </div>
         <div
           style="padding: 0 20px; width: 100%; text-align: center"
           id="presentation"
@@ -353,6 +508,7 @@
       <script src="../JS/Server.js" defer></script>
       <script src="../JS/Animation.js" defer></script>
       <script src="../JS/Amount.js" defer></script>
+      <script src="../JS/Timer.js" defer></script>
       <!-- SCRIPT PRINCIPAL -->
       <script defer>
         document.addEventListener("DOMContentLoaded", () => {
