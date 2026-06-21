@@ -12,14 +12,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.log("Utilisateur non connecté");
     return;
   }
-  // ============================================================
-  // FOOTBALL 2026 — football2026.js
-  // Pattern : state → render → updateUI → apiRequest
-  // ============================================================
-
-  // ----------------------------------------------------------
-  // CONSTANTES
-  // ----------------------------------------------------------
 
   const TEAM_FLAGS = {
     france: "🇫🇷",
@@ -101,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     { id: "top10", label: "Top 10", icon: "🏆" },
   ];
 
-  const STREAK_REWARDS = [0, 1, 2, 4, 8, 16, 32, 64];
+  const STREAK_REWARDS = [0, 1, 2, 3, 4, 5, 6, 7];
 
   // ----------------------------------------------------------
   // ÉTAT GLOBAL
