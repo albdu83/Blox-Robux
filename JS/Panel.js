@@ -781,7 +781,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     /* ===== CODES PROMO ===== */
     const promoTableBody = document.querySelector(
-      "section.card:nth-of-type(2) tbody",
+      "section.card:nth-of-type(3) tbody",
     );
     let currentPromo = null;
 
