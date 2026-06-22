@@ -1802,7 +1802,7 @@ nav ul li a.active {
   position: relative;
 
   width: 1150px;
-  height: 500px;
+  max-height: 500px;
 
   padding: 40px 50px;
 
@@ -1959,7 +1959,7 @@ h2 {
   width: 500px;
   height: 500px;
 
-  border: 18px solid rgba(255, 255, 255, 0.55);
+  border: 18px solid rgba(255, 255, 255, 0.144);
 
   border-radius: 50%;
 
