@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     offers_3: 3,
     offers_10: 10,
     offers_25: 25,
-    robux_50: 3,
+    robux_50: 50,
     robux_250: 250,
     robux_1000: 1000,
   };
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     offers_3: 3,
     offers_10: 20,
     offers_25: 25,
-    robux_50: 50,
+    robux_50: 3,
     robux_250: 15,
     robux_1000: 75,
   };
