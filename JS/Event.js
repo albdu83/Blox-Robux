@@ -52,12 +52,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   };
 
   const MISSION_REWARDS = {
-    offers_1: 5,
-    offers_3: 15,
-    offers_10: 40,
-    offers_25: 100,
-    robux_50: 10,
-    robux_250: 30,
+    offers_1: 2,
+    offers_3: 3,
+    offers_10: 20,
+    offers_25: 25,
+    robux_50: 50,
+    robux_250: 15,
     robux_1000: 75,
   };
 
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     { id: "top10", label: "Top 10", icon: "🏆" },
   ];
 
-  const STREAK_REWARDS = [0, 1, 2, 3, 4, 5, 6, 7];
+  const STREAK_REWARDS = [0, 1, 1, 2, 2, 3, 3, 4];
 
   // ----------------------------------------------------------
   // ÉTAT GLOBAL
