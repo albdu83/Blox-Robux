@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       },
     };
     if (body) opts.body = JSON.stringify(body);
-    const res = await fetch("https://il.bloxrbx.fr" + path, opts);
+    const res = await fetch("https://vps.bloxrbx.fr" + path, opts);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Erreur serveur");
     return data;
