@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://il.bloxrbx.fr";
+const API_BASE_URL = "https://vps.bloxrbx.fr";
 
 async function fetchCsrfToken() {
   const res = await fetch(`${API_BASE_URL}/getCsrfToken`, {
