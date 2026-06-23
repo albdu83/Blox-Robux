@@ -56,9 +56,9 @@ body > * {
   max-width: 420px;
   margin: 18px auto 22px;
   padding: 14px 16px;
-  border: 1px solid rgba(255, 233, 0, 0.35);
+  border: 1px solid rgba(46, 204, 113, 0.35);
   border-radius: 14px;
-  background: rgba(255, 233, 0, 0.1);
+  background: rgba(46, 204, 113, 0.1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
@@ -69,8 +69,8 @@ body > * {
   height: 44px;
   flex: 0 0 44px;
   border-radius: 50%;
-  background: #ffea00;
-  color: #ffffff;
+  background: #2ecc71;
+  color: white;
   font-weight: 800;
   font-size: 15px;
 }
@@ -88,7 +88,7 @@ body > * {
 }
 
 .stock-content span {
-  color: #ffd900;
+  color: #26fab3;
   font-size: 23px;
   font-weight: 600;
 }
