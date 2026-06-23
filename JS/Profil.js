@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function setRobloxAvatar(robloxName) {
     pseudoR.textContent = `@${robloxName}`;
     try {
-      const res = await fetch(`https://il.bloxrbx.fr/api/avatar/${robloxName}`);
+      const res = await fetch(`${API_BASE_URL}/api/avatar/${robloxName}`);
       const data = await res.json();
       if (!imgage) return;
 
