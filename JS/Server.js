@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://il.bloxrbx.fr";
+const API_BASE_URL = "https://vps.bloxrbx.fr";
 
 let RobloxP = null;
 let ID = null;
