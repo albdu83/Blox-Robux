@@ -1842,7 +1842,7 @@ nav ul li a.active {
   margin-bottom: 22px;
 }
 
-h2 {
+.event-card h2 {
   font-size: 52px;
   font-weight: 800;
 
