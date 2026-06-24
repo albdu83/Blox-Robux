@@ -547,7 +547,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const url = await getLootablyUrl();
 
         container.appendChild(
-          createIframe(url.toString()),
+          createIframe(url.toString(), {
+            allow: "accelerometer; gyroscope; magnetometer; camera; microphone",
+          }),
         );
       }
 
