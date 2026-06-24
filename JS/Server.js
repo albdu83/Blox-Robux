@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const url = await getTimeWallUrl();
 
-        container.appendChild(createIframe(url.toString()));
+        container.appendChild(createIframe(url.toString(), {allow: "encrypted-media; accelerometer;"}));
       }
 
       async function getTheoremUrl() {
@@ -548,11 +548,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         container.appendChild(
           createIframe(url.toString(), {
-            allow: "accelerometer; gyroscope; magnetometer; camera; microphone",
+            allow: "accelerometer; gyroscope; magnetometer; camera; microphone; unload;",
           }),
         );
       }
-
       /* =========================
    MOBILE CARDS SYSTEM
 ========================= */
