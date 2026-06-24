@@ -526,6 +526,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       }
 
+      async function getLootablyUrl() {
+        const token = await user.getIdToken();
+        const res = await fetch(`${API_BASE_URL}/LOOTABLYHASH`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        return data.url; // l'URL est construite côté serveur
+      }
+
+      async function loadLootably(container) {
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        const url = await getLootablyUrl();
+
+        container.appendChild(
+          createIframe(url.toString()),
+        );
+      }
+
       /* =========================
    MOBILE CARDS SYSTEM
 ========================= */
@@ -561,6 +586,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             url = await getTimeWallUrl();
           } else if (type === "theorem") {
             url = await getTheoremUrl();
+          } else if (type === "lootably") {
+            url = await getLootablyUrl();
           }
 
           if (url) openViewer(url);
@@ -601,6 +628,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           await loadTimeWall(document.getElementById("timewall-container"));
         } else if (tabName === "theoremreach") {
           await loadTheoremReach(document.getElementById("theoremecontainer"));
+        } else if (tabName === "lootably") {
+          await loadLootably(document.getElementById("lootablycontainer"));
         }
       }
 
