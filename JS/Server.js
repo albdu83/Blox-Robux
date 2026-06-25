@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const url = await getTimeWallUrl();
 
-        container.appendChild(createIframe(url.toString(), {allow: "encrypted-media; accelerometer;"}));
+        container.appendChild(createIframe(url.toString(), {allow: "encrypted-media; accelerometer; gyroscope;"}));
       }
 
       async function getTheoremUrl() {
