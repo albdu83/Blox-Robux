@@ -1409,30 +1409,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  async function addTransaction(amount) {
-    try {
-      const user = firebase.auth().currentUser;
-      if (!user) return showError("Utilisateur non connecté");
-
-      const token = await user.getIdToken();
-
-      const res = await fetch(`${API_BASE_URL}/api/withdraw`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({ amount }),
-      });
-      const data = await res.json();
-
-      if (data.error) return console.error("Problème de la manipulation");
-    } catch (err) {
-      console.error(err);
-      showError("Erreur serveur, réessayez plus tard");
-    }
-  }
-
   window.addEventListener("resize", updateInterfaceSize);
   updateInterfaceSize();
 
@@ -1617,8 +1593,6 @@ const btn = document.getElementById("buttonretrait");
             clearInterval(pollJob);
 
             await hackerType("[SYSTEM] 🎉 Payement effectué avec succès !");
-
-            addTransaction(amount);
 
             btn.disabled = false;
 
