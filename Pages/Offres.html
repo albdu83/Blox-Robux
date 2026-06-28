@@ -166,114 +166,187 @@
       </div>
 
       <div id="app-desktop">
-        <div class="contenu">
-          <div class="event-card" data-event>
-            <div class="ring"></div>
-            <img src="../img/BloxImg.png" alt="BloxRobux" class="logo-bg" />
+        <div class="page-wrap">
+          <div class="contenu hub-fade">
+            <div class="event-card event-card-compact" data-event>
+              <div class="event-card-left">
+                <span class="badge"><strong>ÉVÉNEMENT LIMITÉ</strong></span>
+                <h2 class="title">Event Football 2026</h2>
+              </div>
+              <div class="ring"></div>
+              <img src="../img/BloxImg.png" alt="BloxRobux" class="logo-bg" />
+              <div class="event-card-right">
+                <button class="join-btn" data-join>Rejoindre</button>
+                <button class="details-btn" data-details>
+                  Voir les détails
+                </button>
+              </div>
+            </div>
+          </div>
 
-            <span class="badge">ÉVÉNEMENT LIMITÉ</span>
+          <div id="message-dis-container" class="hub-fade">
+            <div class="message-side-card message-side-left">
+              <span class="side-icon">💡</span>
+              <div class="side-text">
+                <strong>Astuce</strong>
+                <span
+                  >Réponds pertinemment aux sondages pour débloquer plus d'offres
+                  ciblées.</span
+                >
+              </div>
+            </div>
 
-            <h2 class="title">Event Football 2026</h2>
+            <div id="messageDis">
+              <h3 id="distitre">...</h3>
+              <span id="discontexte">...</span>
+            </div>
 
-            <p class="description">
-              La Coupe du Monde 2026 bat son plein ! Soutiens ton équipe
-              favorite et participe à des défis exclusifs sur BloxRbx.
+            <div class="message-side-card message-side-right">
+              <span class="side-icon">🔥</span>
+              <div class="side-text">
+                <strong>Offre vedette</strong>
+                <span
+                  >CPX Research : sondages rapides, paiement instantané.</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="offers-header hub-fade">
+            <h2>🧭 Gagnez vos premiers robux</h2>
+            <p>
+              Obtenez des R$ simplement en nous rejoignant sur les réseaux
+              sociaux
             </p>
+          </div>
 
-            <div class="buttons">
-              <button class="join-btn" data-join>Rejoindre</button>
-              <button class="details-btn" data-details>Voir les détails</button>
+          <div id="deskmedia-grid" class="hub-fade">
+            <div id="medias-show">
+              <div class="media_card">
+                <a
+                  href="https://youtube.com/@bloxrbx00"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  ><img
+                    src="../img/YouTube_Desktop.jpg"
+                    alt="YouTube"
+                    class="Desk_media_img"
+                    data-link="youtube"
+                /></a>
+              </div>
+
+              <div class="media_card">
+                <a
+                  href="https://discord.gg/QQMRtfBXpq"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  ><img
+                    src="../img/discord_Desktop.png"
+                    alt="Discord"
+                    class="Desk_media_img"
+                    data-link="discord"
+                /></a>
+              </div>
+
+              <div class="media_card">
+                <a
+                  href="https://www.instagram.com/bloxrbx/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  ><img
+                    src="../img/instagram_Desktop.png"
+                    alt="Instagram"
+                    class="Desk_media_img"
+                    data-link="instagram"
+                /></a>
+              </div>
+
+              <div class="media_card">
+                <a
+                  href="https://www.tiktok.com/@bloxrbx.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  ><img
+                    src="../img/tiktok_Desktop.png"
+                    alt="TikTok"
+                    class="Desk_media_img"
+                    data-link="tiktok"
+                /></a>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div id="message-dis-container">
-          <div id="messageDis">
-            <h3 id="distitre">...</h3>
-            <span id="discontexte">...</span>
-          </div>
-        </div>
-
-        <div class="offers-header">
-          <h2>🧭 Gagnez vos premiers robux</h2>
-          <p>
-            Obtenez des R$ simplement en nous rejoignant sur les réseaux sociaux
-          </p>
-        </div>
-
-        <div id="deskmedia-grid">
-          <div id="medias-show">
-            <div class="media_card">
-              <a
-                href="https://youtube.com/@bloxrbx00"
-                target="_blank"
-                rel="noopener noreferrer"
-                ><img
-                  src="../img/YouTube_Desktop.jpg"
-                  alt="YouTube"
-                  class="Desk_media_img"
-                  data-link="youtube"
-              /></a>
+          <!-- BITLABS -->
+          <div class="offers-container">
+            <div class="offers-header hub-fade">
+              <h2>OU</h2>
+              <p>Complétez des offres et gagnez des récompenses instantanées</p>
+              <p>
+                Pour cela vous pouvez choisir un des mur d'offres ci-dessous
+              </p>
             </div>
+            
+            <button class="offerwall-back-btn" id="offerwallBackBtn">
+              ← Retour
+            </button>
 
-            <div class="media_card">
+            <div class="offers-tabs">
+              <button class="tab-btn active" data-tab="cpx">
+                <img
+                  src="../img/cpx.jpg"
+                  alt="CPX Research"
+                  class="tab-btn-icon"
+                />
+                CPX Research
+              </button>
+              <button class="tab-btn" data-tab="timewall">
+                <img
+                  src="../img/Timewall.png"
+                  alt="TimeWall"
+                  class="tab-btn-icon"
+                />
+                TimeWall
+              </button>
+              <button class="tab-btn" data-tab="theoremreach">
+                <img
+                  src="../img/theoremereach_logo.png"
+                  alt="TheoremReach"
+                  class="tab-btn-icon"
+                />
+                TheoremReach
+              </button>
+              <button class="tab-btn" data-tab="lootably">
+                <img
+                  src="../img/lootably.jpg"
+                  alt="Lootably"
+                  class="tab-btn-icon"
+                />
+                Lootably
+              </button>
+            </div>
+          </div>
+          <div
+            class="informations hub-fade"
+            id="info"
+            style="text-align: center"
+          >
+            <img src="../img/discordlogo.png" alt="Logo Discord" />
+            <p>
+              Obtenez de l'aide sur
               <a
                 href="https://discord.gg/QQMRtfBXpq"
                 target="_blank"
                 rel="noopener noreferrer"
-                ><img
-                  src="../img/discord_Desktop.png"
-                  alt="Discord"
-                  class="Desk_media_img"
-                  data-link="discord"
-              /></a>
-            </div>
-
-            <div class="media_card">
-              <a
-                href="https://www.instagram.com/bloxrbx/"
-                target="_blank"
-                rel="noopener noreferrer"
-                ><img
-                  src="../img/instagram_Desktop.png"
-                  alt="Instagram"
-                  class="Desk_media_img"
-                  data-link="instagram"
-              /></a>
-            </div>
-
-            <div class="media_card">
-              <a
-                href="https://www.tiktok.com/@bloxrbx.fr"
-                target="_blank"
-                rel="noopener noreferrer"
-                ><img
-                  src="../img/tiktok_Desktop.png"
-                  alt="TikTok"
-                  class="Desk_media_img"
-                  data-link="tiktok"
-              /></a>
-            </div>
+                >notre serveur Discord</a
+              >!
+            </p>
           </div>
         </div>
+      </div>
 
-        <!-- BITLABS -->
+      <!-- MUR D'OFFRES — cœur de la page -->
+      <main class="offerwall-page-main">
         <div class="offers-container">
-          <div class="offers-header">
-            <h2>OU</h2>
-            <p>Complétez des offres et gagnez des récompenses instantanées</p>
-            <p>Pour cela vous pouvez choisir un des mur d'offres ci-dessous</p>
-          </div>
-
-          <div class="offers-tabs">
-            <button class="tab-btn active" data-tab="cpx">CPX Research</button>
-            <button class="tab-btn" data-tab="timewall">TimeWall</button>
-            <button class="tab-btn" data-tab="theoremreach">
-              TheoremReach
-            </button>
-            <button class="tab-btn" data-tab="lootably">Lootably</button>
-          </div>
-
           <div class="offers-content">
             <div class="tab-panel active" data-panel="cpx">
               <div class="panel-card">
@@ -311,19 +384,8 @@
             </div>
           </div>
         </div>
-        <div class="informations" id="info" style="text-align: center">
-          <img src="../img/discordlogo.png" alt="Logo Discord" />
-          <p>
-            Obtenez de l'aide sur
-            <a
-              href="https://discord.gg/QQMRtfBXpq"
-              target="_blank"
-              rel="noopener noreferrer"
-              >notre serveur Discord</a
-            >!
-          </p>
-        </div>
-      </div>
+      </main>
+
       <div id="app-mobile">
         <div class="contenu">
           <div class="event-card" data-event>
@@ -455,7 +517,7 @@
       </div>
       <!-- TRANSITION -->
       <div class="separator" style="visibility: hidden"></div>
-      <div class="separator"></div>
+      <div class="separator hub-fade"></div>
       <!-- SCRIPT reach ET FIREBASE -->
       <script src="https://code.jquery.com/jquery-3.2.1.min.js" defer></script>
       <script
@@ -484,130 +546,9 @@
       <script src="../JS/Animation.js" defer></script>
       <script src="../JS/Amount.js" defer></script>
       <script src="../JS/Timer.js" defer></script>
-      <!-- SCRIPT PRINCIPAL -->
-      <script defer>
-        document.addEventListener("DOMContentLoaded", () => {
-          /* =========================
-     ELEMENTS
-  ========================= */
-          const tabs = document.querySelectorAll(".tab-btn");
-          const panels = document.querySelectorAll(".tab-panel");
-          const header = document.querySelector("header");
+      <script src="../JS/Offres.js" defer></script>
 
-          const loadingWrapper = document.getElementById(
-            "sous-container-wrapper",
-          );
-
-          const boostBanner = document.getElementById("boost-banner");
-          const boostPercentEl = document.getElementById("boost-percent");
-          const boostClose = document.getElementById("boostclose");
-
-          /* =========================
-     LOADING (safe)
-  ========================= */
-          if (loadingWrapper) {
-            loadingWrapper.style.display = "flex";
-
-            window.addEventListener("load", () => {
-              setTimeout(() => {
-                loadingWrapper.style.display = "none";
-              }, 300);
-            });
-          }
-
-          /* =========================
-     TAB SYSTEM (CLEAN & SCALABLE)
-  ========================= */
-          function activateTab(tabName) {
-            tabs.forEach((btn) => {
-              btn.classList.toggle("active", btn.dataset.tab === tabName);
-            });
-
-            panels.forEach((panel) => {
-              panel.classList.toggle("active", panel.dataset.panel === tabName);
-            });
-          }
-
-          tabs.forEach((tab) => {
-            tab.addEventListener("click", () => {
-              activateTab(tab.dataset.tab);
-            });
-          });
-
-          // Default tab (safe)
-          if (tabs.length > 0) {
-            activateTab(tabs[0].dataset.tab);
-          }
-
-          /* =========================
-     SCROLL HEADER EFFECT
-  ========================= */
-          if (header) {
-            window.addEventListener("scroll", () => {
-              header.classList.toggle("scrolled", window.scrollY > 50);
-            });
-          }
-
-          /* =========================
-     BOOST BANNER
-  ========================= */
-          async function loadBoost() {
-            if (!boostBanner || !boostPercentEl) return;
-
-            try {
-              const res = await fetch(`${API_BASE_URL}/getmultiplier`);
-              const data = await res.json();
-
-              const multiplier = data?.multiplier ?? 1;
-
-              if (multiplier > 1) {
-                const percent = Math.round((multiplier - 1) * 100);
-                boostPercentEl.textContent = percent;
-                boostBanner.style.display = "flex";
-              } else {
-                boostBanner.style.display = "none";
-              }
-            } catch (err) {
-              console.error("Boost error:", err);
-              boostBanner.style.display = "none";
-            }
-          }
-
-          loadBoost();
-
-          if (boostClose) {
-            boostClose.addEventListener("click", () => {
-              boostBanner.style.display = "none";
-            });
-          }
-
-          /* =========================
-     MOBILE NAV CLEAN FIX
-  ========================= */
-          const barres = document.getElementById("barres");
-          const navBtns = document.getElementById("btns");
-          const soldeBox = document.getElementById("solde-box");
-
-          function handleResponsive() {
-            if (!barres || !navBtns || !soldeBox) return;
-
-            if (window.innerWidth >= 1024) {
-              barres.style.display = "none";
-              navBtns.style.display = "flex";
-              soldeBox.style.display = "flex";
-            } else {
-              barres.style.display = "block";
-              navBtns.style.display = "none";
-              soldeBox.style.display = "none";
-            }
-          }
-
-          handleResponsive();
-          window.addEventListener("resize", handleResponsive);
-        });
-      </script>
-
-      <div id="Block">
+      <div id="Block" class="hub-fade">
         <!-- COLONNE GAUCHE -->
         <div class="side">
           <img src="../img/BloxImg.png" alt="BloxRobuxLogo" />
