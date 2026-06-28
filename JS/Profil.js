@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       gif.style.display = "none";
       confirmBtn.style.display = "block";
       console.error(err);
-      showMsg(msg2, "❌ Erreur lors de la mise à jour");
+      showMsg(msg2, err || "❌ Erreur lors de la mise à jour");
     }
   });
 
