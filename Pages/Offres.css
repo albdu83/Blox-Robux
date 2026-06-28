@@ -569,7 +569,7 @@ nav ul li a.active {
 .offers-tabs {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 42px;
   margin-bottom: 25px;
   flex-wrap: wrap;
 }
@@ -583,6 +583,21 @@ nav ul li a.active {
   cursor: pointer;
   transition: 0.25s;
   backdrop-filter: blur(10px);
+}
+
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -1422,9 +1437,13 @@ nav ul li a.active {
 }
 
 #message-dis-container {
-  display: none;
+  display: none; /* géré par ton JS existant, probablement passé en "flex" */
+  align-items: stretch;
   justify-content: center;
-  margin: 20px 0;
+  gap: 24px;
+  max-width: 1900px;
+  margin: 20px auto;
+  padding: 0 20px;
 }
 
 #messageDis {
@@ -1443,6 +1462,8 @@ nav ul li a.active {
   gap: 6px;
 
   animation: fadeInMsg 0.4s ease;
+  flex: 1 1 600px;
+  max-width: 600px;
 }
 
 #messageDis h3 {
@@ -1455,6 +1476,74 @@ nav ul li a.active {
 #messageDis span {
   font-size: 13px;
   color: #b8b8b8;
+}
+
+.message-side-card {
+  flex: 1 1 280px;
+  max-width: 320px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.message-side-card .side-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.message-side-card .side-text strong {
+  display: block;
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.message-side-card .side-text span {
+  font-size: 12.5px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* glow décoratif derrière chaque carte, façon offers-container */
+.message-side-card::before {
+  content: "";
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.message-side-left::before {
+  background: rgba(99, 102, 241, 0.25);
+  left: -60px;
+  top: -40px;
+}
+
+.message-side-right::before {
+  background: rgba(0, 255, 200, 0.18);
+  right: -60px;
+  bottom: -40px;
+}
+
+/* sous 1100px : on enlève les cartes latérales, le message reprend toute la priorité */
+@media (max-width: 1100px) {
+  .message-side-card {
+    display: none;
+  }
+  #messageDis {
+    max-width: 600px;
+    margin: 0 auto;
+  }
 }
 
 /* Animation douce */
@@ -1499,7 +1588,11 @@ nav ul li a.active {
 }
 
 #medias-show {
-  gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  max-width: 1000px;
+  margin: 0 auto;
+  gap: 24px; /* plus large que 15px actuel */
 }
 
 #medias-show,
@@ -1553,6 +1646,7 @@ nav ul li a.active {
   transition: all 0.25s ease;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 /* ===== IMAGE ===== */
@@ -1803,7 +1897,7 @@ nav ul li a.active {
 .event-card {
   position: relative;
 
-  width: 1150px;
+  width: min(1150px, 92%);
   max-height: 500px;
 
   padding: 40px 50px;
@@ -1824,43 +1918,67 @@ nav ul li a.active {
   backdrop-filter: blur(10px);
 }
 
-.badge {
-  display: inline-flex;
+.event-card.event-card-compact {
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  min-height: auto;
+  max-height: none;
+  padding: 18px 28px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
 
-  padding: 10px 18px;
+.event-card.event-card-compact .ring,
+.event-card.event-card-compact .logo-bg {
+  display: none;
+}
 
-  border-radius: 999px;
+.event-card-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
-  background: #f0c240;
+.event-card.event-card-compact .badge {
+  margin-bottom: 0;
+}
 
-  color: #111;
+.event-card.event-card-compact .title {
+  font-size: clamp(18px, 2.4vw, 26px);
+  margin-bottom: 0;
+}
 
+.event-card-right {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.event-card.event-card-compact .join-btn,
+.event-card.event-card-compact .details-btn {
+  height: 42px;
+  padding: 0 20px;
   font-size: 14px;
-  font-weight: 700;
-
-  margin-bottom: 22px;
 }
 
-.event-card h2 {
-  font-size: 52px;
-  font-weight: 800;
-
-  line-height: 1;
-
-  margin-bottom: 20px;
-}
-
-.description {
-  width: 520px;
-
-  font-size: 17px;
-
-  line-height: 1.55;
-
-  color: rgba(255, 255, 255, 0.95);
-
-  margin-bottom: 35px;
+@media (max-width: 700px) {
+  .event-card.event-card-compact {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 18px;
+  }
+  .event-card-right {
+    width: 100%;
+  }
+  .event-card.event-card-compact .join-btn,
+  .event-card.event-card-compact .details-btn {
+    flex: 1;
+  }
 }
 
 .buttons {
@@ -1882,7 +2000,6 @@ nav ul li a.active {
 
   transition: 0.25s;
 }
-
 .join-btn {
   background: #f0c240;
 
@@ -1892,7 +2009,6 @@ nav ul li a.active {
 
   color: #111;
 }
-
 .details-btn {
   background: rgba(255, 255, 255, 0.08);
 
@@ -1905,39 +2021,6 @@ nav ul li a.active {
 .details-btn:hover {
   transform: translateY(-2px);
 }
-
-.timer {
-  display: flex;
-
-  gap: 12px;
-
-  margin-top: 35px;
-}
-
-.time-box {
-  width: 90px;
-  height: 90px;
-
-  background: rgba(255, 255, 255, 0.08);
-
-  border-radius: 14px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.time-box span {
-  font-size: 38px;
-  font-weight: 700;
-}
-
-.time-box small {
-  margin-top: 4px;
-  opacity: 0.85;
-}
-
 .logo-bg {
   position: absolute;
 
@@ -2088,6 +2171,121 @@ nav ul li a.active {
 .footer {
   margin-top: 10px;
   font-weight: 600;
+}
+
+.page-wrap {
+  max-width: 1900px;   /* au lieu de 1300px */
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+#deskmedia-grid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+#medias-show {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 260px)); /* taille plafonnée par colonne */
+  gap: 28px;
+  justify-content: center; /* centre la grille au lieu de l'étirer */
+  width: 100%;
+}
+
+.Desk_media_img {
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* L'event-card hérite maintenant du wrapper, plus besoin d'une largeur fixe */
+.event-card {
+  width: 100%;
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+/* Le panel d'offres n'a plus besoin de 2100px, il hérite de .page-wrap */
+.offers-container {
+  max-width: 100%;
+  margin: 0 auto 20px auto;
+  padding: 20px 20px;
+}
+
+.informations {
+  max-width: 100%;
+}
+
+/* ====== MODE MUR D'OFFRES IMMERSIF ====== */
+
+.hub-fade {
+  max-height: 2000px;
+  overflow: hidden;
+  transition:
+    opacity 0.4s ease,
+    max-height 0.5s ease,
+    margin 0.5s ease,
+    padding 0.5s ease;
+}
+
+body.offerwall-mode .hub-fade {
+  opacity: 0;
+  max-height: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none;
+}
+
+/* léger réajustement visuel du bandeau des tabs en mode immersif */
+body.offerwall-mode .offers-container:first-of-type {
+  padding-top: 28px;
+  padding-bottom: 12px;
+}
+
+/* Le mur d'offres : caché par défaut, prêt à glisser depuis le bas */
+.offerwall-page-main {
+  display: none;
+  opacity: 0;
+  transform: translateY(60px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+.offerwall-page-main.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Bouton retour */
+.offerwall-back-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+    display: none;
+  opacity: 0;
+  transform: translateY(60px);
+}
+
+.offerwall-back-btn.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.offerwall-back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(-3px);
 }
 
 /* Animations */
