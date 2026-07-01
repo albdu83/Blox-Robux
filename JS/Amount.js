@@ -204,20 +204,20 @@ document.addEventListener("DOMContentLoaded", async () => {
           const Stock = Number(stock).toLocaleString("fr-FR");
           remainingStockEl.textContent = Stock;
           if (Stock <= 15) {
-            remainingStockEl.style.color = "#a74949";
-            Stockicon.style.background = "#a74949";
-            StockCard.style.borderColor = "#a7494944";
-            StockCard.style.background = "#a749492a";
+            remainingStockEl.style.color = "#da1414"; // rouge
+            Stockicon.style.background = "#991f1f"; // rouge
+            StockCard.style.borderColor = "#961d1d48"; // rouge
+            StockCard.style.background = "#a51e1e11"; // rouge
           } else if (Stock <= 100) {
-            remainingStockEl.style.color = "#FFC107";
-            Stockicon.style.background = "#FFC107";
-            StockCard.style.borderColor = "#ffc1072f";
-            StockCard.style.background = "#ffc1071a";
+            remainingStockEl.style.color = "#FFC107"; // jaune
+            Stockicon.style.background = "#FFC107"; // jaune
+            StockCard.style.borderColor = "#ffc1072f"; // jaune
+            StockCard.style.background = "#ffc1071a"; // jaune
           } else {
-            remainingStockEl.style.color = "#28d42e";
-            Stockicon.style.background = "#4CAF50";
-            StockCard.style.borderColor = "#4caf4f54";
-            StockCard.style.background = "#4caf4f1c";
+            remainingStockEl.style.color = "#28d42e"; // vert
+            Stockicon.style.background = "#4CAF50"; // vert
+            StockCard.style.borderColor = "#4caf4f54"; // vert
+            StockCard.style.background = "#4caf4f1c"; // vert
           }
         }
 
