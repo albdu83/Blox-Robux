@@ -45,23 +45,20 @@ body {
 /* vignette + grain léger */
 body::before {
   content: "";
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  inset: -100px;
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="white" fill-opacity="0.03"><path d="M20,30 C25,10 35,10 40,30 C35,25 25,25 20,30 Z"/><path d="M60,40 C65,20 75,20 80,40 C75,35 65,35 60,40 Z"/><path d="M40,70 C45,50 55,50 60,70 C55,65 45,65 40,70 Z"/></g></svg>')
     repeat;
   background-size: 50px 50px; /* avant 100px → moins de pixels à calculer */
   pointer-events: none;
   z-index: -1;
-  animation: moveBg 10s linear infinite;
+  animation: moveBg 2.5s linear infinite;
+  will-change: transform;
 }
 
 @keyframes moveBg {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 200px -200px;
-  }
+  from { transform: translate(0, 0); }
+  to   { transform: translate(50px, -50px); }
 }
 
 /* ajoute des “blocs visuels” dans la page */
@@ -97,34 +94,6 @@ body::before {
   display: flex;
   flex-direction: column;
 }
-
-#mobile-feed {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 16px;
-}
-
-/* CARD */
-.mobile-card {
-  background: linear-gradient(145deg, #1a1a2e, #12121f);
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* HEADER */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-header h3 {
-  font-size: 16px;
-}
-
 /* BADGE */
 .badge {
   background: #ffea00;
@@ -134,25 +103,6 @@ body::before {
   border-radius: 8px;
 }
 
-/* DESC */
-.card-desc {
-  font-size: 13px;
-  opacity: 0.7;
-  margin: 8px 0 12px;
-}
-
-/* IFRAME WRAPPER */
-.iframe-wrapper {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-/* IFRAME */
-.iframe-wrapper iframe {
-  width: 100%;
-  height: 500px;
-  border: none;
-}
 /* ===================== */
 /* TRANSITION CHARGEMENT  */
 /* ===================== */
@@ -381,7 +331,7 @@ nav ul li a.active {
 
   top: -150px;
   left: -100px;
-
+  will-change: transform;
   animation: moveGlow 8s ease-in-out infinite alternate;
 }
 
@@ -816,89 +766,6 @@ nav ul li a.active {
 .informations a {
   color: #009bf9;
   text-decoration: underline;
-}
-
-/* ============================ */
-/* BITLABS / TIMEWALL/ Theoreme */
-/* ============================ */
-#pk {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 24px;
-  max-width: 600px;
-  margin: 40px auto;
-}
-
-#pk li {
-  background: #1f2937;
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-#pk img {
-  border: black solid 2px;
-  width: 90px;
-  height: 90px;
-  object-fit: contain;
-  background: #4b4b4b;
-  padding: 8px;
-  border-radius: 18px;
-  cursor: pointer;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-#pk img:hover {
-  transform: translateY(-6px) scale(1.05);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-}
-
-#pk li.active {
-  outline: 2px solid #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
-}
-
-#reload-bitlabs {
-  width: clamp(80px, 20vw, 150px);
-  height: auto;
-  border-radius: 20px;
-  transition: transform 0.2s ease;
-  cursor: pointer;
-}
-
-#btnGagner,
-#theoreme {
-  width: clamp(60px, 15vw, 120px);
-  height: auto;
-  border-radius: 20px;
-  transition: transform 0.2s ease;
-  cursor: pointer;
-}
-
-#theoreme:hover,
-#pk img:hover,
-#btnGagner:hover {
-  transform: scale(0.9);
-}
-
-#theoreme:active,
-#pk img:active,
-#btnGagner:active {
-  transform: scale(1);
-}
-
-.theoremereach,
-.bitLabs,
-.TimeWall {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 
@@ -2365,11 +2232,6 @@ body.offerwall-mode .offers-container:first-of-type {
   .offers-wrapper {
     margin: 20px 14px 60px;
   }
-
-  #pk img {
-    width: 70px;
-    height: 70px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -2423,7 +2285,7 @@ body.offerwall-mode .offers-container:first-of-type {
     right: 20px;
   }
 
-  h2 {
+  .event-card h2 {
     font-size: 42px;
   }
 
@@ -2438,7 +2300,7 @@ body.offerwall-mode .offers-container:first-of-type {
     padding: 30px;
   }
 
-  h2 {
+  .event-card h2 {
     font-size: 34px;
   }
 
@@ -2480,7 +2342,7 @@ body.offerwall-mode .offers-container:first-of-type {
     border-radius: 18px;
   }
 
-  h2 {
+  .event-card h2 {
     font-size: 26px;
     line-height: 1.2;
   }
@@ -2526,7 +2388,7 @@ body.offerwall-mode .offers-container:first-of-type {
     padding: 18px;
   }
 
-  h2 {
+  .event-card h2 {
     font-size: 22px;
   }
 
