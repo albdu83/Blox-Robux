@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closenotif2 = document.getElementById("closenotif2");
   const sousnotifbackground = document.getElementById("sous-notifbackground");
   const remainingStockEl = document.getElementById("remainingStock");
+  const Stockicon = document.querySelector(".stock-icon");
+  const StockCard = document.querySelector(".stock-card");
 
   /* =====================================================
        3️⃣ ÉTAT LOCAL
@@ -199,7 +201,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (remainingStockEl) {
           const stock = data.stock_data?.remaining_solde ?? 0;
-          remainingStockEl.textContent = Number(stock).toLocaleString("fr-FR");
+          const Stock = Number(stock).toLocaleString("fr-FR");
+          remainingStockEl.textContent = Stock;
+          if (Stock <= 15) {
+            remainingStockEl.style.color = "#a74949";
+            Stockicon.style.background = "#a74949";
+            StockCard.style.borderColor = "#a7494944";
+            StockCard.style.background = "#a749492a";
+          } else if (Stock <= 100) {
+            remainingStockEl.style.color = "#FFC107";
+            Stockicon.style.background = "#FFC107";
+            StockCard.style.borderColor = "#ffc1072f";
+            StockCard.style.background = "#ffc1071a";
+          } else {
+            remainingStockEl.style.color = "#28d42e";
+            Stockicon.style.background = "#4CAF50";
+            StockCard.style.borderColor = "#4caf4f54";
+            StockCard.style.background = "#4caf4f1c";
+          }
         }
 
         const delta = data.delta ?? state.balance - oldBalance;
