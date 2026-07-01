@@ -931,6 +931,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       .getElementById("closeDrawer")
       ?.addEventListener("click", closeDrawer);
 
+    /* ===== STOCKS ===== */
+    const stockInput = document.getElementById("Stockrestant");
+    const stockBtn = document.querySelector(".EditStock");
+
+    stockBtn?.addEventListener("click", async () => {
+      const stockValue = Number(stockInput.value);
+      if (isNaN(stockValue) || stockValue < 0 || stockInput.value === "") {
+        stockInput.value = "";
+        return alert("❌ Valeur invalide (0 ou plus)");
+      }
+      try {
+        await adminAction("/admin/stock", { stock: stockValue });
+        alert("✅ Stock mis à jour");
+        stockInput.value = "";
+      } catch (err) {
+        alert("❌ " + err.message);
+      }
+    });
+
     /* ===== MULTIPLICATEUR ===== */
     const multiplierSpan = document.querySelector(".current-multiplier");
     const multiplierInput = document.getElementById("Multiplicator");
