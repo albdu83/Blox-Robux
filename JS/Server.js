@@ -995,6 +995,22 @@ document.addEventListener("DOMContentLoaded", async () => {
           return alert(msg);
         }
 
+        if (data.recoveryCodes && data.recoveryCodes.length > 0) {
+          showRecoveryCodesModal(data.recoveryCodes, async () => {
+            try {
+              await firebase.auth().signInWithCustomToken(data.token);
+              resetUI();
+              alert("Connexion réussie ✅");
+              window.location.href = "../Pages/Offres";
+            } catch (err) {
+              console.error(err);
+              resetUI();
+              alert("Erreur serveur ❌");
+            }
+          });
+          return;
+        }
+
         // 🔐 Connexion Firebase
         await firebase.auth().signInWithCustomToken(data.token);
 
