@@ -113,6 +113,26 @@
       </p>
     </form>
 
+    <div id="recoveryModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Codes de récupération</h2>
+
+        <p>
+          IMPORTANT : sauvegarde ces codes. Ils permettent de récupérer ton
+          compte.
+        </p>
+
+        <textarea id="recoveryCode" readonly></textarea>
+
+        <div class="buttons">
+          <button id="copyRecovery">Copier</button>
+          <button id="downloadRecovery">Télécharger</button>
+        </div>
+
+        <button id="confirmRecovery">J'ai sauvegardé mes codes</button>
+      </div>
+    </div>
+
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script
       src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
