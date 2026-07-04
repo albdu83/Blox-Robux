@@ -51,7 +51,11 @@
           />
         </span>
       </div>
-      <div id="recaptcha-login" style="min-height: 78px; min-width: 304px" class="g-recaptcha"></div>
+      <div
+        id="recaptcha-login"
+        style="min-height: 78px; min-width: 304px"
+        class="g-recaptcha"
+      ></div>
       <input type="submit" value="Connexion" id="inconnexion" />
       <img src="../img/loading.gif" alt="loading" id="loading" />
       <p>
@@ -64,7 +68,11 @@
         <br />
         <span style="color: white"
           >Mot de passe oublié ?
-          <a href="#" class="switch-view" data-view="recover1" style="color: #dec2c2"
+          <a
+            href="#"
+            class="switch-view"
+            data-view="recover1"
+            style="color: #dec2c2"
             >Récupère ton compte ici</a
           ></span
         >
@@ -74,7 +82,9 @@
     <!-- ═══════════ VUE 2 : RÉCUPÉRATION — ÉTAPE 1 (code) ═══════════ -->
     <form id="form-recuperation-step1" style="display: none">
       <h4><span style="color: white">Récupération</span></h4>
-      <h2><span style="color: #dec2c2">Vérifie ton code de récupération</span></h2>
+      <h2>
+        <span style="color: #dec2c2">Vérifie ton code de récupération</span>
+      </h2>
       <hr />
 
       <div class="user-field">
@@ -105,15 +115,28 @@
         />
       </div>
 
-      <div id="recaptcha-recover1" style="min-height: 78px; min-width: 304px" class="g-recaptcha"></div>
+      <div
+        id="recaptcha-recover1"
+        style="min-height: 78px; min-width: 304px"
+        class="g-recaptcha"
+      ></div>
 
       <input type="submit" value="Vérifier le code" id="inrecuperation1" />
-      <img src="../img/loading.gif" alt="loading" id="loading2" style="display: none" />
+      <img
+        src="../img/loading.gif"
+        alt="loading"
+        id="loading2"
+        style="display: none"
+      />
 
       <p>
         <span style="color: white"
           >Tu te souviens de ton mot de passe ?
-          <a href="#" class="switch-view" data-view="login" style="color: #dec2c2"
+          <a
+            href="#"
+            class="switch-view"
+            data-view="login"
+            style="color: #dec2c2"
             >Retour à la connexion</a
           ></span
         >
@@ -123,7 +146,9 @@
     <!-- ═══════════ VUE 3 : RÉCUPÉRATION — ÉTAPE 2 (nouveau mdp) ═══════════ -->
     <form id="form-recuperation-step2" style="display: none">
       <h4><span style="color: white">Récupération</span></h4>
-      <h2><span style="color: #dec2c2">Choisis un nouveau mot de passe</span></h2>
+      <h2>
+        <span style="color: #dec2c2">Choisis un nouveau mot de passe</span>
+      </h2>
       <hr />
 
       <div class="password-field">
@@ -166,17 +191,49 @@
         </span>
       </div>
 
-      <input type="submit" value="Réinitialiser le mot de passe" id="inrecuperation2" />
-      <img src="../img/loading.gif" alt="loading" id="loading3" style="display: none" />
+      <input
+        type="submit"
+        value="Réinitialiser le mot de passe"
+        id="inrecuperation2"
+      />
+      <img
+        src="../img/loading.gif"
+        alt="loading"
+        id="loading3"
+        style="display: none"
+      />
 
       <p>
         <span style="color: white"
-          ><a href="#" class="switch-view" data-view="login" style="color: #dec2c2"
+          ><a
+            href="#"
+            class="switch-view"
+            data-view="login"
+            style="color: #dec2c2"
             >Annuler et retourner à la connexion</a
           ></span
         >
       </p>
     </form>
+    <div id="recoveryModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Codes de récupération</h2>
+
+        <p>
+          IMPORTANT : sauvegarde ces codes. Ils permettent de récupérer ton
+          compte.
+        </p>
+
+        <textarea id="recoveryCode" readonly></textarea>
+
+        <div class="buttons">
+          <button id="copyRecovery">Copier</button>
+          <button id="downloadRecovery">Télécharger</button>
+        </div>
+
+        <button id="confirmRecovery">J'ai sauvegardé mes codes</button>
+      </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
