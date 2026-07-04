@@ -3,13 +3,15 @@ const API_BASE_URL = "https://vps.bloxrbx.fr";
 let RobloxP = null;
 let ID = null;
 let userN = null;
+let loginWidgetId = null;
+let recoverWidgetId = null;
 
 if (!window.firebaseReady) {
   window.firebaseReady = (async () => {
     const res = await fetch("https://api.bloxrbx.fr/firebase-config", {
-      method: "POST"
+      method: "POST",
     });
-    const config = await res.json()
+    const config = await res.json();
 
     firebase.initializeApp(config);
 
@@ -18,6 +20,28 @@ if (!window.firebaseReady) {
 
     return { auth: window.auth, db: window.db };
   })();
+}
+
+window.onRecaptchaLoad = function () {
+  const loginContainer = document.getElementById("recaptcha-login");
+  if (loginContainer) {
+    loginWidgetId = grecaptcha.render("recaptcha-login", {
+      sitekey: "6LfYrkUsAAAAAP1-Oe9wb5F3u5p67hNg_92-ug-W",
+    });
+  }
+};
+
+function ensureRecoverCaptcha() {
+  const recoverContainer = document.getElementById("recaptcha-recover1");
+  if (
+    recoverContainer &&
+    recoverWidgetId === null &&
+    typeof grecaptcha !== "undefined"
+  ) {
+    recoverWidgetId = grecaptcha.render("recaptcha-recover1", {
+      sitekey: "6LfYrkUsAAAAAP1-Oe9wb5F3u5p67hNg_92-ug-W",
+    });
+  }
 }
 
 function initFirebase() {
@@ -496,7 +520,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const url = await getTimeWallUrl();
 
-        container.appendChild(createIframe(url.toString(), {allow: "encrypted-media; accelerometer; gyroscope;"}));
+        container.appendChild(
+          createIframe(url.toString(), {
+            allow: "encrypted-media; accelerometer; gyroscope;",
+          }),
+        );
       }
 
       async function getTheoremUrl() {
@@ -548,7 +576,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         container.appendChild(
           createIframe(url.toString(), {
-            allow: "accelerometer; gyroscope; magnetometer; camera; microphone; unload;",
+            allow:
+              "accelerometer; gyroscope; magnetometer; camera; microphone; unload;",
           }),
         );
       }
@@ -748,6 +777,69 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   /* =======================
+   BASCULE ENTRE VUES (login / recover1 / recover2)
+======================= */
+  function switchView(view) {
+    const views = {
+      login: document.getElementById("form-connexion"),
+      recover1: document.getElementById("form-recuperation-step1"),
+      recover2: document.getElementById("form-recuperation-step2"),
+    };
+    Object.entries(views).forEach(([key, el]) => {
+      if (el) el.style.display = key === view ? "flex" : "none";
+    });
+  }
+
+  document.querySelectorAll(".switch-view").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      const view = el.dataset.view;
+      if (view === "recover1") ensureRecoverCaptcha();
+      switchView(view);
+    });
+  });
+
+  function showRecoveryCodesModal(codes, onConfirm) {
+    const modal = document.getElementById("recoveryModal");
+    const codeField = document.getElementById("recoveryCode");
+    const copyBtn = document.getElementById("copyRecovery");
+    const downloadBtn = document.getElementById("downloadRecovery");
+    const confirmBtn = document.getElementById("confirmRecovery");
+
+    // Pas de modal sur cette page (sécurité si le HTML n'est pas encore à jour)
+    if (!modal || !codeField) {
+      onConfirm();
+      return;
+    }
+
+    const codesText = codes.join("\n");
+    codeField.value = codesText;
+    modal.classList.remove("hidden");
+
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(codesText).then(() => {
+        copyBtn.textContent = "Copié ✅";
+        setTimeout(() => (copyBtn.textContent = "Copier"), 1200);
+      });
+    };
+
+    downloadBtn.onclick = () => {
+      const blob = new Blob([codesText], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "bloxrbx-codes-recuperation.txt";
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    confirmBtn.onclick = () => {
+      modal.classList.add("hidden");
+      onConfirm();
+    };
+  }
+
+  /* =======================
      INSCRIPTION
   ======================= */
   const gif = document.getElementById("loading");
@@ -823,22 +915,20 @@ document.addEventListener("DOMContentLoaded", async () => {
           return;
         }
         const customToken = data.customToken;
-        try {
-          await firebase.auth().signInWithCustomToken(customToken);
+        const recoveryCodes = data.recoveryCodes || [];
 
-          // Maintenant que l'utilisateur est connecté
-          gif.style.display = "none";
-          inscription.style.display = "block";
-          alert("Compte créé avec succès ✅");
+        gif.style.display = "none";
 
-          // Redirection sûre après login
-          window.location.href = "../Pages/Offres";
-        } catch (err) {
-          gif.style.display = "none";
-          inscription.style.display = "block";
-          console.error(err);
-          alert("Erreur lors de la connexion avec le token ❌");
-        }
+        showRecoveryCodesModal(recoveryCodes, async () => {
+          try {
+            await firebase.auth().signInWithCustomToken(customToken);
+            window.location.href = "../Pages/Offres";
+          } catch (err) {
+            console.error(err);
+            inscription.style.display = "block";
+            alert("Erreur lors de la connexion avec le token ❌");
+          }
+        });
       } catch (err) {
         gif.style.display = "none";
         inscription.style.display = "block";
@@ -874,7 +964,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return alert("Veuillez remplir tous les champs ❌");
       }
 
-      const captcha = grecaptcha.getResponse();
+      const captcha = grecaptcha.getResponse(loginWidgetId);
       if (!captcha) {
         resetUI();
         return alert("Veuillez cocher le CAPTCHA ❌");
@@ -900,7 +990,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (!res.ok || !data.token) {
           resetUI();
-          grecaptcha.reset();
+          grecaptcha.reset(loginWidgetId);
           const msg = data.error || "Connexion échouée ❌";
           return alert(msg);
         }
@@ -923,6 +1013,150 @@ document.addEventListener("DOMContentLoaded", async () => {
     gif.style.display = "none";
     connexion.style.display = "block";
   }
+
+  /* =======================
+   RÉCUPÉRATION DE COMPTE
+======================= */
+  const formRecuperationStep1 = document.getElementById(
+    "form-recuperation-step1",
+  );
+  const formRecuperationStep2 = document.getElementById(
+    "form-recuperation-step2",
+  );
+  const gifRecover1 = document.getElementById("loading2");
+  const gifRecover2 = document.getElementById("loading3");
+
+  let pendingResetToken = null;
+
+  if (formRecuperationStep1) {
+    formRecuperationStep1.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      formRecuperationStep1.style.display = "none";
+      gifRecover1.style.display = "block";
+
+      const username = document.getElementById("recUsername").value.trim();
+      const code = document.getElementById("recCode").value.trim();
+
+      if (typeof grecaptcha === "undefined") {
+        gifRecover1.style.display = "none";
+        formRecuperationStep1.style.display = "flex";
+        return alert("reCAPTCHA non chargé ❌");
+      }
+
+      const captcha = grecaptcha.getResponse(recoverWidgetId);
+      if (!captcha) {
+        gifRecover1.style.display = "none";
+        formRecuperationStep1.style.display = "flex";
+        return alert("Veuillez cocher le CAPTCHA ❌");
+      }
+
+      if (!username || !code) {
+        gifRecover1.style.display = "none";
+        formRecuperationStep1.style.display = "flex";
+        return alert("Veuillez remplir tous les champs ❌");
+      }
+
+      try {
+        const csrfToken = await fetchCsrfToken();
+        const res = await fetch(`${API_BASE_URL}/recover/verify`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          credentials: "include",
+          body: JSON.stringify({ username, code, captcha }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.resetToken) {
+          gifRecover1.style.display = "none";
+          formRecuperationStep1.style.display = "flex";
+          grecaptcha.reset(recoverWidgetId);
+          return alert(data.error || "Code invalide ❌");
+        }
+
+        pendingResetToken = data.resetToken;
+
+        gifRecover1.style.display = "none";
+        formRecuperationStep2.style.display = "flex";
+      } catch (err) {
+        console.error(err);
+        gifRecover1.style.display = "none";
+        formRecuperationStep1.style.display = "flex";
+        alert("Erreur serveur ❌");
+      }
+    });
+  }
+
+  if (formRecuperationStep2) {
+    formRecuperationStep2.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!pendingResetToken) {
+        alert("Session de récupération expirée, recommence depuis le début ❌");
+        switchView("recover1");
+        return;
+      }
+
+      formRecuperationStep2.style.display = "none";
+      gifRecover2.style.display = "block";
+
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmNewPassword =
+        document.getElementById("confirmNewPassword").value;
+
+      if (newPassword.length < 8) {
+        gifRecover2.style.display = "none";
+        formRecuperationStep2.style.display = "flex";
+        return alert("Le mot de passe doit contenir au moins 8 caractères ❌");
+      }
+
+      if (newPassword !== confirmNewPassword) {
+        gifRecover2.style.display = "none";
+        formRecuperationStep2.style.display = "flex";
+        return alert("Les mots de passe ne correspondent pas ❌");
+      }
+
+      try {
+        const csrfToken = await fetchCsrfToken();
+        const res = await fetch(`${API_BASE_URL}/recover/reset`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          credentials: "include",
+          body: JSON.stringify({ resetToken: pendingResetToken, newPassword }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          gifRecover2.style.display = "none";
+          formRecuperationStep2.style.display = "flex";
+          return alert(data.error || "Erreur lors de la réinitialisation ❌");
+        }
+
+        pendingResetToken = null;
+        gifRecover2.style.display = "none";
+        alert(
+          "Mot de passe réinitialisé avec succès ✅ Vous pouvez te reconnecter.",
+        );
+        switchView("login");
+      } catch (err) {
+        console.error(err);
+        gifRecover2.style.display = "none";
+        formRecuperationStep2.style.display = "flex";
+        alert("Erreur serveur ❌");
+      }
+    });
+  }
+
+  togglePasswordImage("checkimg4", "newPassword");
+  togglePasswordImage("checkimg5", "confirmNewPassword");
 
   /* =======================
         MENU DEPLOYING
@@ -1356,7 +1590,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `${finalTime}s`;
   }
 
-    function hackerType(text, speed = 12) {
+  function hackerType(text, speed = 12) {
     return new Promise((resolve) => {
       const textBox = document.getElementById("hacker-text");
 
@@ -1412,7 +1646,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("resize", updateInterfaceSize);
   updateInterfaceSize();
 
-const btn = document.getElementById("buttonretrait");
+  const btn = document.getElementById("buttonretrait");
   const finalStep = document.getElementById("finalStep");
   const select = document.getElementById("public-places");
   const frame = document.getElementById("hacker-frame");
@@ -1420,7 +1654,7 @@ const btn = document.getElementById("buttonretrait");
 
   if (!btn || !select) return;
 
-    btn.addEventListener("click", async () => {
+  btn.addEventListener("click", async () => {
     if (btn.disabled) return;
     btn.disabled = true;
     finalStep.classList.remove("show");
