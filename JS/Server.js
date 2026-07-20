@@ -576,8 +576,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         container.appendChild(
           createIframe(url.toString(), {
-            allow:
-              "accelerometer; gyroscope; magnetometer; camera; microphone; unload;",
+            allow: "accelerometer; gyroscope; magnetometer; camera; microphone; unload; encrypted-media;",
           }),
         );
       }
