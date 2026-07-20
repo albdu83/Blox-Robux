@@ -763,12 +763,16 @@ header ul li a.active {
  
 /* ── Header ── */
 .fb-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   text-align: center;
   margin-bottom: 28px;
+  min-height: 80vh;
 }
  
-.fb-header h1 {
-  font-size: 2rem;
+.fb-header .foot {
+  font-size: 3rem;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
