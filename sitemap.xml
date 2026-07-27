@@ -39,6 +39,18 @@
     </url>
 
     <url>
+        <loc>https://www.bloxrbx.fr/Pages/Bio</loc>
+        <priority>0.8</priority>
+        <changefreq>weekly</changefreq>
+    </url>
+
+    <url>
+        <loc>https://www.bloxrbx.fr/Pages/Security</loc>
+        <priority>0.8</priority>
+        <changefreq>weekly</changefreq>
+    </url>
+
+    <url>
         <loc>https://www.bloxrbx.fr/Pages/Support</loc>
         <priority>0.6</priority>
         <changefreq>monthly</changefreq>
