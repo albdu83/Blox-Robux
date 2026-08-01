@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloxR$ - Leaderboard</title>
+    <link rel="stylesheet" href="Leaderboard.css" />
+  </head>
+  <body>
+    <div id="transition" class="fade-transition active">
+      <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+      <div class="text" id="text-chargement">Chargement...</div>
+    </div>
+
+    <header class="header">
+      <a href="../" class="logo">
+        <img src="../img/logo.png" alt="Logo De Blox Robux" />
+      </a>
+      <div class="text">Blox R$</div>
+      <div class="logo2">
+        <img src="../img/Barres.png" alt="Barres" id="barres" />
+      </div>
+    </header>
+
+    <div class="header-shadow"></div>
+    <div class="navigation" id="navigation">
+      <div class="nav-panel" id="nav-panel">
+        <div class="logo2" id="logo2">
+          <img src="../img/Back.png" alt="Barres" id="barres2" />
+        </div>
+        <ul class="nave">
+          <li>
+            <a id="lien-profil" href="#">
+              <span>Aucun compte</span>
+              <img id="avatar-roblox" src="../img/default-avatar.png" />
+            </a>
+          </li>
+          <li><a id="btn-accueil" href="../">Accueil</a></li>
+          <li><a id="btn-win" href="../Pages/Offres">Gagner des R$</a></li>
+          <li><a id="btn-retrait" href="../Pages/Retraits">Retirer</a></li>
+        </ul>
+        <div class="loadimg"></div>
+      </div>
+    </div>
+
+    <div id="Page">
+      <h1>📊 Leaderboard de BloxR$</h1>
+
+      <div id="leaderboard-top3">
+        <span id="top1" class="top-player">
+          <div class="rank">🏆 Top 1</div>
+          <div class="username">Chargement...</div>
+          <div class="robux">0 R$</div>
+        </span>
+        <span id="top2" class="top-player">
+          <div class="rank">🥈 Top 2</div>
+          <div class="username">Chargement...</div>
+          <div class="robux">0 R$</div>
+        </span>
+        <span id="top3" class="top-player">
+          <div class="rank">🥉 Top 3</div>
+          <div class="username">Chargement...</div>
+          <div class="robux">0 R$</div>
+        </span>
+      </div>
+
+      <div id="leaderboard">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Rang</th>
+              <th>Nom d'utilisateur</th>
+              <th>R$ gagnés</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+
+      <footer>
+        <p>Blox R$ - Leaderboard actif</p>
+      </footer>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const barres = document.getElementById("logo3");
+        const btns = document.getElementById("btns");
+        const soldeBox = document.getElementById("solde-box");
+        const navBtns = document.getElementById("btns");
+
+        function handleResponsive() {
+          if (!barres || !navBtns || !soldeBox) return;
+
+          if (window.innerWidth >= 1024) {
+            barres.style.display = "none";
+            navBtns.style.display = "flex";
+            soldeBox.style.display = "flex";
+          } else {
+            barres.style.display = "block";
+            navBtns.style.display = "none";
+            soldeBox.style.display = "none";
+          }
+        }
+
+        handleResponsive();
+        window.addEventListener("resize", handleResponsive);
+
+        const header = document.querySelector("header");
+
+        window.addEventListener("scroll", () => {
+          if (window.scrollY > 50) {
+            header.classList.add("scrolled");
+          } else {
+            header.classList.remove("scrolled");
+          }
+        });
+      });
+    </script>
+
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
+      defer
+    ></script>
+    <script src="../JS/Animation.js" defer></script>
+    <script src="../JS/Server.js" defer></script>
+    <script src="../JS/Support.js" defer></script>
+    <script src="../JS/Leaderboard.js" defer></script>
+
+    <div id="Block">
+      <!-- COLONNE GAUCHE -->
+      <div class="side">
+        <img src="../img/BloxImg.png" alt="BloxRobuxLogo" />
+      </div>
+
+      <!-- COLONNE CENTRALE -->
+      <div id="BlockBottom">
+        <div class="infos">
+          <div class="col">
+            <h2>A propos de nous</h2>
+            <ul>
+              <li><a href="Bio">Biographie du site</a></li>
+              <li><a href="Security">Paiements sécurisés</a></li>
+              <li><a href="Support">Support</a></li>
+              <li>
+                <a
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=contact@bloxrbx.fr"
+                  >Nous contacter</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div class="col">
+            <h2>Mentions légales</h2>
+            <ul>
+              <li><a href="../Legal/CGU">Conditions d'utilisations</a></li>
+              <li><a href="../Legal/PCF">Politique de confidentialité</a></li>
+            </ul>
+          </div>
+
+          <div class="col">
+            <h2>Réseaux sociaux</h2>
+            <ul>
+              <li>
+                <a
+                  href="https://discord.gg/QQMRtfBXpq"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Discord</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://youtube.com/@bloxrbx00"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >YouTube</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/bloxrbx/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Instagram</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://www.tiktok.com/@bloxrbx.fr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >TikTok</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="side empty"></div>
+    </div>
+  </body>
+</html>
