@@ -1285,18 +1285,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const rootIdMap = {};
+  const Interface = document.querySelector(".Interface");
+
   async function getPublicsPlaces(targetId) {
     if (!targetId) return;
 
     const select = document.getElementById("public-places");
     if (!select) return;
 
-    const Interface = document.querySelector(".Interface");
+    const tutocontainer = document.getElementById("tutocontainer");
     const explain = document.getElementById("explain");
     const HELP = document.getElementById("HELP");
-    const tutocontainer = document.getElementById("tutocontainer");
     const href = document.getElementById("href");
     const href2 = document.getElementById("href2");
+    const HelpBtn = document.getElementById("buttonhelp");
 
     let hasChangedOnce = false;
 
@@ -1356,7 +1358,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // UI first interaction only
         if (!hasChangedOnce) {
-          Interface?.classList.add("active9");
+          Interface?.classList.toggle("active9");
           explain?.classList.add("active6");
           HELP?.classList.add("active7");
 
@@ -1390,8 +1392,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Erreur lors de la récupération des places :", err);
     }
   }
+
   function updateInterfaceSize() {
-    const Interface = document.querySelector(".Interface");
     const logoimg = document.getElementById("logoimg");
     if (!Interface) return;
 
@@ -1655,6 +1657,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       requestAnimationFrame(loop);
+    });
+  }
+
+  const btnhelp = document.getElementById("buttonhelp");
+  if (btnhelp) {
+    const helpFrame = document.getElementById("help-frame");
+    btnhelp.addEventListener("click", () => {
+      helpFrame.style.display = "block";
+      Interface?.classList.remove("show");
+      Interface.style.display = "none";
+      setTimeout(() => {
+        helpFrame.classList.add("visible");
+      }, 100);
+    });
+    document.getElementById("closeHelpBtn")?.addEventListener("click", () => {
+      helpFrame.classList.remove("visible");
+      Interface.style.display = "flex";
+      requestAnimationFrame(() => {
+        helpFrame.style.display = "none";
+        Interface?.classList.add("show");
+      });
     });
   }
 
