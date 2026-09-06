@@ -1282,3 +1282,4 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Erreur avatar :", err);
     }
   }
+});
