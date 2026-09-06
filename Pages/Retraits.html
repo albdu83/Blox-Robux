@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blox R$ - Retraits</title>
-    <link rel="stylesheet" href="Retraits.css" />
+    <link rel="stylesheet" href="Retraits-Test.css" />
     <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon" />
   </head>
 
@@ -53,9 +53,9 @@
       <div class="background" id="background">
         <div class="Interface" id="finalStep">
           <p class="explain" id="explain">
-            Veuillez selectionner un de vos jeux publiques pour
-            effectuer votre transaction. Si aucun jeu n'apparait, veuillez
-            cliquer sur le bouton si dessous.
+            Veuillez selectionner un de vos jeux publiques pour effectuer votre
+            transaction. Si aucun jeu n'apparait, veuillez cliquer sur le bouton
+            si dessous.
           </p>
           <button class="HELP" id="HELP">Aucun jeu n'apparaît ?</button>
           <div class="public-places">
@@ -254,7 +254,6 @@
                   </article>
                 </div>
               </div>
-
               <!-- ============================================= -->
               <!-- 1. ERREURS DE PAIEMENT — format accordéon      -->
               <!-- Chaque erreur = 1 <details>. Le <summary>      -->
@@ -816,13 +815,29 @@
                     <div id="help-article-wrapper">
                       <a href="https://discord.gg/KUGzfhUEDg" target="_blank">
                         <img
-                          style="max-width: 100%; border-radius: 10px; transform: rotate(-5deg);"
+                          style="
+                            max-width: 100%;
+                            border-radius: 10px;
+                            transform: rotate(-5deg);
+                          "
                           src="../img/discord_Desktop.png"
                           alt="Support"
                         />
                       </a>
-                      <img src="../img/Flèches.png" alt="Flèches" style="max-width: 45%" />
-                      <img src="../img/ComingSoon.png" alt="Vidéo tutoriel" style="max-width: 100%; border-radius: 10px; transform: rotate(5deg);" />
+                      <img
+                        src="../img/Flèches.png"
+                        alt="Flèches"
+                        style="max-width: 45%"
+                      />
+                      <img
+                        src="../img/ComingSoon.png"
+                        alt="Vidéo tutoriel"
+                        style="
+                          max-width: 100%;
+                          border-radius: 10px;
+                          transform: rotate(5deg);
+                        "
+                      />
                     </div>
 
                     <div class="help-article-footer">
@@ -939,9 +954,14 @@
               <strong><span id="remainingStock">0</span> R$</strong>
             </div>
           </div>
-          <h2>Historique des retraits</h2>
-          <div class="template" id="transactions">
-            aucun retrait effectué...
+        </section>
+
+        <section>
+          <div class="retrait-container history">
+            <h2>Historique des retraits</h2>
+            <div class="template" id="transactions">
+              aucun retrait effectué...
+            </div>
           </div>
         </section>
       </main>
@@ -963,7 +983,7 @@
       ></script>
       <script src="../JS/Server.js" defer></script>
       <script src="../JS/Animation.js" defer></script>
-      <script src="../JS/Amount.js" defer></script>
+      <script src="../JS/SysRbx.js" defer></script>
       <script>
         document.addEventListener("DOMContentLoaded", () => {
           const barres = document.getElementById("logo3");
