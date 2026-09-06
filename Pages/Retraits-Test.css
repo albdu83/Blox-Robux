@@ -478,11 +478,6 @@ main {
   align-items: center;
 }
 
-.history {
-  margin-top: 40px;
-  min-width: 600px;
-}
-
 .retrait-container {
   background: #222436;
   padding: 30px;
@@ -490,6 +485,13 @@ main {
   width: 100%;
   max-width: 600px;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+.history {
+  margin-top: 40px;
+  width: 600px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .retrait-container h1 {
@@ -2481,10 +2483,21 @@ h2 {
     width: 11vw;
   }
 }
+
+@media (max-width: 600px) {
+  .history {
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .retrait-container {
     margin: 20px;
     padding: 20px;
+  }
+
+  .history {
+    margin: 0;
   }
 
   header {
