@@ -738,35 +738,115 @@ button:hover {
   width: 25px;
 }
 
+/* ===== Résultat du retrait ===== */
+
 .summary-frame {
+  width: min(460px, calc(100vw - 28px));
+  max-width: 70vw;
+  max-height: none;
+  margin: 0;
+  padding: 28px;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.16), transparent 42%),
+    linear-gradient(145deg, rgba(20, 31, 55, 0.98), rgba(9, 14, 27, 0.98));
+
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 22px;
+
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55);
+  z-index: 20;
   pointer-events: auto;
-  margin-top: 24px;
-  padding: 24px;
-  max-height: 400px;
-  max-width: 90%;
-  overflow-y: scroll;
-  border-radius: 20px;
+}
 
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.03)
-  );
+.summary-success {
+  border-color: rgba(74, 222, 128, 0.35);
+}
 
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.summary-error {
+  border-color: rgba(248, 113, 113, 0.35);
+}
 
-  backdrop-filter: blur(10px);
+.summary-top {
+  gap: 14px;
+  margin-bottom: 14px;
+}
 
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+.summary-title {
+  color: #f8fafc;
+  font-size: clamp(1.2rem, 3vw, 1.45rem);
+  line-height: 1.25;
+}
 
-  color: white;
+.summary-status {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid currentColor;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
 
-  opacity: 0;
-  transform: translateY(10px);
+.summary-success .summary-status {
+  background: rgba(74, 222, 128, 0.12);
+  color: #86efac;
+}
 
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
+.summary-error .summary-status {
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+}
+
+.summary-message {
+  margin: 0 0 18px;
+  color: #cbd5e1;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.summary-value {
+  margin: 0 0 22px;
+  padding: 14px 16px;
+
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.045);
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.summary-btn {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
+.success-btn {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.3);
+}
+
+.error-btn {
+  background: linear-gradient(135deg, #dc2626, #ea580c);
+  box-shadow: 0 12px 26px rgba(220, 38, 38, 0.25);
+}
+
+@media (max-width: 420px) {
+  .summary-frame {
+    width: calc(100vw - 20px);
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .summary-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .summary-frame.visible {
@@ -857,19 +937,8 @@ button:hover {
   background: #00ff99;
 }
 
-.summary-error .summary-dot {
+.summary-dot {
   background: #ff6b6b;
-}
-
-.summary-message {
-  margin-top: 6px;
-
-  font-size: 14px;
-  line-height: 1.5;
-
-  color: rgba(255, 255, 255, 0.72);
-
-  max-width: 600px;
 }
 
 .summary-frame,
@@ -938,26 +1007,6 @@ button:hover {
 
 .summary-btn:active {
   transform: scale(0.97);
-}
-
-/* success */
-
-.success-btn {
-  background: linear-gradient(135deg, #00d68f, #00b8ff);
-
-  color: white;
-
-  box-shadow: 0 10px 25px rgba(0, 214, 143, 0.25);
-}
-
-/* error */
-
-.error-btn {
-  background: linear-gradient(135deg, #ff5f6d, #ff9966);
-
-  color: white;
-
-  box-shadow: 0 10px 25px rgba(255, 95, 109, 0.25);
 }
 
 .explain {
@@ -2307,7 +2356,7 @@ h2 {
 #finalStep .tuto-step p { color: #cbd5e1; line-height: 1.55; }
 #finalStep .tuto-step img { display: block; width: min(100%,500px); margin: 12px auto 0; border: 1px solid rgba(148,163,184,.15); border-radius: 10px; }
 #finalStep .tuto-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 6px; }
-#finalStep .finish-text { flex: 1 1 220px; margin: 0; color: #94a3b8; font-size: .88rem; }
+#finalStep { flex: 1 1 220px; margin: 0; color: #94a3b8; font-size: .88rem; }
 #finalStep #buttonretrait { min-height: 44px; padding: 11px 18px; border-radius: 11px; background: linear-gradient(135deg,#2563eb,#4f46e5); color: white; box-shadow: 0 10px 24px rgba(37,99,235,.28); }
 
 /* #finalStep2 : aide quand aucun jeu n'est détecté. */
