@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blox R$ - Retraits</title>
+    <link rel="stylesheet" href="Retraits.css" />
+    <link rel="icon" href="../img/Bloxlogo.png" type="image/x-icon" />
+  </head>
+
+  <body>
+    <div id="disconnect">
+      <h1>Vous avez été déconnecté... 😭</h1>
+      <h2>
+        Pour accéder aux fonctions du site web, merci de bien vouloir vous
+        (re)connecter.
+      </h2>
+      <a href="../Authentification/connexion">Se connecter ?</a>
+    </div>
+    <div id="transition" class="fade-transition active">
+      <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+      <div class="text" id="text-chargement">Chargement...</div>
+    </div>
+    <div id="body">
+      <div class="navigation" id="navigation">
+        <div class="nav-panel" id="nav-panel">
+          <div class="logo2" id="logo2">
+            <img src="../img/Back.png" alt="Barres" id="barres2" />
+          </div>
+          <ul class="nave">
+            <li>
+              <div class="solde-box">
+                <span>💰 Solde</span>
+                <span id="balance2">0,00 R$</span>
+              </div>
+            </li>
+            <li><a id="btn-accueil" href="../">Accueil</a></li>
+            <li><a id="btn-lb" href="../Stats/Leaderboard">Leaderboard</a></li>
+            <li><a id="btn-win" href="Offres">Gagner des R$</a></li>
+            <li><a id="btn-retrait" href="Retraits">Retirer</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="back">
+        <div id="summary-frame" class="summary-box"></div>
+      </div>
+      <div class="back">
+        <div id="hacker-frame">
+          <pre id="hacker-text"></pre>
+          <span id="hacker-timer"> 0.0s </span>
+        </div>
+      </div>
+      <div class="background" id="background">
+        <div class="Interface" id="finalStep">
+          <p class="explain" id="explain">
+            Veuillez selectionner un de vos jeux publiques pour effectuer votre
+            transaction. Si aucun jeu n'apparait, veuillez cliquer sur le bouton
+            si dessous.
+          </p>
+          <button class="HELP" id="HELP">Aucun jeu n'apparaît ?</button>
+          <div class="public-places">
+            <select id="public-places">
+              <option>séléctionner un jeu</option>
+            </select>
+          </div>
+          <div class="tutocontainer" id="tutocontainer">
+            <div class="tuto-header">
+              <h2>Tutoriel</h2>
+            </div>
+
+            <div class="tuto-step">
+              <p>
+                1. Cliquez sur
+                <a href="" id="href" target="_blank" rel="noopener noreferrer"
+                  >ce lien</a
+                >.
+              </p>
+            </div>
+
+            <div class="tuto-step">
+              <p>2. Paramétrez votre jeu Roblox comme ceci :</p>
+              <img src="../img/Tuto1.png" alt="étape 1" />
+              <p class="highlight" id="robuxadd">
+                🛑 Vous indiquerez <strong>...</strong> Robux dans l'encadré
+                rouge.
+              </p>
+            </div>
+
+            <div class="tuto-step">
+              <p>3. Enregistrez les modifications :</p>
+              <img src="../img/Tuto2.png" alt="enregistrer modifications" />
+            </div>
+
+            <div class="tuto-step">
+              <p>
+                4. Cliquez sur
+                <a href="" id="href2" target="_blank" rel="noopener noreferrer"
+                  >ce lien</a
+                >.
+              </p>
+            </div>
+
+            <div class="tuto-step">
+              <p>5. Effectuez le questionnaire :</p>
+              <img src="../img/Tuto3.png" alt="questionnaire" />
+              <p>
+                Répondez à chaque question (de préférence “non”), puis
+                continuez.
+              </p>
+              <img src="../img/Tuto4.png" alt="réponses" />
+            </div>
+
+            <div class="tuto-step">
+              <p>6. Envoyez vos réponses :</p>
+              <img src="../img/Tuto5.png" alt="envoi réponses" />
+            </div>
+
+            <div class="tuto-footer">
+              <p class="finish-text">
+                Cliquez sur "Retirer !" une fois terminé.
+              </p>
+              <button id="buttonretrait">Retirer !</button>
+              <button id="buttonhelp">Besoin d'aide ?</button>
+            </div>
+          </div>
+        </div>
+        <div id="help-frame">
+          <div id="helpframeEl">
+            <div class="help-header">
+              <button id="closeHelpBtn">Retour</button>
+              <h2>Guide d'aide</h2>
+            </div>
+
+            <select name="HelpType" id="HelpType">
+              <option disabled selected value="default">
+                Sélectionner un type d'aide
+              </option>
+              <option value="Errors">
+                Les Différentes erreurs de paiements
+              </option>
+              <option value="PaymentIssue">Problème lors du paiement</option>
+              <option value="GameNotFound">Mes jeux sont introuvables</option>
+              <option value="SetMyGame">Comment configurer mon jeu?</option>
+              <option value="other">Autre</option>
+            </select>
+
+            <div class="help-content">
+              <!-- ============================================= -->
+              <!-- 0. RÉSUMÉ (état par défaut)                    -->
+              <!-- Affiché tant qu'aucun type d'aide précis n'est -->
+              <!-- choisi dans le <select>. Chaque carte reprend  -->
+              <!-- le texte d'une <option> + une phrase de résumé -->
+              <!-- et pointe vers la section complète via         -->
+              <!-- data-help-link (voir le <script> en bas).      -->
+              <!-- ============================================= -->
+              <div id="default" class="help-section active">
+                <h2>Bienvenue dans le guide d'aide</h2>
+                <p class="help-intro"></p>
+
+                <div class="help-summary-scroller">
+                  <article class="help-summary-frame">
+                    <img
+                      class="help-summary-img"
+                      src="../img/Section1.png"
+                      alt="Illustration : erreurs de paiement"
+                    />
+                    <div class="help-summary-text">
+                      <h3>Les Différentes erreurs de paiements</h3>
+                      <p>
+                        Lors d'un retrait, le système peut refuser l'opération
+                        pour plusieurs raisons : solde insuffisant par rapport
+                        au montant demandé, questionnaire de maturité de
+                        l'emplacement non complété, emplacement Roblox invalide
+                        ou incompatible avec la création de serveurs privés,
+                        écart entre le prix affiché et le prix attendu, ou
+                        encore un délai d'attente à respecter entre deux
+                        retraits. Cette section détaille chacune de ces 5
+                        erreurs avec sa cause exacte et la marche à suivre pour
+                        la résoudre.
+                      </p>
+                    </div>
+                  </article>
+
+                  <article class="help-summary-frame">
+                    <img
+                      class="help-summary-img"
+                      src="../img/Section2.png"
+                      alt="Illustration : problème de paiement"
+                    />
+                    <div class="help-summary-text">
+                      <h3>Problème lors du paiement</h3>
+                      <p>
+                        Il est tout à fait possible de rencontrer des problèmes
+                        lors du paiement. Nos systèmes sont conçus pour gérer
+                        les transactions de manière sécurisée, mais des erreurs
+                        peuvent survenir. Si vous rencontrez des difficultés.
+                        Dans cette section nous vous expliquons quelle démarche
+                        suivre.
+                      </p>
+                    </div>
+                  </article>
+
+                  <article class="help-summary-frame">
+                    <img
+                      class="help-summary-img"
+                      src="../img/Section3.png"
+                      alt="Illustration : jeux introuvables"
+                    />
+                    <div class="help-summary-text">
+                      <h3>Mes jeux sont introuvables</h3>
+                      <p>
+                        Si jamais aucun jeu ne s'affiche lorsque vous essayez de
+                        retirer, pas de panique ! Ceci peut arriver pour
+                        plusieurs raisons. Pour résoudre ce problème, nous vous
+                        expliquerons étape par étape comment le corriger.
+                      </p>
+                    </div>
+                  </article>
+
+                  <article class="help-summary-frame">
+                    <img
+                      class="help-summary-img"
+                      src="../img/Section4.png"
+                      alt="Illustration : configuration du jeu"
+                    />
+                    <div class="help-summary-text">
+                      <h3>Comment configurer mon jeu?</h3>
+                      <p>
+                        Configurer son jeu n'est pas aussi complexe que cela
+                        peut sembler. Pour configurer son jeu, il suffit de
+                        suivre les étapes détaillées dans le guide officiel.
+                        Pensez bien à vérifier que toute votre manipulation est
+                        correcte et qu'elle correspond à ce qui est demandé.
+                        Cette section vous guidera pas à pas pour configurer
+                        votre jeu correctement en vous détaillant chaque étape.
+                        Elle contiendra également des informations n'appraissant
+                        pas dans le tutoriel officiel.
+                      </p>
+                    </div>
+                  </article>
+
+                  <article class="help-summary-frame">
+                    <img
+                      class="help-summary-img"
+                      src="../img/Section5.png"
+                      alt="Illustration : autre demande"
+                    />
+                    <div class="help-summary-text">
+                      <h3>Autre</h3>
+                      <p>
+                        Vous avez d'autres problèmes ? Rejoignez notre support.
+                      </p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+              <!-- ============================================= -->
+              <!-- 1. ERREURS DE PAIEMENT — format accordéon      -->
+              <!-- Chaque erreur = 1 <details>. Le <summary>      -->
+              <!-- reprend le message d'erreur exact, le contenu  -->
+              <!-- suit toujours le même schéma Cause / Solution. -->
+              <!-- ============================================= -->
+              <div id="Errors" class="help-section">
+                <article class="help-article">
+                  <img
+                    class="help-article-banner"
+                    src="../img/Erreur de paiement.png"
+                    alt="Bannière : erreurs de paiement"
+                  />
+
+                  <div class="help-article-body">
+                    <span class="help-article-tag">Paiements</span>
+                    <h2>Les Différentes erreurs de paiements</h2>
+                    <p class="help-article-lead"></p>
+
+                    <details class="help-error">
+                      <summary>
+                        Erreur n°1 : "Solde insuffisant (.. R$) pour effectuer
+                        un retrait de .. R$."
+                      </summary>
+                      <div class="help-error-body">
+                        <div class="help-callout help-callout-cause">
+                          <strong>Cause</strong>
+                          <p>
+                            Cette erreur apparaît lorsque le montant de votre
+                            retrait dépasse notre stock de fonds actuel. Par
+                            conséquent, vous ne pouvez pas effectuer de retrait
+                            qui dépasse le montant disponible affiché sur cette
+                            page.
+                          </p>
+                        </div>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Erreur1.png"
+                          alt="Capture : message d'erreur solde insuffisant"
+                        />
+                        <div class="help-callout help-callout-solution">
+                          <strong>Solution</strong>
+                          <p>
+                            Vous pouvez effectuer un retrait pour un montant
+                            inférieur au solde disponible ou alors attendre que
+                            plus de fonds soient disponibles. Pour plus
+                            d'informations sur l'ajout de fonds, rejoignez notre
+                            support.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="help-error">
+                      <summary>
+                        Erreur n°2 : "Complètez le questionnaire de maturité de
+                        cet emplacement pour pouvoir effectuer un retrait sur
+                        celui-ci."
+                      </summary>
+                      <div class="help-error-body">
+                        <div class="help-callout help-callout-cause">
+                          <strong>Cause</strong>
+                          <p>
+                            Cette erreur apparaît lorsque vous n'avez pas encore
+                            complété le questionnaire de maturité pour cet
+                            emplacement. Vous devez terminer ce questionnaire
+                            avant de pouvoir effectuer un retrait sur cet
+                            emplacement.
+                          </p>
+                        </div>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Erreur2.png"
+                          alt="Capture : questionnaire de maturité"
+                        />
+                        <div class="help-callout help-callout-solution">
+                          <strong>Solution</strong>
+                          <p>
+                            Vous devez compléter le questionnaire de maturité
+                            pour cet emplacement avant de pouvoir effectuer un
+                            retrait. Pour cela, cliquez sur le lien fourni dans
+                            le tutoriel et suivez les instructions pour
+                            compléter le questionnaire. Une fois terminé, vous
+                            pourrez effectuer votre retrait.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="help-error">
+                      <summary>
+                        Erreur n°3 : "Votre emplacement Roblox est invalide.
+                        Nous ne pouvons pas créer de serveurs privés sur
+                        celui-ci. Pour plus d'informations, nous vous invitons à
+                        re-vérifier l'état de votre emplacement."
+                      </summary>
+                      <div class="help-error-body">
+                        <div class="help-callout help-callout-cause">
+                          <strong>Cause</strong>
+                          <p>
+                            Cette erreur est rare mais apparait malheureusement
+                            de plus en plus souvent. Cette erreur signifie que
+                            votre jeu Roblox est affiché comme invalide lorsque
+                            nous essayons de nous rendre sur cet emplacement.
+                            Par conséquent, nous ne pouvons pas créer de
+                            serveurs privés sur celui-ci car Roblox ne nous
+                            autorise pas à le faire. Cela peut être dû à un
+                            problème temporaire sur Roblox, ou à un problème
+                            avec votre jeu lui-même. Cela arrive également si
+                            vous n'avez pas vérifier votre âge sur Roblox avec
+                            l'estimation de l'âge facial (Facial Age
+                            Estimation).
+                          </p>
+                        </div>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Erreur3.png"
+                          alt="Capture : emplacement invalide"
+                        />
+                        <div class="help-callout help-callout-solution">
+                          <strong>Solution</strong>
+                          <p>
+                            Pour contrer ce problème que de plus en plus de
+                            joueurs rencontrent, nous avons trouvé une solution.
+                            Mais deux méthodes s'imposent selon les utilisateurs
+                            mobiles et PC. De plus, il vous faudra
+                            impérativement vérifier votre âge sur Roblox.
+                          </p>
+                          <p>
+                            Si vous êtes sur PC, vous pouvez essayer de vous
+                            rendre sur Roblox Studio et de publier votre jeu à
+                            nouveau avec Alt + P sur Windows ou Option + P sur
+                            macOS. Cela peut résoudre le problème et rendre
+                            votre jeu valide pour la création de serveurs
+                            privés.
+                          </p>
+                          <p>
+                            Si vous êtes sur mobile, la procédure est beaucoup
+                            plus complexe. La seule solution que nous avions
+                            trouvée est de recréer un nouveau compte Roblox pour
+                            qu'un nouveau jeu soit créé sur celui-ci. Ensuite,
+                            attendez 2 jours et publiez votre jeu sur ce nouveau
+                            compte pour le rendre public. Après cela, vous
+                            pourrez utiliser ce nouveau jeu pour effectuer vos
+                            retraits. Le seule problème est que vous receverez
+                            vos R$ sur ce nouveau compte et non sur votre compte
+                            principal. Nous vous conseillons donc de transférer
+                            vos R$ sur votre compte principal en l'ajoutant en
+                            ami de confiance puis de créer un Game-Pass sur le
+                            jeu dont nous n'avons pas accès. Une fois cela fait,
+                            vous receverez vos R$ sur votre compte principal
+                            avec un taxe de 30% de Roblox.
+                          </p>
+                          <p>
+                            Une vidéo Youtube sera bientôt disponible pour vous
+                            aider à résoudre ce problème.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="help-error">
+                      <summary>
+                        Erreur n°4 : "Le prix des serveurs privés (.. R$) ne
+                        correspond pas au prix attendu (.. R$)."
+                      </summary>
+                      <div class="help-error-body">
+                        <div class="help-callout help-callout-cause">
+                          <strong>Cause</strong>
+                          <p>
+                            Cette erreur se produit lorsque le prix du serveur
+                            privé ne correspond pas au prix attendu par notre
+                            système de payment. C'est souvent le cas lorsque
+                            vous tentez de créer un serveur privé avec un prix
+                            différent de celui demandé par notre système.
+                          </p>
+                        </div>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Erreur4.1.png"
+                          alt="Capture : écart de prix serveur privé"
+                        />
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Erreur4.2.png"
+                          alt="Capture : écart de prix serveur privé"
+                        />
+                        <div class="help-callout help-callout-solution">
+                          <strong>Solution</strong>
+                          <p>
+                            Pour résoudre ce problème, assurez-vous de saisir le
+                            bon prix pour votre serveur privé. De plus, un délai
+                            de 60 jours est imposé par Roblox entre deux
+                            modifications du prix donc il est crucial de
+                            revérifier les informations avant de procéder à une
+                            modification de votre jeu.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="help-error">
+                      <summary>
+                        Erreur n°5 : "Attendez ..s avant un nouveau retrait."
+                      </summary>
+                      <div class="help-error-body">
+                        <div class="help-callout help-callout-cause">
+                          <strong>Cause</strong>
+                          <p>
+                            Cette erreur se produit lorsque vous tentez de faire
+                            un retrait trop rapidement après un autre retrait.
+                          </p>
+                        </div>
+                        <div class="help-callout help-callout-solution">
+                          <strong>Solution</strong>
+                          <p>
+                            Attendez le temps imparti avant de faire un nouveau
+                            retrait.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <div class="help-article-footer">
+                      <p>Cet article vous a-t-il aidé ?</p>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <!-- ============================================= -->
+              <!-- 2. PROBLÈME LORS DU PAIEMENT                   -->
+              <!-- ============================================= -->
+              <div id="PaymentIssue" class="help-section">
+                <article class="help-article">
+                  <img
+                    class="help-article-banner"
+                    src="../img/Payment refusé.png"
+                    alt="Bannière : problème lors du paiement"
+                  />
+
+                  <div class="help-article-body">
+                    <span class="help-article-tag">Paiements</span>
+                    <h2>Problème lors du paiement</h2>
+                    <p class="help-article-lead">
+                      Il peut arriver que votre paiement soit refusé suivant
+                      quelques bugs. Si cela vous arrive et que vous ne
+                      comprenez pas pourquoi :
+                    </p>
+
+                    <h3>
+                      Voici les vérifications à faire avant de contacter le
+                      support
+                    </h3>
+                    <ul class="help-checklist">
+                      <li>
+                        Vérifiez que vous avez bien saisi les informations de
+                        paiement sur votre jeu. Ex : Le prix du jeu ou les cases
+                        à cocher
+                      </li>
+                      <li>
+                        Vérifier que vous êtes bien connecté à votre compte
+                        BloxR$
+                      </li>
+                      <li>
+                        Assurez-vous que vous ayez assez de Robux pour effectuer
+                        le paiement souhaité et que les fonds restants soient
+                        suffisants
+                      </li>
+                    </ul>
+                    <h3>Image d'un paiement réussi :</h3>
+                    <img
+                      class="help-article-inline-img"
+                      src="../img/Payement.jpg"
+                      alt="Capture : écran de paiement"
+                    />
+
+                    <div class="help-callout help-callout-tip">
+                      <strong>Astuce</strong>
+                      <p>
+                        Essayez de réinitialiser votre navigateur et de vous
+                        reconnecter à votre compte BloxR$. Cela peut parfois
+                        résoudre le problème. Mais si le problème persiste,
+                        n'hésitez pas à rejoindre le support.
+                      </p>
+                    </div>
+
+                    <h3>Le problème persiste ?</h3>
+                    <p>
+                      Si vous continuez à rencontrer des problèmes, n'hésitez
+                      pas à rejoindre le support pour obtenir de l'aide
+                      supplémentaire. Notre équipe de support est là pour vous
+                      aider à résoudre tout problème que vous pourriez
+                      rencontrer.
+                    </p>
+
+                    <div class="help-article-footer">
+                      <p>Cet article vous a-t-il aidé ?</p>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <!-- ============================================= -->
+              <!-- 3. JEUX INTROUVABLES                           -->
+              <!-- ============================================= -->
+              <div id="GameNotFound" class="help-section">
+                <article class="help-article">
+                  <img
+                    class="help-article-banner"
+                    src="../img/UnfoundGames.png"
+                    alt="Bannière : jeux introuvables"
+                  />
+
+                  <div class="help-article-body">
+                    <span class="help-article-tag">Compte</span>
+                    <h2>Mes jeux sont introuvables</h2>
+                    <p class="help-article-lead"></p>
+
+                    <h3>Causes possibles</h3>
+                    <ul class="help-checklist">
+                      <li>
+                        Vérifiez que vous êtes bien connecté à votre compte
+                        BloxR$. Il est possible que vous soyez déconnecté
+                      </li>
+                      <li>
+                        Assurez-vous que au moins un de vos jeu aie public sur
+                        le
+                        <a
+                          href="https://create.roblox.com/dashboard/creations"
+                          target="_blank"
+                          >Dashboard de Roblox</a
+                        >Si ce n'est pas le cas, cela en pourrait être la cause
+                      </li>
+                      <li>
+                        Vérifiez que vous possédez bien au moins un jeu sur le
+                        <a
+                          href="https://create.roblox.com/dashboard/creations"
+                          target="_blank"
+                          >Dashboard de Roblox</a
+                        >
+                        pour pouvoir en sélectionner un.
+                      </li>
+                    </ul>
+
+                    <img
+                      class="help-article-inline-img"
+                      src="../img/GameList.png"
+                      alt="Capture : liste des jeux"
+                    />
+
+                    <h3>Comment résoudre le problème</h3>
+                    <ol class="help-steps">
+                      <li>
+                        Si vous êtes déconnecté, reconnectez-vous à votre compte
+                        BloxR$ via la
+                        <a
+                          href="https://www.roblox.com/Authentification/connexion"
+                          target="_blank"
+                          >page de connexion</a
+                        >.
+                      </li>
+                      <li>
+                        Si vous n'avez aucun jeu public, il vous suffit de
+                        d'aller dans les paramètres de celui-ci et de le rendre
+                        public.
+                      </li>
+                      <li>
+                        Si vous n'avez aucun jeu sur le Dashboard, créez-en un
+                        nouveau via Roblox Studio ou, si vous êtes uniquement
+                        sur mobile, suivez les instructions de la catégorie "Les
+                        différentes erreurs de paiement" sur l'erreur numéro 3.
+                      </li>
+                    </ol>
+
+                    <div class="help-callout help-callout-tip">
+                      <strong>Astuce</strong>
+                      <p>
+                        Regardez le Dashboard Roblox pour pouvoir vérifier si
+                        vous avez des jeux publics. Parfois certains peuvent
+                        être en "limité" ou privé.
+                      </p>
+                    </div>
+
+                    <div class="help-article-footer">
+                      <p>Cet article vous a-t-il aidé ?</p>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <!-- ============================================= -->
+              <!-- 4. CONFIGURER SON JEU — guide pas-à-pas        -->
+              <!-- ============================================= -->
+              <div id="SetMyGame" class="help-section">
+                <article class="help-article">
+                  <img
+                    class="help-article-banner"
+                    src="../img/GameConfig.png"
+                    alt="Bannière : configuration du jeu"
+                  />
+
+                  <div class="help-article-body">
+                    <span class="help-article-tag">Configuration</span>
+                    <h2>Comment configurer mon jeu ?</h2>
+                    <p class="help-article-lead"></p>
+
+                    <ol class="help-steps help-steps-detailed">
+                      <li>
+                        <h3>Étape 1 :</h3>
+                        <p>
+                          Pour commencer, il vous faudra vous rendre sur la
+                          première url fournie dans le tutoriel de rertait.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/GC1.png"
+                          alt="Capture : étape 1"
+                        />
+                        <p>
+                          Ensuite, vous devrez premièrement cocher la case
+                          "Activer les serveurs privés"se situant au bas de la
+                          page.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/GC2.png"
+                          alt="Capture : étape 1"
+                        />
+                        <p>
+                          Puis, vous devrez également cocher la case "nécessite
+                          des R$" qui apparaîtera une fois la case précédente
+                          cochée. Il vous suffira ensuite de saisir le montant
+                          de R$ que le BloxR$ vous demande dans le tutoriel de
+                          retrait. Il est très important de ne pas se tromper
+                          sur ce montant.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/GC3.png"
+                          alt="Capture : étape 1"
+                        />
+                        <p>
+                          Pour finir, vous devrez cliquer sur le bouton
+                          "Enregistrer les modifications" pour valider vos
+                          modifications sur la page. Une fois cela fait, vous
+                          pourrez passer à l'étape 2.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/GC4.png"
+                          alt="Capture : étape 1"
+                        />
+                      </li>
+                      <li>
+                        <h3>Étape 2 :</h3>
+                        <p>
+                          Pour l'étape 2, vous devrez tout d'abord vous rendre
+                          sur la deuxième url fournie dans le tutoriel. Une fois
+                          sur la page, vous verrez un questionnaire. Ce
+                          questionnaire est le questionnaire de maturité de
+                          votre jeu. Il est obligatoire pour que nous puissions
+                          acheter un serveur privé.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/GC5.png"
+                          alt="Capture : étape 2"
+                        />
+                        <p>
+                          Pour commencer le questionnaire, cliquez sur le bouton
+                          "Commencer". Puis cocher les cases de chaque question
+                          par "non" (de préférence).
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Tuto3.png"
+                          alt="Capture : étape 2"
+                        />
+                        <p>
+                          Une fois toutes les cases remplises, cliquez sur le
+                          bouton "Continuer" pour valider vos réponses.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Tuto4.png"
+                          alt="Capture : étape 2"
+                        />
+                        <p>
+                          Pour finir, il vous suffira d'envoyer vos réponses
+                          avec le bouton "Envoyer". Maintenant que l'étape 2 est
+                          terminée, passons à l'étape 3.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/Tuto5.png"
+                          alt="Capture : étape 2"
+                        />
+                      </li>
+                      <li>
+                        <h3>Étape 3 :</h3>
+                        <p>
+                          Pour finir la procédure, vous n'aurez plus qu'à
+                          cliquer sur le bouton "Retirer" pour effectuer votre
+                          retrait.
+                        </p>
+                        <img
+                          class="help-article-inline-img"
+                          src="../img/GC6.png"
+                          alt="Capture : étape 3"
+                        />
+                        <p>
+                          Bravo ! Vous venez de réaliser votre (premier) retrait
+                          sur BloxR$ !
+                        </p>
+                      </li>
+                    </ol>
+
+                    <div class="help-callout help-callout-tip">
+                      <strong>Astuce</strong>
+                      <p>
+                        Pour votre prochain retrait, vous ne serez plus obligé
+                        de refaire chaque étape du tutoriel puisque vous aurez
+                        déjà un jeu correctement configuré. Vous pourrez
+                        toujours modifier le prix des serveurs privés si vous
+                        effectuez un retrait d'un montant différent et si cela
+                        est demandé. Mais vous n'aurez pas besoin de refaire le
+                        questionnaire de maturité puisque vous l'avez déjà
+                        complété.
+                      </p>
+                    </div>
+
+                    <div class="help-article-footer">
+                      <p>Cet article vous a-t-il aidé ?</p>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <!-- ============================================= -->
+              <!-- 5. AUTRE                                       -->
+              <!-- ============================================= -->
+              <div id="other" class="help-section">
+                <article class="help-article">
+                  <img
+                    class="help-article-banner"
+                    src="../img/Other.png"
+                    alt="Bannière : autre demande"
+                  />
+
+                  <div class="help-article-body">
+                    <span class="help-article-tag">Support</span>
+                    <h2>Autre</h2>
+                    <p class="help-article-lead"></p>
+                    <p>
+                      Vous besoin d'aide supplémentaire ? Rejoignez notre
+                      communauté de support !
+                    </p>
+                    <div id="help-article-wrapper">
+                      <a href="https://discord.gg/KUGzfhUEDg" target="_blank">
+                        <img
+                          style="
+                            max-width: 100%;
+                            border-radius: 10px;
+                            transform: rotate(-5deg);
+                          "
+                          src="../img/discord_Desktop.png"
+                          alt="Support"
+                        />
+                      </a>
+                      <img
+                        src="../img/Flèches.png"
+                        alt="Flèches"
+                        style="max-width: 45%"
+                      />
+                      <img
+                        src="../img/ComingSoon.png"
+                        alt="Vidéo tutoriel"
+                        style="
+                          max-width: 100%;
+                          border-radius: 10px;
+                          transform: rotate(5deg);
+                        "
+                      />
+                    </div>
+
+                    <div class="help-article-footer">
+                      <p>Cet article vous a-t-il aidé ?</p>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="Interface2" id="finalStep2">
+          <div class="tuto-header">
+            <img src="../img/return.png" alt="retour" id="btnretour" />
+            <h2>⚠️ Aucun jeu détecté</h2>
+            <p>Voici comment résoudre le problème</p>
+          </div>
+
+          <div class="step-card">
+            <h3>📍 Étape 1 — Vérification Roblox</h3>
+            <p>
+              Rendez-vous sur
+              <a
+                href="https://create.roblox.com/"
+                target="_blank"
+                class="lien_roblox"
+                >create.roblox.com</a
+              >
+            </p>
+          </div>
+
+          <div class="step-card">
+            <h3>🌐 Rendre une expérience publique</h3>
+            <ul>
+              <li>Connectez-vous à Roblox</li>
+              <li>Allez sur votre expérience</li>
+              <li>Cliquez sur "Rendre publique"</li>
+            </ul>
+          </div>
+
+          <div class="step-card warning">
+            <h3>⚠️ Conditions requises</h3>
+            <p>
+              Vous devez avoir une
+              <a
+                class="lien_roblox"
+                href="https://create.roblox.com/settings/eligibility/public-publish"
+                target="_blank"
+                >éligibilité publique</a
+              >
+              et une
+              <a
+                class="lien_roblox"
+                href="https://create.roblox.com/docs/fr-fr/production/promotion/content-maturity"
+                target="_blank"
+                >étiquette de maturité</a
+              >.
+            </p>
+          </div>
+
+          <div class="step-card">
+            <h3>🛠️ Cas rare — aucune expérience</h3>
+            <ul>
+              <li>Créer une expérience sur Roblox Studio</li>
+              <li>Publier votre jeu</li>
+              <li>Le rendre public</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <header>
+        <div class="header-left">
+          <a href="../">
+            <img src="../img/logo.png" alt="Logo Blox Robux" />
+          </a>
+          <div class="solde-box" id="solde-box">
+            <span>💰 Solde :</span>
+            <span id="balance">0,00 R$</span>
+          </div>
+        </div>
+        <div class="title">Blox R$</div>
+        <ul id="btns">
+          <li><a id="btn-lb" href="../Stats/Leaderboard">Leaderboard</a></li>
+          <li><a href="Offres">Gagner des R$</a></li>
+          <li><a href="Retraits" class="active">Retirer</a></li>
+        </ul>
+        <div class="logo2" id="logo3">
+          <img src="../img/Barres.png" alt="Barres" id="barres" />
+        </div>
+      </header>
+      <div class="header-shadow"></div>
+      <main>
+        <section class="retrait-container">
+          <h1>💸 Retirer des Robux</h1>
+          <p class="desc">
+            Entrez le montant de Robux à retirer depuis votre solde ci-dessus.
+          </p>
+          <div class="actions">
+            <input
+              id="amount"
+              type="number"
+              placeholder="Montant à retirer (ex : 50)"
+            />
+            <button id="withdrawBtn">Retirer</button>
+          </div>
+
+          <div id="error" class="error" style="display: none"></div>
+
+          <div class="stock-card">
+            <div class="stock-icon">R$</div>
+            <div class="stock-content">
+              <h4>Stock restant</h4>
+              <strong><span id="remainingStock">0</span> R$</strong>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="retrait-container history">
+            <h2>Historique des retraits</h2>
+            <div class="template" id="transactions">
+              aucun retrait effectué...
+            </div>
+          </div>
+        </section>
+      </main>
+      <script
+        src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
+        defer
+      ></script>
+      <script
+        src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
+        defer
+      ></script>
+      <script
+        src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"
+        defer
+      ></script>
+      <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
+        defer
+      ></script>
+      <script src="../JS/Server.js" defer></script>
+      <script src="../JS/Animation.js" defer></script>
+      <script src="../JS/SysRbx.js" defer></script>
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const barres = document.getElementById("logo3");
+          const btns = document.getElementById("btns");
+          const soldeBox = document.getElementById("solde-box");
+          const navBtns = document.getElementById("btns");
+
+          function handleResponsive() {
+            if (!barres || !navBtns || !soldeBox) return;
+
+            if (window.innerWidth >= 1024) {
+              barres.style.display = "none";
+              navBtns.style.display = "flex";
+              soldeBox.style.display = "flex";
+            } else {
+              barres.style.display = "block";
+              navBtns.style.display = "none";
+              soldeBox.style.display = "none";
+            }
+          }
+
+          handleResponsive();
+          window.addEventListener("resize", handleResponsive);
+
+          const header = document.querySelector("header");
+
+          window.addEventListener("scroll", () => {
+            if (window.scrollY > 50) {
+              header.classList.add("scrolled");
+            } else {
+              header.classList.remove("scrolled");
+            }
+          });
+        });
+        (function () {
+          const helpSelect = document.getElementById("HelpType");
+          const sections = document.querySelectorAll(".help-section");
+
+          function showSection(id) {
+            sections.forEach(function (section) {
+              section.classList.toggle("active", section.id === id);
+            });
+          }
+
+          // Bascule quand on change le <select>
+          helpSelect.addEventListener("change", function () {
+            showSection(helpSelect.value);
+          });
+        })();
+      </script>
+      <div class="separator" style="visibility: hidden"></div>
+      <div class="separator" style="visibility: hidden"></div>
+      <div class="separator"></div>
+      <div id="Block">
+        <!-- COLONNE GAUCHE -->
+        <div class="side">
+          <img src="../img/BloxImg.png" alt="BloxRobuxLogo" />
+        </div>
+
+        <!-- COLONNE CENTRALE -->
+        <div id="BlockBottom">
+          <div class="infos">
+            <div class="col">
+              <h2>A propos de nous</h2>
+              <ul>
+                <li><a href="Bio">Biographie du site</a></li>
+                <li><a href="Security">Paiements sécurisés</a></li>
+                <li><a href="Support">Support</a></li>
+                <li>
+                  <a
+                    href="https://mail.google.com/mail/?view=cm&fs=1&to=contact@bloxrbx.fr"
+                    >Nous contacter</a
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div class="col">
+              <h2>Mentions légales</h2>
+              <ul>
+                <li><a href="../Legal/CGU">Conditions d'utilisations</a></li>
+                <li><a href="../Legal/PCF">Politique de confidentialité</a></li>
+              </ul>
+            </div>
+
+            <div class="col">
+              <h2>Réseaux sociaux</h2>
+              <ul>
+                <li>
+                  <a
+                    href="https://discord.gg/QQMRtfBXpq"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Discord</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://youtube.com/@bloxrbx00"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >YouTube</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://www.instagram.com/bloxrbx/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Instagram</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://www.tiktok.com/@bloxrbx.fr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >TikTok</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLONNE DROITE VIDE -->
+        <div class="side empty"></div>
+      </div>
+    </div>
+  </body>
+</html>
