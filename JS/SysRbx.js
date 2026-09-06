@@ -472,11 +472,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   ui.helpButton?.addEventListener("click", () => {
     if (!ui.helpFrame) return;
     ui.helpFrame.style.display = "block";
+    setStepVisibility(ui.withdrawalStep, false);
     requestAnimationFrame(() => ui.helpFrame.classList.add("visible"));
   });
   ui.closeHelpButton?.addEventListener("click", () => {
     ui.helpFrame?.classList.remove("visible");
-    setTimeout(() => { if (ui.helpFrame) ui.helpFrame.style.display = "none"; }, 250);
+    setTimeout(() => { if (ui.helpFrame) ui.helpFrame.style.display = "none"; setStepVisibility(ui.withdrawalStep, true); }, 250);
   });
   ui.helpBackButton?.addEventListener("click", closeHelp);
   ui.helpSelect?.addEventListener("change", (event) => {
