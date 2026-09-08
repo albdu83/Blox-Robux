@@ -319,7 +319,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       }
     }
-    await checkAndFixRobloxName(user);
     const uid = user.uid;
 
     try {
