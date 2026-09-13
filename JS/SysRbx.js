@@ -556,7 +556,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           renderTransactions();
           renderStock(payload.stock_data?.remaining_solde);
           const delta = data.delta;
-
+          console.log(delta);
           if (delta && delta !== 0 && gainnotif) {
             if (userIsActive) {
               showGainNotification(data, delta);
