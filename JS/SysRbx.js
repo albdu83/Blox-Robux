@@ -1,16 +1,15 @@
-/*
- * Retraits.js
- * Script unique pour la page Retraits.
- * Dépendances laissées volontairement partagées : Server.js (API_BASE_URL,
- * initFirebase, ID) et les scripts Firebase chargés dans Retraits.html.
- */
-
 document.addEventListener("DOMContentLoaded", async () => {
   const { auth, db } = await initFirebase();
   if (!auth || !db) {
     console.error("Firebase n'est pas initialisé.");
     return;
   }
+
+  const gainnotif = document.getElementById("gainnotif");
+  const notifbackgroundwin = document.getElementById("notifbackgroundwin");
+  const closenotif = document.getElementById("closenotif");
+  const closenotif2 = document.getElementById("closenotif2");
+  const sousnotifbackground = document.getElementById("sous-notifbackground");
 
   const ui = {
     balance: document.getElementById("balance"),
@@ -55,8 +54,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     tutorialWasOpened: false,
   };
 
+  let pendingNotifications = [];
+  let userIsActive = true;
+
+  document.addEventListener("visibilitychange", () => {
+    userIsActive = !document.hidden;
+    if (!document.hidden && pendingNotifications.length > 0) {
+      pendingNotifications.forEach((n) =>
+        showGainNotification(n.data, n.delta),
+      );
+      pendingNotifications = [];
+    }
+  });
+
   function money(value) {
-    return `${Number(value || 0).toFixed(2).replace(".", ",")} R$`;
+    return `${Number(value || 0)
+      .toFixed(2)
+      .replace(".", ",")} R$`;
   }
 
   function showError(message) {
@@ -89,6 +103,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     setStepVisibility(ui.withdrawalStep, true);
   }
 
+  function closeNotif() {
+    // 1️⃣ Lancer l’animation de sortie
+    notifbackgroundwin.classList.remove("show");
+    sousnotifbackground.classList.remove("show");
+
+    // 2️⃣ Attendre la fin de la transition avant de masquer complètement
+    setTimeout(() => {
+      notifbackgroundwin.style.display = "none";
+    }, 300); // doit correspondre à la durée de ta transition CSS
+  }
+
   function closeWithdrawalStep() {
     setStepVisibility(ui.withdrawalStep, false);
     if (ui.overlay) {
@@ -118,13 +143,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (ui.stock) ui.stock.textContent = stock.toLocaleString("fr-FR");
     if (!ui.stockCard || !ui.stockIcon || !ui.stock) return;
 
-    const color = stock <= 15 ? "#da1414" : stock <= 100 ? "#FFC107" : "#28d42e";
-    const background = stock <= 15 ? "#a51e1e11" : stock <= 100 ? "#ffc1071a" : "#4caf4f1c";
-    const border = stock <= 15 ? "#961d1d48" : stock <= 100 ? "#ffc1072f" : "#4caf4f54";
+    const color =
+      stock <= 15 ? "#da1414" : stock <= 100 ? "#FFC107" : "#28d42e";
+    const background =
+      stock <= 15 ? "#a51e1e11" : stock <= 100 ? "#ffc1071a" : "#4caf4f1c";
+    const border =
+      stock <= 15 ? "#961d1d48" : stock <= 100 ? "#ffc1072f" : "#4caf4f54";
     ui.stock.style.color = color;
     ui.stockIcon.style.background = color;
     ui.stockCard.style.background = background;
     ui.stockCard.style.borderColor = border;
+  }
+
+  function showGainNotification(data, delta) {
+    gainnotif.innerText = `${delta > 0 ? "Bravo ," : "Oh non... "}vous venez de ${delta > 0 ? "gagner" : "perdre"} ${Math.abs(delta)} R$ sur le site !`;
+    notifbackgroundwin.style.display = "flex";
+    // Forcer l'animation
+    setTimeout(() => {
+      (notifbackgroundwin.classList.toggle("show"),
+        sousnotifbackground.classList.toggle("show"));
+    }, 50);
   }
 
   function renderTransactions() {
@@ -148,27 +186,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     ui.transactions.append(header);
 
-    state.transactions.slice(-10).reverse().forEach((transaction, index) => {
-      const row = document.createElement("div");
-      row.className = "transaction";
-      const number = document.createElement("span");
-      number.textContent = `${state.transactions.length - index} - Retrait`;
-      const reference = document.createElement("button");
-      reference.type = "button";
-      reference.className = "copy-id";
-      reference.textContent = `ID : ${transaction.id || "indisponible"}`;
-      reference.addEventListener("click", async () => {
-        if (!transaction.id || !navigator.clipboard) return;
-        await navigator.clipboard.writeText(String(transaction.id));
-        reference.textContent = "ID copié";
-        setTimeout(() => (reference.textContent = `ID : ${transaction.id}`), 1200);
+    state.transactions
+      .slice(-10)
+      .reverse()
+      .forEach((transaction, index) => {
+        const row = document.createElement("div");
+        row.className = "transaction";
+        const number = document.createElement("span");
+        number.textContent = `${state.transactions.length - index} - Retrait`;
+        const reference = document.createElement("button");
+        reference.type = "button";
+        reference.className = "copy-id";
+        reference.textContent = `ID : ${transaction.id || "indisponible"}`;
+        reference.addEventListener("click", async () => {
+          if (!transaction.id || !navigator.clipboard) return;
+          await navigator.clipboard.writeText(String(transaction.id));
+          reference.textContent = "ID copié";
+          setTimeout(
+            () => (reference.textContent = `ID : ${transaction.id}`),
+            1200,
+          );
+        });
+        const amount = document.createElement("span");
+        amount.className = "neg";
+        amount.textContent = money(Math.abs(Number(transaction.amount || 0)));
+        row.append(number, reference, amount);
+        ui.transactions.append(row);
       });
-      const amount = document.createElement("span");
-      amount.className = "neg";
-      amount.textContent = money(Math.abs(Number(transaction.amount || 0)));
-      row.append(number, reference, amount);
-      ui.transactions.append(row);
-    });
   }
 
   function showProgress(message, currentStep = 1) {
@@ -188,17 +232,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       description.className = "withdrawal-progress__message";
       const steps = document.createElement("ol");
       steps.className = "withdrawal-progress__steps";
-      ["Vérification", "Création du retrait", "Confirmation"].forEach((label, index) => {
-        const item = document.createElement("li");
-        item.dataset.step = String(index + 1);
-        item.textContent = label;
-        steps.append(item);
-      });
+      ["Vérification", "Création du retrait", "Confirmation"].forEach(
+        (label, index) => {
+          const item = document.createElement("li");
+          item.dataset.step = String(index + 1);
+          item.textContent = label;
+          steps.append(item);
+        },
+      );
       card.append(spinner, title, description, steps);
       ui.progressFrame.replaceChildren(card);
     }
 
-    ui.progressFrame.querySelector(".withdrawal-progress__message").textContent = message;
+    ui.progressFrame.querySelector(
+      ".withdrawal-progress__message",
+    ).textContent = message;
     ui.progressFrame.querySelectorAll("[data-step]").forEach((step) => {
       const position = Number(step.dataset.step);
       step.classList.toggle("is-current", position === currentStep);
@@ -263,22 +311,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!state.targetId) {
         const nameSnapshot = await db.ref(`users/${user.uid}/RobloxName`).get();
         const robloxName = nameSnapshot.val();
-        if (!robloxName) throw new Error("Votre pseudo Roblox est introuvable.");
-        const avatarResponse = await fetch(`${API_BASE_URL}/api/avatar/${encodeURIComponent(robloxName)}`);
+        if (!robloxName)
+          throw new Error("Votre pseudo Roblox est introuvable.");
+        const avatarResponse = await fetch(
+          `${API_BASE_URL}/api/avatar/${encodeURIComponent(robloxName)}`,
+        );
         const avatarData = await avatarResponse.json().catch(() => ({}));
         if (!avatarResponse.ok || !avatarData.targetId) {
           throw new Error("Impossible de récupérer votre compte Roblox.");
         }
         state.targetId = String(avatarData.targetId);
       }
-      const response = await fetch(`${API_BASE_URL}/api/places?targetId=${encodeURIComponent(state.targetId)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/places?targetId=${encodeURIComponent(state.targetId)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       if (!response.ok) throw new Error("Impossible de récupérer les jeux.");
       const payload = await response.json();
       const places = payload?.data || [];
 
-      ui.placeSelect.replaceChildren(new Option("Sélectionner un jeu", "", true, true));
+      ui.placeSelect.replaceChildren(
+        new Option("Sélectionner un jeu", "", true, true),
+      );
       ui.placeSelect.options[0].disabled = true;
       if (!places.length) {
         const option = new Option("Aucun emplacement public trouvé", "");
@@ -289,10 +345,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       places.forEach((place) => {
         state.rootIdByPlaceId.set(String(place.ID), place.RootID);
-        ui.placeSelect.append(new Option(place.name || "Jeu sans nom", String(place.ID)));
+        ui.placeSelect.append(
+          new Option(place.name || "Jeu sans nom", String(place.ID)),
+        );
       });
     } catch (error) {
-      ui.placeSelect.replaceChildren(new Option("Impossible de charger les jeux", ""));
+      ui.placeSelect.replaceChildren(
+        new Option("Impossible de charger les jeux", ""),
+      );
       ui.placeSelect.options[0].disabled = true;
       showError("Impossible de charger vos jeux Roblox. Réessayez plus tard.");
     } finally {
@@ -302,8 +362,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function prepareTutorial(placeId) {
     state.selectedPlaceId = placeId;
-    if (ui.accessLink) ui.accessLink.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/access`;
-    if (ui.questionnaireLink) ui.questionnaireLink.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/experience-questionnaire`;
+    if (ui.accessLink)
+      ui.accessLink.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/access`;
+    if (ui.questionnaireLink)
+      ui.questionnaireLink.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/experience-questionnaire`;
     if (state.tutorialWasOpened) {
       ui.tutorial?.classList.add("active10");
       return;
@@ -319,7 +381,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       ui.explanation?.classList.add("activeB");
     };
     if (ui.explanation) {
-      ui.explanation.addEventListener("transitionend", revealTutorial, { once: true });
+      ui.explanation.addEventListener("transitionend", revealTutorial, {
+        once: true,
+      });
       setTimeout(revealTutorial, 350);
     } else {
       revealTutorial();
@@ -343,11 +407,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const token = await user.getIdToken();
       const response = await fetch(`${API_BASE_URL}/api/getBalance`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ Montant: amount }),
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || "Votre solde ne permet pas ce retrait.");
+      if (!response.ok)
+        throw new Error(
+          payload.error || "Votre solde ne permet pas ce retrait.",
+        );
       state.amount = amount;
       if (ui.priceHint) {
         const gamePassPrice = Math.round(amount / 0.7);
@@ -370,14 +440,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       await new Promise((resolve) => setTimeout(resolve, 3000));
       const response = await fetch(`${API_BASE_URL}/api/jobStatus`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ job_id: jobId }),
       });
       const data = await response.json().catch(() => ({}));
       if (data.status === "success") return data;
-      if (data.status === "error") throw new Error(data.error || "Le retrait n'a pas pu être effectué.");
+      if (data.status === "error")
+        throw new Error(data.error || "Le retrait n'a pas pu être effectué.");
     }
-    throw new Error("Le traitement prend plus de temps que prévu. Vérifiez votre historique avant de réessayer.");
+    throw new Error(
+      "Le traitement prend plus de temps que prévu. Vérifiez votre historique avant de réessayer.",
+    );
   }
 
   async function submitWithdrawal() {
@@ -399,21 +475,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       const token = await user.getIdToken();
       const balanceResponse = await fetch(`${API_BASE_URL}/api/getBalance`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ Montant: state.amount }),
       });
       const balanceData = await balanceResponse.json().catch(() => ({}));
-      if (!balanceResponse.ok) throw new Error(balanceData.error || "Votre solde ne permet plus ce retrait.");
+      if (!balanceResponse.ok)
+        throw new Error(
+          balanceData.error || "Votre solde ne permet plus ce retrait.",
+        );
 
       showProgress("Création de votre retrait…", 2);
       const paymentResponse = await fetch(`${API_BASE_URL}/api/payServer`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ID: state.targetId, gameId: rootId, amount: state.amount }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ID: state.targetId,
+          gameId: rootId,
+          amount: state.amount,
+        }),
       });
       const paymentData = await paymentResponse.json().catch(() => ({}));
       if (!paymentResponse.ok || !paymentData.success) {
-        throw new Error(paymentData.error || "Le retrait n'a pas pu être lancé.");
+        throw new Error(
+          paymentData.error || "Le retrait n'a pas pu être lancé.",
+        );
       }
 
       showProgress("Finalisation de votre retrait…", 3);
@@ -430,7 +521,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       showSummary({
         success: false,
         title: "Retrait non effectué",
-        message: error.message || "Une erreur est survenue. Aucun montant ne doit être débité si le retrait a échoué.",
+        message:
+          error.message ||
+          "Une erreur est survenue. Aucun montant ne doit être débité si le retrait a échoué.",
         amount: state.amount,
       });
     } finally {
@@ -450,23 +543,41 @@ document.addEventListener("DOMContentLoaded", async () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: token }),
         });
-        state.eventSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, { withCredentials: true });
+        state.eventSource = new EventSource(`${API_BASE_URL}/api/sse/balance`, {
+          withCredentials: true,
+        });
         state.eventSource.onmessage = ({ data }) => {
           const payload = JSON.parse(data);
           state.balance = Number(payload.balance || 0);
-          state.transactions = Array.isArray(payload.transactions) ? payload.transactions : [];
+          state.transactions = Array.isArray(payload.transactions)
+            ? payload.transactions
+            : [];
           renderBalance();
           renderTransactions();
           renderStock(payload.stock_data?.remaining_solde);
+          const delta = data.delta;
+
+          if (delta && delta !== 0 && gainnotif) {
+            if (userIsActive) {
+              showGainNotification(data, delta);
+            } else {
+              pendingNotifications.push({ data, delta });
+            }
+          }
         };
       } catch (error) {
-        console.error("Impossible de démarrer les mises à jour du retrait.", error);
+        console.error(
+          "Impossible de démarrer les mises à jour du retrait.",
+          error,
+        );
       }
     })();
   }
 
   ui.startButton?.addEventListener("click", validateAmount);
-  ui.placeSelect?.addEventListener("change", (event) => prepareTutorial(event.target.value));
+  ui.placeSelect?.addEventListener("change", (event) =>
+    prepareTutorial(event.target.value),
+  );
   ui.confirmButton?.addEventListener("click", submitWithdrawal);
   ui.noGameButton?.addEventListener("click", openHelp);
   ui.helpButton?.addEventListener("click", () => {
@@ -477,7 +588,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   ui.closeHelpButton?.addEventListener("click", () => {
     ui.helpFrame?.classList.remove("visible");
-    setTimeout(() => { if (ui.helpFrame) ui.helpFrame.style.display = "none"; setStepVisibility(ui.withdrawalStep, true); }, 250);
+    setTimeout(() => {
+      if (ui.helpFrame) ui.helpFrame.style.display = "none";
+      setStepVisibility(ui.withdrawalStep, true);
+    }, 250);
   });
   ui.helpBackButton?.addEventListener("click", closeHelp);
   ui.helpSelect?.addEventListener("change", (event) => {
@@ -498,4 +612,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setButtonLoading(ui.startButton, false);
     startBalanceStream(user);
   });
+
+  if (closenotif) closenotif.addEventListener("click", closeNotif);
+  if (closenotif2) closenotif2.addEventListener("click", closeNotif);
 });
