@@ -682,7 +682,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (mobile === currentMode) return;
         currentMode = mobile;
 
-        document.querySelectorAll("iframe").forEach((i) => i.remove());
+      function initOffers() {
+        const mobile = isMobile();
+
+        if (mobile === currentMode) return;
+        currentMode = mobile;
+
+        document.querySelectorAll("iframe").forEach((i) => {
+          if (!i.closest(".trustpilot-widget")) {
+            i.remove();
+          }
+        });
+        loadedTabs.clear();
+
+        if (mobile) {
+          initMobileOffers();
+        } else {
+          loadDesktopOffers();
+        }
+      }
         loadedTabs.clear();
 
         if (mobile) {
