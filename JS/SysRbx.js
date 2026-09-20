@@ -279,7 +279,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     top.append(heading, status);
     const text = document.createElement("p");
     text.className = "summary-message";
-    text.textContent = message;
+    text.innerHTML =
+      message + (success ? ' Consultez <a href="https://www.roblox.com/transactions">vos transactions</a> sur Roblox !' : "");
     const details = document.createElement("p");
     details.className = "summary-value";
     details.textContent = amount ? `Montant : ${money(amount)}` : "";
