@@ -133,6 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let lastCount = null;
   let lastRobux = null;
+  let lastWithdraws = null;
 
   function LoadMessage() {
     if (evtSource) evtSource.close();
