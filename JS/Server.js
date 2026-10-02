@@ -94,6 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const start = document.getElementById("start");
   const countmember = document.getElementById("countmember");
   const robuxnumber = document.getElementById("robuxnumber");
+  const withdrawsnumber = document.getElementById("withdrawsnumber");
   const btnAccueil = document.getElementById("btnAccueil");
   const btnRetour = document.getElementById("btn-Retour");
 
@@ -149,6 +150,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (countmember && data.count != null) {
           const newCount = String(data.count);
           const newRobux = String(data.Robux);
+          const newWithdraws = String(data.Withdraws);
 
           // COUNT
           if (newCount !== lastCount) {
@@ -185,6 +187,25 @@ document.addEventListener("DOMContentLoaded", async () => {
                 scrambleText(robuxnumber, newRobux);
               } else {
                 robuxnumber.textContent = newRobux;
+              }
+            });
+          }
+
+          if (newWithdraws !== lastWithdraws) {
+            lastWithdraws = newWithdraws;
+
+            withdrawsnumber.dataset.value = newWithdraws;
+
+            requestAnimationFrame(() => {
+              const rect3 = withdrawsnumber.getBoundingClientRect();
+
+              const inView3 =
+                rect3.top < window.innerHeight && rect3.bottom > 0;
+
+              if (inView3) {
+                scrambleText(withdrawsnumber, newWithdraws);
+              } else {
+                withdrawsnumber.textContent = newWithdraws;
               }
             });
           }
@@ -262,10 +283,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   );
 
   if (countmember) {
+    withdrawsnumber.dataset.value = withdrawsnumber.textContent;
     robuxnumber.dataset.value = robuxnumber.textContent;
     countmember.dataset.value = countmember.textContent;
     observer.observe(robuxnumber);
     observer.observe(countmember);
+    observer.observe(withdrawsnumber);
   }
 
   auth.onAuthStateChanged(async (user) => {
