@@ -80,8 +80,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   const switch2 = document.getElementById("drawer-disabled");
   const title = document.getElementById("Titre");
   const content = document.getElementById("Contenu");
+  const soldebox = document.querySelector(".solde-box");
+  const btn_retrait = document.getElementById("btn-retrait");
+  const btn_Giveaways = document.getElementById("btn-Giveaways");
+  const btn_win = document.getElementById("btn-win");
+  const btn_lb = document.getElementById("btn-lb");
   if (loadinggif) loadinggif.style.display = "flex";
-  if (btnprofil) btnprofil.style.display = "none";
+  if (btnprofil) {
+    if (soldebox || btn_retrait) {
+      btnprofil.style.display = "flex";
+    } else {
+      btnprofil.style.display = "none";
+    }
+  }
 
   //----------------------//
   // REQUETE POUR MESSAGE //
@@ -91,7 +102,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const distitre = document.getElementById("distitre");
   const discontexte = document.getElementById("discontexte");
   const messageContainer = document.getElementById("message-dis-container");
-  const start = document.getElementById("start");
   const countmember = document.getElementById("countmember");
   const robuxnumber = document.getElementById("robuxnumber");
   const withdrawsnumber = document.getElementById("withdrawsnumber");
@@ -328,6 +338,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (btnConnexion) {
         btnConnexion.style.display = "none";
       }
+      if (btn_retrait) {
+        btn_retrait.style.display = "none";
+      }
+      if (btnprofil) {
+        btnprofil.style.display = "none";
+      }
+      if (btn_Giveaways) {
+        btn_Giveaways.style.display = "none";
+      }
+      if (btn_win) {
+        btn_win.style.display = "none";
+      }
+      if (btn_lb) {
+        btn_lb.style.display = "none";
+      }
 
       if (sign) {
         sign.forEach((btn) => {
@@ -370,10 +395,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       /* ===== PROFIL HEADER ===== */
       const lienprofil = document.getElementById("lien-profil");
-      if (lienprofil) {
-        lienprofil.href = "Pages/Profil";
-        lienprofil.style.justifyContent = "center";
-        const span = lienprofil.querySelector("span");
+      if (lienprofil || soldebox) {
+        if (lienprofil) {
+          lienprofil.href = "Pages/Profil";
+          lienprofil.style.justifyContent = "center";
+          const span = lienprofil.querySelector("span");
+          if (span) span.textContent = `${username}`;
+        }
+
         if (elements) {
           elements.style.display = "flex";
         }
@@ -390,6 +419,21 @@ document.addEventListener("DOMContentLoaded", async () => {
           btnInscription.style.display = "flex";
         }
 
+        if (btn_retrait) {
+          btn_retrait.style.display = "flex";
+        }
+        if (btnprofil) {
+          btnprofil.style.display = "flex";
+        }
+        if (btn_Giveaways) {
+          btn_Giveaways.style.display = "flex";
+        }
+        if (btn_win) {
+          btn_win.style.display = "flex";
+        }
+        if (btn_lb) {
+          btn_lb.style.display = "flex";
+        }
         if (btnConnexion) {
           btnConnexion.style.display = "flex";
         }
@@ -398,7 +442,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             img.style.display = "none";
           });
         }
-        if (span) span.textContent = `${username}`;
       }
 
       const isMobile = () => window.matchMedia("(max-width: 460px)").matches;
