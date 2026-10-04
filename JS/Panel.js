@@ -105,6 +105,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const background = document.getElementById("background");
     const pseudoR = document.getElementById("pseudoR");
     const retour = document.getElementById("retour");
+    const giveawayCondition = document.getElementById("giveawayCondition");
+    const giveawayRobux = document.getElementById("giveawayRobux");
+    const giveawayDuration = document.getElementById("giveawayDuration");
+    const giveawayWinners = document.getElementById("giveawayWinners");
+    const giveawayValue = document.getElementById("giveawayConditionValue");
+    const giveawayBtn = document.getElementById("giveawayBtn");
 
     if (loadinggif) loadinggif.style.display = "flex";
     if (btnprofil) btnprofil.style.display = "none";
@@ -135,6 +141,54 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Erreur avatar :", err);
       }
     }
+
+    async function GiveawayCreate(prize, condition, robux, duration, winners, value) {
+      try {
+        const token = await firebase.auth().currentUser.getIdToken();
+        const res = await fetch(`${API_BASE_URL}/api/giveaways/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            prize,
+            condition,
+            value,
+            robux,
+            duration,
+            winners,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erreur lors de la création du giveaway");
+        return data;
+      } catch (error) {
+        console.error("Erreur lors de la création du giveaway :", error);
+        throw error;
+      }
+    }
+
+    giveawayBtn?.addEventListener("click", async () => {
+      const prize = giveawayPrize?.value.trim();
+      const condition = giveawayCondition?.value.trim();
+      const robux = parseInt(giveawayRobux?.value.trim(), 10);
+      const duration = parseInt(giveawayDuration?.value.trim(), 10);
+      const winners = parseInt(giveawayWinners?.value.trim(), 10);
+      const value = parseInt(giveawayValue?.value.trim(), 10);
+
+      if (!prize || !condition || isNaN(robux) || isNaN(duration) || isNaN(winners) || isNaN(value)) {
+        alert("Veuillez remplir tous les champs correctement.");
+        return;
+      }
+
+      try {
+        await GiveawayCreate(prize, condition, robux, duration, winners, value);
+        alert("Giveaway créé avec succès !");
+      } catch (error) {
+        alert("Erreur lors de la création du giveaway.");
+      }
+    });
 
     /* ===== PROFIL D'UN UTILISATEUR ===== */
     // ✅ Récupère les données fraîches à chaque ouverture de profil
