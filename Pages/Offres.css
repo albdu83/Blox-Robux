@@ -199,6 +199,24 @@ header.scrolled {
 .header-left img {
   width: clamp(32px, 6vw, 45px);
   height: auto;
+  display: flex;
+}
+
+.minisolde-box {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #052e16;
+  padding: clamp(6px, 1.7vw, 12px) clamp(6px, 1.8vw, 12px);
+  border-radius: 100px;
+  border: #3dff5d31 2px solid;
+  color: #ffea00;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  gap: 5px;
+  box-shadow:
+    0 10px 30px rgba(0, 255, 106, 0.4),
+    inset 0 1px rgba(2, 23, 139, 0.03);
 }
 
 .solde-box {
@@ -1034,6 +1052,10 @@ nav ul li a.active {
 .logo2 img:hover {
   cursor: pointer;
   background: rgba(59, 130, 246, 0.12);
+}
+
+.logo2 {
+  display : flex;
 }
 
 #logo2 {
