@@ -109,6 +109,48 @@
   </section>
 
   <section class="card">
+    <h2>Création de Giveaway</h2>
+    <div class="giveaway-form" style="gap: 10px; display: flex; flex-direction: column;">
+      <input
+        type="text"
+        id="giveawayPrize"
+        placeholder="Prix du giveaway (ex: Giveaway de 5R$)"
+      />
+      <input
+        type="number"
+        id="giveawayRobux"
+        placeholder="Montant total de Robux à distribuer"
+      />
+      <input
+        type="number"
+        id="giveawayWinners"
+        placeholder="Nombre de gagnants"
+      />
+      <input
+        type="number"
+        id="giveawayDuration"
+        placeholder="Durée en secondes (ex: 3600 pour 1h/ 86400 pour 1j/ 604800 pour 1 semaine)"
+      />
+
+      <label for="giveawayCondition">Condition de participation :</label>
+      <select id="giveawayCondition">
+        <option value="R$">Avoir gagné tant de R$</option>
+        <option value="Retraits">Avoir effectué tant de Retraits</option>
+        <option value="Offre">Avoir complété tant d'offres</option>
+        <option value="solde">Avoir un solde minimum</option>
+      </select>
+      <input
+        type="number"
+        id="giveawayConditionValue"
+        placeholder="Valeur de la condition (ex: 100 pour 100 R$)"
+      />
+      <button class="btn create-giveaway" type="button" id="giveawayBtn">
+        Créer le Giveaway
+      </button>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>Promocodes</h2>
     <button class="btn create-promo" id="createPromo">
       Créer un promocode
