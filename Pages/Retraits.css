@@ -389,15 +389,19 @@ body > * {
 
 /* ----- HEADER ----- */
 header {
-  z-index: 1000;
   position: sticky;
   top: 0;
+  z-index: 1000;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
+  justify-content: space-between;
+  padding-top: clamp(10px, 2.5vw, 15px);
+  padding-bottom: clamp(10px, 2.5vw, 15px);
+  padding-left: 20px;
+  padding-right: 20px;
   background: linear-gradient(180deg, #0f172a, #020617);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: nowrap; /* pour mobile */
 }
 
 header.scrolled {
@@ -406,24 +410,25 @@ header.scrolled {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
+/* ======= HEADER SHADOW ======= */
 .header-shadow {
+  position: relative;
   height: 40px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
-  position: relative;
   z-index: 2;
 }
 
-/* gauche */
+/* LEFT : logo + solde */
 .header-left {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: clamp(10px, 2vw, 15px);
 }
 
-/* logo */
 .header-left img {
-  height: 50px;
+  width: clamp(32px, 6vw, 45px);
+  height: auto;
+  display: flex;
 }
 
 /* solde */
@@ -443,13 +448,36 @@ header.scrolled {
     inset 0 1px rgba(2, 23, 139, 0.03);
 }
 
+.minisolde-box {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #052e16;
+  padding: clamp(6px, 1.7vw, 12px) clamp(6px, 1.8vw, 12px);
+  border-radius: 100px;
+  border: #3dff5d31 2px solid;
+  color: #ffea00;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  gap: 5px;
+  box-shadow:
+    0 10px 30px rgba(0, 255, 106, 0.4),
+    inset 0 1px rgba(2, 23, 139, 0.03);
+}
+
 /* titre DANS le flex */
 header .title {
+  flex: 1; /* prend tout l’espace disponible */
+  text-align: center;
   font-size: clamp(18px, 4vw, 25px);
   font-weight: bold;
   color: #2b6ac9;
-  white-space: nowrap;
+  white-space: nowrap; /* empêche le retour à la ligne */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+
 
 /* menu */
 header ul {
@@ -1908,6 +1936,10 @@ select:focus {
 .logo2 img:hover {
   cursor: pointer;
   background: rgba(59, 130, 246, 0.12);
+}
+
+.logo2 {
+  display: flex;
 }
 
 #logo2 {
