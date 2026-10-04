@@ -157,28 +157,4 @@ document.addEventListener("DOMContentLoaded", () => {
       boostBanner.style.display = "none";
     });
   }
-
-  /* =========================
-     MOBILE NAV CLEAN FIX
-  ========================= */
-  const barres = document.getElementById("barres");
-  const navBtns = document.getElementById("btns");
-  const soldeBox = document.getElementById("solde-box");
-
-  function handleResponsive() {
-    if (!barres || !navBtns || !soldeBox) return;
-
-    if (window.innerWidth >= 1024) {
-      barres.style.display = "none";
-      navBtns.style.display = "flex";
-      soldeBox.style.display = "flex";
-    } else {
-      barres.style.display = "block";
-      navBtns.style.display = "none";
-      soldeBox.style.display = "none";
-    }
-  }
-
-  handleResponsive();
-  window.addEventListener("resize", handleResponsive);
 });
