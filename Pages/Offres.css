@@ -62,7 +62,6 @@ body {
   height: 300px;
   background: radial-gradient(circle, rgba(0, 255, 200, 0.1), transparent 70%);
   bottom: 100px;
-  right: -80px;
   filter: blur(40px);
   z-index: -1;
 }
