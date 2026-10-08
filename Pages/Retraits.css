@@ -130,7 +130,6 @@ body > * {
   pointer-events: auto;
 
   bottom: 20px;
-  right: 20px;
 
   width: min(520px, calc(100vw - 32px));
   height: min(380px, calc(100vh - 80px));
@@ -308,7 +307,6 @@ body > * {
     height: calc(100vh - 20px);
 
     bottom: 8px;
-    right: 8px;
 
     padding: 12px;
 
