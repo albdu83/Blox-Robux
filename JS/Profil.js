@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return showMsg(msg, `❌ ${data.error}`);
       }
 
-      showMsg(msg, `✔️ ${data.amount} R$ envoyés !`, true);
+      showMsg(msg, `✔️ ${amountToSend} R$ envoyés !`, true);
     } catch (err) {
       console.error(err);
       btn.disabled = false;
