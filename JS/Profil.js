@@ -262,6 +262,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           Authorization: `Bearer ${token}`,
           "X-CSRF-Token": csrfToken,
         },
+        credentials: "include",
         body: JSON.stringify({
           recipientUsername,
           amount: parseInt(amountToSend),
