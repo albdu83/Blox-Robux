@@ -391,6 +391,7 @@ body::before {
   transform: scale(1);
 }
 
+#background2,
 #warn {
   opacity: 0;
   position: fixed;
@@ -403,6 +404,7 @@ body::before {
   transition: opacity 0.5s ease;
 }
 
+#background2.active,
 #warn.active {
   opacity: 1;
 }
