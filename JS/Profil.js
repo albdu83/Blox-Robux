@@ -198,11 +198,98 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.style.color = success ? "#00ff6a" : "#ff5555";
     setTimeout(() => (el.textContent = ""), 3000);
   }
+
+  async function waitForCaptcha() {
+    while (true) {
+      const response = grecaptcha.getResponse();
+
+      if (response) {
+        return response;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+
+  /* ===ENVOYER DES RBX=== */
+  document.getElementById("sendRobux").addEventListener("click", async () => {
+    grecaptcha.reset();
+    const btn = document.getElementById("sendRobux");
+    if (btn.disabled)
+      return console.warn("Action en cours, veuillez patienter...");
+    btn.disabled = true;
+
+    const background2 = document.getElementById("background2");
+    background2.style.display = "flex";
+    requestAnimationFrame(() => background2.classList.toggle("active"));
+
+    const captchaResponse = await waitForCaptcha();
+
+    if (!captchaResponse) {
+      btn.disabled = false;
+      return showMsg(
+        document.getElementById("sendMessage"),
+        "❌ Veuillez compléter le reCAPTCHA",
+      );
+    }
+
+    background2.classList.remove("active");
+
+    setTimeout(() => {
+      background2.style.display = "none";
+    }, 300);
+
+    const recipientUsername = document
+      .getElementById("recipientUsername")
+      .value.trim();
+    const amountToSend = document.getElementById("amountToSend").value.trim();
+    const msg = document.getElementById("sendMessage");
+    const user = auth.currentUser;
+
+    if (!recipientUsername || !amountToSend) {
+      btn.disabled = false;
+      showMsg(msg, "❌ Informations manquantes");
+      return;
+    }
+
+    try {
+      const csrfToken = await fetchCsrfToken();
+      const token = await user.getIdToken();
+      const res = await fetch(`${API_BASE_URL}/api/send-robux`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify({
+          recipientUsername,
+          amount: parseInt(amountToSend),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        btn.disabled = false;
+        return showMsg(msg, `❌ ${data.error}`);
+      }
+
+      showMsg(msg, `✔️ ${data.amount} R$ envoyés !`, true);
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      showMsg(msg, "❌ Une erreur est survenue.");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   /* ----- PROMOCODE ----- */
   // ✅ APRÈS — le client envoie juste le code, le serveur fait tout
   document.getElementById("applyPromo").addEventListener("click", async () => {
     const btn = document.getElementById("applyPromo");
-    if (btn.disabled) return console.warn("Action en cours, veuillez patienter...");
+    if (btn.disabled)
+      return console.warn("Action en cours, veuillez patienter...");
     btn.disabled = true;
 
     const inputEl = document.getElementById("promoInput");
