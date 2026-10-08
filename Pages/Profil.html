@@ -121,8 +121,43 @@
         </div>
       </div>
       <!-- ---------- PROFIL ---------- -->
+      <div id="background2">
+        <div class="card">
+          <div
+            class="g-recaptcha"
+            data-sitekey="6LfYrkUsAAAAAP1-Oe9wb5F3u5p67hNg_92-ug-W"
+          ></div>
+        </div>
+      </div>
       <main>
-        <!-- SECTION 1 : MODIFIER PROFIL -->
+        <!-- SECTION 1 : ENVOYER DES RBX -->
+        <section class="card">
+          <h2>💸 Envoyer des R$</h2>
+          <div class="form-group">
+            <label>Nom d'utilisateur du destinataire</label>
+            <input
+              type="text"
+              id="recipientUsername"
+              placeholder="Entrez le nom d'utilisateur du destinataire"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Montant à envoyer</label>
+            <input
+              type="number"
+              id="amountToSend"
+              placeholder="Entrez le montant à envoyer"
+            />
+          </div>
+          <p style="font-size: small; color: yellow; text-align: center;">Pour information, une taxe de 10% s'applique sur le montant envoyé ! (100R$ => 90R$)</p>
+
+          <button id="sendRobux">Envoyer</button>
+
+          <p id="sendMessage" class="msg"></p>
+        </section>
+
+        <!-- SECTION 2 : MODIFIER PROFIL -->
         <section class="card">
           <h2>👤 Modification du profil</h2>
           <h5 style="text-align: center">
@@ -169,7 +204,7 @@
           <p id="profileMessage" class="msg"></p>
         </section>
 
-        <!-- SECTION 2 : PROMOCODE -->
+        <!-- SECTION 3 : PROMOCODE -->
         <section class="card">
           <h2>🎁 Entrer un promocode</h2>
 
@@ -205,6 +240,12 @@
         src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
         defer
       ></script>
+      <script
+        src="https://www.google.com/recaptcha/api.js"
+        async
+        defer
+      ></script>
+
       <script src="../JS/Server.js" defer></script>
       <script src="../JS/Animation.js" defer></script>
       <script src="../JS/Profil.js" defer></script>
