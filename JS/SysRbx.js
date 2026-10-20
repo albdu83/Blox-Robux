@@ -491,7 +491,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  async function waitForJob(token, jobId) {
+  async function waitForJobPass(token, jobId) {
     const deadline = Date.now() + 10 * 60 * 1000; // 10 minutes
     let lastStatus = "pending";
 
@@ -525,6 +525,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     return { status: "pending", job_id: jobId, lastStatus };
+  }
+
+  async function waitForJob(token, jobId) {
+    const deadline = Date.now() + 120000;
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const response = await fetch(`${API_BASE_URL}/api/jobStatus`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ job_id: jobId }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (data.status === "success") return data;
+      if (data.status === "error")
+        throw new Error(data.error || "Le retrait n'a pas pu être effectué.");
+    }
+    throw new Error(
+      "Le traitement prend plus de temps que prévu. Vérifiez votre historique avant de réessayer.",
+    );
   }
 
   async function submitWithdrawalPass() {
@@ -584,7 +606,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       showProgress("Finalisation de votre retrait…", 3);
 
-      const jobResult = await waitForJob(token, paymentData.job_id);
+      const jobResult = await waitForJobPass(token, paymentData.job_id);
       hideProgress();
 
       if (jobResult.status === "pending") {
