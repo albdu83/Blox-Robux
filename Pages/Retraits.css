@@ -1092,6 +1092,7 @@ button:hover {
   white-space: normal;
 }
 
+.pass-tuto-container,
 .tutocontainer {
   display: flex;
   flex-direction: column;
@@ -1506,6 +1507,20 @@ button:hover {
   gap: 12px;
 }
 
+#selectGame {
+  opacity: 0;
+  display: none;
+  transition: all ease 0.5s;
+}
+
+#selectGame.active {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 1;
+}
+
+.pass-tuto-container,
 .tutocontainer {
   position: relative;
   opacity: 0;
@@ -1515,7 +1530,7 @@ button:hover {
   max-height: 0;
   padding: 0;
 
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   gap: 12px;
@@ -1544,6 +1559,7 @@ button:hover {
 }
 
 /* ouverture */
+.pass-tuto-container.active,
 .tutocontainer.active10 {
   position: relative;
   opacity: 1;
@@ -1554,18 +1570,21 @@ button:hover {
 }
 
 /* scrollbar moderne */
+.pass-tuto-container::-webkit-scrollbar,
 #hacker-frame::-webkit-scrollbar,
 .summary-frame::-webkit-scrollbar,
 .tutocontainer::-webkit-scrollbar {
   width: 8px;
 }
 
+.pass-tuto-container::-webkit-scrollbar-track,
 #hacker-frame::-webkit-scrollbar-track,
 .summary-frame::-webkit-scrollbar-track,
 .tutocontainer::-webkit-scrollbar-track {
   background: transparent;
 }
 
+.pass-tuto-container::-webkit-scrollbar-thumb,
 #hacker-frame::-webkit-scrollbar-thumb,
 .summary-frame::-webkit-scrollbar-thumb,
 .tutocontainer::-webkit-scrollbar-thumb {
@@ -1573,6 +1592,7 @@ button:hover {
   border-radius: 20px;
 }
 
+.pass-tuto-container::-webkit-scrollbar-thumb:hover,
 #hacker-frame::-webkit-scrollbar-thumb:hover,
 .summary-frame::-webkit-scrollbar-thumb:hover,
 .tutocontainer::-webkit-scrollbar-thumb:hover {
@@ -1685,6 +1705,7 @@ select:focus {
   border-radius: 6px;
   background-color: #0d0e16;
   color: #ffffff;
+  cursor: pointer;
 }
 
 .divHeader {
@@ -2366,6 +2387,7 @@ h2 {
 .withdrawal-progress__steps li.is-current::before { border-color: #60a5fa; box-shadow: 0 0 0 4px rgba(96,165,250,.12); }
 .withdrawal-progress__steps li.is-complete { color: #bbf7d0; border-color: rgba(74,222,128,.28); background: rgba(34,197,94,.08); }
 .withdrawal-progress__steps li.is-complete::before { border-color: #4ade80; background: #4ade80; content: "✓"; color: #052e16; font-size: 11px; font-weight: 800; line-height: 16px; text-align: center; }
+.withdrawal-progress footer {font-size: small; margin-top: 10px;}
 
 /* #finalStep : choix du jeu puis tutoriel. */
 #finalStep.Interface {
@@ -2381,6 +2403,7 @@ h2 {
 #finalStep #public-places:focus { border-color: #60a5fa; box-shadow: 0 0 0 4px rgba(96,165,250,.13); }
 #finalStep .HELP { align-self: center; margin: 0; padding: 9px 14px; border: 0; border-radius: 10px; background: transparent; color: #fcd34d; font-size: .86rem; text-decoration: underline; text-underline-offset: 3px; }
 #finalStep .HELP:hover { background: rgba(250,204,21,.1); color: #fde68a; transform: none; }
+#finalStep .pass-tuto-container.active,
 #finalStep .tutocontainer.active10 { width: 100%; max-width: none; max-height: min(58vh,580px); padding: clamp(16px,3vw,24px); align-items: stretch; border: 1px solid rgba(148,163,184,.16); border-radius: 16px; background: rgba(2,6,23,.5); box-shadow: none; }
 #finalStep .tuto-header { padding-bottom: 14px; border-bottom: 1px solid rgba(148,163,184,.12); }
 #finalStep .tuto-header h2 { margin: 0; color: #f8fafc; font-size: 1.15rem; }
@@ -2408,6 +2431,88 @@ h2 {
 #finalStep2 .step-card p, #finalStep2 .step-card li { color: #cbd5e1; font-size: .9rem; line-height: 1.55; }
 #finalStep2 .step-card.warning { border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.08); }
 #finalStep2 .lien_roblox { color: #93c5fd; font-weight: 600; }
+
+
+#withdrawalType {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+}
+
+#GamePassBtn,
+#PrivateServerBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  width: 100%;
+  min-height: 140px;
+  height: auto;
+  padding: 20px;
+
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  box-shadow: none;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+#GamePassBtn p,
+#PrivateServerBtn p {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #606468;
+}
+
+#GamePassBtn::before,
+#PrivateServerBtn::before {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+#GamePassBtn::before {
+  content: "🎟️";
+}
+
+#PrivateServerBtn::before {
+  content: "🔒";
+}
+
+#GamePassBtn:hover,
+#PrivateServerBtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #fff;
+  box-shadow: none;
+  transform: translateY(-3px);
+}
+
+#GamePassBtn:focus-visible,
+#PrivateServerBtn:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  #GamePassBtn,
+  #PrivateServerBtn {
+    width: 100%;
+    min-height: 110px;
+  }
+}
 
 @keyframes withdrawal-spin { to { transform: rotate(360deg); } }
 @media (max-width: 520px) {
