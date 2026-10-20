@@ -54,17 +54,103 @@
       </div>
       <div class="background" id="background">
         <div class="Interface" id="finalStep">
-          <p class="explain" id="explain">
-            Veuillez selectionner un de vos jeux publiques pour effectuer votre
-            transaction. Si aucun jeu n'apparait, veuillez cliquer sur le bouton
-            si dessous.
-          </p>
-          <button class="HELP" id="HELP">Aucun jeu n'apparaît ?</button>
-          <div class="public-places">
-            <select id="public-places">
-              <option>séléctionner un jeu</option>
-            </select>
+          <div id="withdrawalType" class="withdrawal-type">
+            <h2>Choisissez le type de retrait :</h2>
+            <button id="GamePassBtn" class="withdrawal-type-btn">
+              Game Pass
+              <p>
+                Le paiement peut prendre jusqu'à 24h avant d'arriver dans vos R$
+                en attentes. Dépend d'un tiers.
+              </p>
+            </button>
+            <button id="PrivateServerBtn" class="withdrawal-type-btn">
+              Serveur Privé
+              <p>
+                Paiement garantie de votre serveur privé. Nécessite d'avoir un
+                jeu conforme et public.
+              </p>
+            </button>
           </div>
+
+          <div class="select-game" id="selectGame">
+            <p class="explain" id="explain">
+              Veuillez selectionner un de vos jeux publiques pour effectuer
+              votre transaction. Si aucun jeu n'apparait, veuillez cliquer sur
+              le bouton si dessous.
+            </p>
+            <button class="HELP" id="HELP">Aucun jeu n'apparaît ?</button>
+            <div class="public-places">
+              <select id="public-places">
+                <option>séléctionner un jeu</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="PassTutoContainer" class="pass-tuto-container">
+            <div class="tuto-header">
+              <h2>Tutoriel</h2>
+            </div>
+
+            <div class="tuto-step">
+              <p>
+                1. Cliquez sur
+                <a href="" id="href" target="_blank" rel="noopener noreferrer"
+                  >ce lien</a
+                >
+                pour créer votre Game-Pass.
+              </p>
+            </div>
+
+            <div class="tuto-step">
+              <p id="priceText" class="highlight" style="text-align: center">
+                2. ...
+              </p>
+              <a
+                href="https://www.bloxrbx.fr/img/TutoPasses.png"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src="../img/TutoPasses.png"
+                  alt="étape 2"
+                  style="cursor: pointer"
+                />
+              </a>
+              <p
+                class="tuto-step"
+                style="
+                  text-align: center;
+                  color: rgb(194, 154, 22);
+                  margin-top: 10px;
+                "
+              >
+                N'oubliez pas de désactiver les prix régionaux, sinon, vous
+                n'obtiendrez pas le même montant.
+              </p>
+            </div>
+
+            <div class="tuto-step">
+              <p>3. Enregistrez les modifications apportées à votre passe.</p>
+              <a
+                href="https://www.bloxrbx.fr/img/TutoPasses2.png"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src="../img/TutoPasses2.png"
+                  alt="étape 2"
+                  style="cursor: pointer"
+                />
+              </a>
+            </div>
+            <div class="tuto-footer">
+              <p class="finish-text">
+                Une fois que le Game-Pass est créé avec le bon montant, cliquez sur "Retirer"
+              </p>
+              <button id="buttonretraitPass">Retirer</button>
+            </div>
+          </div>
+
           <div class="tutocontainer" id="tutocontainer">
             <div class="tuto-header">
               <h2>Tutoriel</h2>
@@ -83,8 +169,7 @@
               <p>2. Paramétrez votre jeu Roblox comme ceci :</p>
               <img src="../img/Tuto1.png" alt="étape 1" />
               <p class="highlight" id="robuxadd">
-                🛑 Vous indiquerez <strong>...</strong> Robux dans l'encadré
-                rouge.
+                🛑 Vous indiquerez <strong>...</strong> R$ dans l'encadré rouge.
               </p>
             </div>
 
@@ -119,9 +204,9 @@
 
             <div class="tuto-footer">
               <p class="finish-text">
-                Cliquez sur "Retirer !" une fois terminé.
+                Cliquez sur "Retirer" une fois terminé.
               </p>
-              <button id="buttonretrait">Retirer !</button>
+              <button id="buttonretrait">Retirer</button>
               <button id="buttonhelp">Besoin d'aide ?</button>
             </div>
           </div>
