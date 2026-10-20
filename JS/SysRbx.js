@@ -16,9 +16,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     balanceMobile: document.getElementById("balance2"),
     amount: document.getElementById("amount"),
     startButton: document.getElementById("withdrawBtn"),
+    withdrawalType: document.getElementById("withdrawalType"),
     confirmButton: document.getElementById("buttonretrait"),
+    confirmButtonPass: document.getElementById("buttonretraitPass"),
     placeSelect: document.getElementById("public-places"),
     transactions: document.getElementById("transactions"),
+    gamePassButton: document.getElementById("GamePassBtn"),
+    privateServerButton: document.getElementById("PrivateServerBtn"),
+    selectGame: document.getElementById("selectGame"),
     error: document.getElementById("error"),
     stock: document.getElementById("remainingStock"),
     stockIcon: document.querySelector(".stock-icon"),
@@ -27,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     withdrawalStep: document.getElementById("finalStep"),
     helpStep: document.getElementById("finalStep2"),
     tutorial: document.getElementById("tutocontainer"),
+    PassTutoContainer: document.getElementById("PassTutoContainer"),
     explanation: document.getElementById("explain"),
     noGameButton: document.getElementById("HELP"),
     helpButton: document.getElementById("buttonhelp"),
@@ -36,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     helpSelect: document.getElementById("HelpType"),
     priceHint: document.getElementById("robuxadd"),
     accessLink: document.getElementById("href"),
+    priceText: document.getElementById("priceText"),
     questionnaireLink: document.getElementById("href2"),
     progressFrame: document.getElementById("hacker-frame"),
     progressText: document.getElementById("hacker-text"),
@@ -52,6 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     eventSource: null,
     isSubmitting: false,
     tutorialWasOpened: false,
+    withdrawalMethod: null,
   };
 
   let pendingNotifications = [];
@@ -95,11 +103,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     element.classList.toggle("show", visible);
   }
 
-  function openWithdrawalStep() {
-    if (!ui.overlay || !ui.withdrawalStep) return;
-    setStepVisibility(ui.helpStep, false);
+  function OpenWithdrawalType() {
+    if (!ui.overlay) return;
     ui.overlay.style.display = "flex";
     ui.overlay.classList.add("active");
+    setStepVisibility(ui.withdrawalType, true);
+    setStepVisibility(ui.withdrawalStep, true);
+  }
+
+  function openWithdrawalStep() {
+    if (!ui.withdrawalStep) return;
+    setStepVisibility(ui.helpStep, false);
     setStepVisibility(ui.withdrawalStep, true);
   }
 
@@ -240,7 +254,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           steps.append(item);
         },
       );
-      card.append(spinner, title, description, steps);
+      const footer = document.createElement("footer");
+      footer.textContent =
+        "Cela peut prendre un peu de temps. Patience !";
+      card.append(spinner, title, description, steps, footer);
       ui.progressFrame.replaceChildren(card);
     }
 
@@ -280,7 +297,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const text = document.createElement("p");
     text.className = "summary-message";
     text.innerHTML =
-      message + (success ? ' Consultez <a href="https://www.roblox.com/transactions">vos transactions</a> sur Roblox !' : "");
+      message +
+      (success
+        ? ' Consultez <a href="https://www.roblox.com/transactions">vos transactions</a> sur Roblox ! Si vous ne voyez pas vos R$ au bout de 24h, veuillez contacter le support.'
+        : "");
     const details = document.createElement("p");
     details.className = "summary-value";
     details.textContent = amount ? `Montant : ${money(amount)}` : "";
@@ -361,6 +381,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  function preparePassTutorial(placeId) {
+    state.selectedPlaceId = placeId;
+    if (ui.accessLink)
+      ui.accessLink.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/passes/create`;
+    if (state.tutorialWasOpened) {
+      ui.PassTutoContainer?.classList.add("active");
+      return;
+    }
+
+    state.tutorialWasOpened = true;
+    ui.withdrawalStep?.classList.add("active9");
+    ui.explanation?.classList.add("active6");
+    ui.noGameButton?.classList.add("active7");
+    ui.PassTutoContainer.style.display = "flex";
+    const revealTutorial = () => {
+      ui.PassTutoContainer?.classList.add("active");
+      ui.noGameButton?.classList.add("activeA");
+      ui.explanation?.classList.add("activeB");
+      ui.noGameButton.style.display = "none";
+      ui.explanation.style.display = "none";
+    };
+    if (ui.explanation) {
+      ui.explanation.addEventListener("transitionend", revealTutorial, {
+        once: true,
+      });
+      setTimeout(revealTutorial, 350);
+    } else {
+      revealTutorial();
+    }
+  }
+
   function prepareTutorial(placeId) {
     state.selectedPlaceId = placeId;
     if (ui.accessLink)
@@ -376,10 +427,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     ui.withdrawalStep?.classList.add("active9");
     ui.explanation?.classList.add("active6");
     ui.noGameButton?.classList.add("active7");
+    ui.tutorial.style.display = "flex";
     const revealTutorial = () => {
       ui.tutorial?.classList.add("active10");
       ui.noGameButton?.classList.add("activeA");
       ui.explanation?.classList.add("activeB");
+      ui.noGameButton.style.display = "none";
+      ui.explanation.style.display = "none";
     };
     if (ui.explanation) {
       ui.explanation.addEventListener("transitionend", revealTutorial, {
@@ -422,10 +476,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       state.amount = amount;
       if (ui.priceHint) {
         const gamePassPrice = Math.round(amount / 0.7);
-        ui.priceHint.textContent = `Vous indiquerez ${gamePassPrice} Robux dans l'encadré rouge.`;
+        ui.priceHint.textContent = `Vous indiquerez ${gamePassPrice} R$ dans l'encadré rouge.`;
       }
-      openWithdrawalStep();
-      await loadPlaces(user);
+      if (ui.priceText) {
+        const gamePassPrice = Math.round(amount / 0.7);
+        ui.priceText.textContent = `Vous indiquerez ${gamePassPrice} R$ dans l'encadré rouge pour le prix de votre Game-Pass.`;
+      }
+      OpenWithdrawalType();
       return true;
     } catch (error) {
       showError(error.message || "Impossible de vérifier le montant.");
@@ -457,8 +514,92 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   }
 
+  async function submitWithdrawalPass() {
+    if (state.isSubmitting) return;
+    if (state.withdrawalMethod !== "gamePass") {
+      showError("Sélectionnez un mode de retrait valide.");
+      return;
+    }
+    const rootId = state.rootIdByPlaceId.get(String(state.selectedPlaceId));
+    if (!state.amount || !state.selectedPlaceId || !rootId) {
+      showError("Choisissez un jeu avant de confirmer le retrait.");
+      return;
+    }
+    const user = auth.currentUser;
+    if (!user) return showError("Votre session a expiré. Reconnectez-vous.");
+
+    state.isSubmitting = true;
+    setButtonLoading(ui.confirmButtonPass, true);
+    setStepVisibility(ui.withdrawalStep, false);
+    showProgress("Vérification de votre retrait…", 1);
+
+    try {
+      const token = await user.getIdToken();
+      const balanceResponse = await fetch(`${API_BASE_URL}/api/getBalance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ Montant: state.amount }),
+      });
+      const balanceData = await balanceResponse.json().catch(() => ({}));
+      if (!balanceResponse.ok)
+        throw new Error(
+          balanceData.error || "Votre solde ne permet plus ce retrait.",
+        );
+
+      showProgress("Création de votre retrait…", 2);
+      const paymentResponse = await fetch(`${API_BASE_URL}/api/payGamePass`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ID: state.targetId,
+          gameId: rootId,
+          amount: state.amount,
+        }),
+      });
+      const paymentData = await paymentResponse.json().catch(() => ({}));
+      if (!paymentResponse.ok || !paymentData.success) {
+        throw new Error(
+          paymentData.error || "Le retrait n'a pas pu être lancé.",
+        );
+      }
+
+      showProgress("Finalisation de votre retrait…", 3);
+      await waitForJob(token, paymentData.job_id);
+      hideProgress();
+      showSummary({
+        success: true,
+        title: "Retrait confirmé",
+        message: "Votre retrait a été effectué avec succès.",
+        amount: state.amount,
+      });
+    } catch (error) {
+      hideProgress();
+      showSummary({
+        success: false,
+        title: "Retrait non effectué",
+        message:
+          error.message ||
+          "Une erreur est survenue. Aucun montant ne doit être débité si le retrait a échoué.",
+        amount: state.amount,
+      });
+    } finally {
+      state.isSubmitting = false;
+      setButtonLoading(ui.confirmButtonPass, false);
+    }
+  }
+
   async function submitWithdrawal() {
     if (state.isSubmitting) return;
+    if (state.withdrawalMethod !== "privateServer") {
+      showError("Sélectionnez un mode de retrait valide.");
+      return;
+    }
     const rootId = state.rootIdByPlaceId.get(String(state.selectedPlaceId));
     if (!state.amount || !state.selectedPlaceId || !rootId) {
       showError("Choisissez un jeu avant de confirmer le retrait.");
@@ -576,9 +717,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   ui.startButton?.addEventListener("click", validateAmount);
-  ui.placeSelect?.addEventListener("change", (event) =>
-    prepareTutorial(event.target.value),
-  );
+  ui.placeSelect?.addEventListener("change", (event) => {
+    if (state.withdrawalMethod === "gamePass") {
+      preparePassTutorial(event.target.value);
+    } else if (state.withdrawalMethod === "privateServer") {
+      prepareTutorial(event.target.value);
+    }
+  });
+  ui.confirmButtonPass?.addEventListener("click", submitWithdrawalPass);
   ui.confirmButton?.addEventListener("click", submitWithdrawal);
   ui.noGameButton?.addEventListener("click", openHelp);
   ui.helpButton?.addEventListener("click", () => {
@@ -599,6 +745,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelectorAll(".help-section").forEach((section) => {
       section.classList.toggle("active", section.id === event.target.value);
     });
+  });
+  ui.privateServerButton?.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      showError("Votre session a expiré. Reconnectez-vous.");
+      return;
+    }
+
+    state.withdrawalMethod = "privateServer";
+    setStepVisibility(ui.withdrawalType, false);
+
+    if (ui.selectGame) ui.selectGame.classList.toggle("active");
+
+    await loadPlaces(user);
+  });
+
+  ui.gamePassButton?.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      showError("Votre session a expiré. Reconnectez-vous.");
+      return;
+    }
+
+    state.withdrawalMethod = "gamePass";
+    setStepVisibility(ui.withdrawalType, false);
+
+    if (ui.selectGame) ui.selectGame.classList.toggle("active");
+
+    await loadPlaces(user);
   });
   auth.onAuthStateChanged((user) => {
     if (!user) {
