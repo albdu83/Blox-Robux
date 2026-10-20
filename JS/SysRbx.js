@@ -255,8 +255,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
       );
       const footer = document.createElement("footer");
-      footer.textContent =
-        "Cela peut prendre un peu de temps. Patience !";
+      footer.textContent = "Cela peut prendre un peu de temps. Patience !";
       card.append(spinner, title, description, steps, footer);
       ui.progressFrame.replaceChildren(card);
     }
@@ -493,9 +492,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function waitForJob(token, jobId) {
-    const deadline = Date.now() + 120000;
+    const deadline = Date.now() + 10 * 60 * 1000; // 10 minutes
+    let lastStatus = "pending";
+
     while (Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 3000));
+
       const response = await fetch(`${API_BASE_URL}/api/jobStatus`, {
         method: "POST",
         headers: {
@@ -504,14 +506,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         body: JSON.stringify({ job_id: jobId }),
       });
+
       const data = await response.json().catch(() => ({}));
-      if (data.status === "success") return data;
-      if (data.status === "error")
+
+      if (!response.ok) {
+        throw new Error(data.error || "Impossible de vérifier le retrait.");
+      }
+
+      lastStatus = data.status;
+
+      if (lastStatus === "completed") {
+        return { ...data, status: "completed" };
+      }
+
+      if (["failed", "cancelled"].includes(lastStatus)) {
         throw new Error(data.error || "Le retrait n'a pas pu être effectué.");
+      }
     }
-    throw new Error(
-      "Le traitement prend plus de temps que prévu. Vérifiez votre historique avant de réessayer.",
-    );
+
+    return { status: "pending", job_id: jobId, lastStatus };
   }
 
   async function submitWithdrawalPass() {
@@ -570,8 +583,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       showProgress("Finalisation de votre retrait…", 3);
-      await waitForJob(token, paymentData.job_id);
+
+      const jobResult = await waitForJob(token, paymentData.job_id);
       hideProgress();
+
+      if (jobResult.status === "pending") {
+        showSummary({
+          success: false,
+          title: "Retrait toujours en cours",
+          message:
+            "Le traitement prendre du temps. Votre retrait est confirmé mais est en attente pour le moment. Si aucun changement n'apparait dans les 24h veuillez contacter le support.",
+          amount: state.amount,
+        });
+        return;
+      }
+
       showSummary({
         success: true,
         title: "Retrait confirmé",
