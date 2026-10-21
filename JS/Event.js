@@ -5,10 +5,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const API =
     typeof API_BASE_URL === "string" ? API_BASE_URL : window.API_BASE_URL || "";
   const configs = [
-    { id: "blood", button: "openButton", threshold: 5 },
-    { id: "vampire", button: "openButton2", threshold: 10 },
-    { id: "haunted", button: "openButton3", threshold: 20 },
-    { id: "pumpkin", button: "openButton4", threshold: 50 },
+    { id: "blood", button: "openButton", threshold: 10 },
+    { id: "vampire", button: "openButton2", threshold: 25 },
+    { id: "haunted", button: "openButton3", threshold: 50 },
+    { id: "pumpkin", button: "openButton4", threshold: 100 },
   ];
   const trickButton = document.getElementById("trickButton");
   const notice = document.createElement("p");
