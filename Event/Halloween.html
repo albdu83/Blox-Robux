@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blox R$ - Halloween Event</title>
+    <link rel="stylesheet" href="Halloween.css" />
+  </head>
+  <body>
+    <div id="disconnect">
+      <h1>Vous avez été déconnecté... 😭</h1>
+      <h2>
+        Pour accéder aux fonctions du site web, merci de bien vouloir vous
+        (re)connecter.
+      </h2>
+      <a href="../Authentification/connexion">Se connecter ?</a>
+    </div>
+    <div id="transition" class="fade-transition active">
+      <img src="../img/Robux.png" id="image" alt="Logo Blox Robux" />
+      <div class="text" id="text-chargement">Chargement...</div>
+    </div>
+    <div id="body">
+      <header>
+        <!-- LEFT : logo + solde -->
+        <div class="header-left">
+          <a href="../">
+            <img src="../img/logo.png" alt="Logo Blox Robux" />
+          </a>
+        </div>
+        <div class="minisolde-box">
+          <span id="balance">0 R$</span>
+        </div>
+
+        <!-- TITRE CENTRÉ DANS LE FLEX -->
+        <div class="title">Blox R$</div>
+
+        <!-- NAVIGATION -->
+        <div class="minisolde-box" style="visibility: hidden">
+          <span>0 R$</span>
+        </div>
+
+        <div class="logo2">
+          <img src="../img/Barres.png" alt="Barres" id="barres" />
+        </div>
+      </header>
+      <div class="header-shadow"></div>
+
+      <div class="navigation" id="navigation">
+        <div class="nav-panel" id="nav-panel">
+          <div class="logo2" id="logo2">
+            <img src="../img/Back.png" alt="Barres" id="barres2" />
+          </div>
+          <ul class="nave">
+            <li>
+              <div class="solde-box">
+                <span>💰 Solde :</span>
+                <span id="balance2">0,00 R$</span>
+              </div>
+            </li>
+            <li><a id="btn-Retour" href="../">Accueil</a></li>
+            <li><a id="btn-lb" href="../Stats/Leaderboard">Leaderboard</a></li>
+            <li><a id="btn-win" href="Offres">Gagner des R$</a></li>
+            <li><a id="btn-retrait" href="Retraits">Retirer</a></li>
+            <li><a id="btn-profil" href="Profil">Profil</a></li>
+            <li><a id="btn-Giveaways" href="Giveaways">Giveaways</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="event">
+        <div class="event-intro">
+          <span>Event Halloween</span>
+          <h2>Coffres spéciaux</h2>
+          <p>
+            Gagne des coffres pendant l'event et débloque des R$ bonus sans
+            dépenser ton solde.
+          </p>
+        </div>
+
+        <section id="coffres">
+          <main>
+            <div class="card">
+              <h3>Coffre sanglant</h3>
+              <p>Chance : 50%</p>
+              <small>Récompense : +1 à +3 R$</small>
+              <button class="open-button" id="openButton" type="button" disabled>Avoir gagné 5 R$</button>
+            </div>
+
+            <div class="card">
+              <h3>Coffre vampirique</h3>
+              <p>Chance : 25%</p>
+              <small>Récompense : +3 à +6 R$</small>
+              <button class="open-button" id="openButton2" type="button" disabled>Avoir gagné 10 R$</button>
+            </div>
+
+            <div class="card">
+              <h3>Coffre hanté</h3>
+              <p>Chance : 12.5%</p>
+              <small>Récompense : +6 à +12 R$</small>
+              <button class="open-button" id="openButton3" type="button" disabled>Avoir gagné 20 R$</button>
+            </div>
+
+            <div class="card">
+              <h3>Coffre citrouille</h3>
+              <p>Chance : 5%</p>
+              <small>Récompense : jackpot spécial</small>
+              <button class="open-button" id="openButton4" type="button" disabled>Avoir gagné 50 R$</button>
+            </div>
+          </main>
+        </section>
+
+        <section id="trick-or-treat">
+          <main>
+            <div class="card trick-card">
+              <h3>Un bonbon ou un sort ?</h3>
+              <p>1 essai par jour</p>
+              <small>50% : +1 R$ / 50% : rien</small>
+              <button id="trickButton" type="button">Tenter ma chance</button>
+            </div>
+          </main>
+        </section>
+
+        <section id="event-rules">
+          <h3>Règles de l'event</h3>
+          <ul>
+            <li>Les coffres donnent uniquement des R$ bonus.</li>
+            <li>Aucun R$ gagné n'est dépensé pour ouvrir un coffre.</li>
+            <li>Les récompenses peuvent être ajustées pendant l'event.</li>
+            <li>Le bouton Trick or Treat est utilisable une fois par jour.</li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="separator hub-fade"></div>
+      <div id="Block">
+        <!-- COLONNE GAUCHE -->
+        <div class="side">
+          <img src="../img/BloxImg.png" alt="BloxRobuxLogo" />
+        </div>
+
+        <!-- COLONNE CENTRALE -->
+        <div id="BlockBottom">
+          <div class="infos">
+            <div class="col">
+              <h2>A propos de nous</h2>
+              <ul>
+                <li><a href="Bio">Biographie du site</a></li>
+                <li><a href="Security">Paiements sécurisés</a></li>
+                <li><a href="Support">Support</a></li>
+                <li>
+                  <a
+                    href="https://mail.google.com/mail/?view=cm&fs=1&to=contact@bloxrbx.fr"
+                    >Nous contacter</a
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div class="col">
+              <h2>Mentions légales</h2>
+              <ul>
+                <li><a href="../Legal/CGU">Conditions d'utilisations</a></li>
+                <li><a href="../Legal/PCF">Politique de confidentialité</a></li>
+              </ul>
+            </div>
+
+            <div class="col">
+              <h2>Réseaux sociaux</h2>
+              <ul>
+                <li>
+                  <a
+                    href="https://discord.gg/QQMRtfBXpq"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Discord</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://youtube.com/@bloxrbx00"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >YouTube</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://www.instagram.com/bloxrbx/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Instagram</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://www.tiktok.com/@bloxrbx.fr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >TikTok</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLONNE DROITE VIDE -->
+        <div class="side empty"></div>
+      </div>
+    </div>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
+      defer
+    ></script>
+    <script src="../JS/Server.js" defer></script>
+    <script src="../JS/Animation.js" defer></script>
+    <script src="../JS/Event.js" defer></script>
+  </body>
+</html>
