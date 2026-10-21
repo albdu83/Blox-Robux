@@ -1,28 +1,15 @@
-/* Compte à rebours Halloween réutilisable sur Offres et sur la page Event. */
+/* Timer Halloween partagé par les vues desktop et mobile. */
 document.addEventListener("DOMContentLoaded", () => {
   const API = typeof API_BASE_URL === "string" ? API_BASE_URL : (window.API_BASE_URL || "");
-  const offersPage = document.getElementById("body");
-  const mount = offersPage
-    ? (document.querySelector("#body .page-wrap") || offersPage)
-    : document.querySelector("#event .event-intro");
-  if (!mount) return;
-
-  const panel = document.createElement("section");
-  panel.className = "halloween-countdown";
-  panel.setAttribute("aria-live", "polite");
-  panel.innerHTML = [
-    '<div class="halloween-countdown__copy">',
-    '<span class="halloween-countdown__eyebrow">🎃 Événement spécial</span>',
-    '<strong class="halloween-countdown__title">Halloween approche…</strong>',
-    '<span class="halloween-countdown__caption">Ouverture dans</span>',
-    '</div>',
-    '<time class="halloween-countdown__clock" aria-label="Temps restant">--:--</time>',
-    '<a class="halloween-countdown__link" hidden>Entrer dans l’événement</a>',
-  ].join("");
+  const desktop = document.querySelector("#app-desktop .page-wrap") || document.getElementById("app-desktop");
+  const mobile = document.getElementById("app-mobile");
+  const eventIntro = document.querySelector("#event .event-intro");
+  const mounts = desktop || mobile ? [desktop, mobile].filter(Boolean) : [eventIntro].filter(Boolean);
+  if (!mounts.length) return;
 
   const style = document.createElement("style");
   style.textContent = `
-    .halloween-countdown{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px 24px;margin:20px auto;padding:18px 22px;width:min(900px,calc(100% - 28px));border:1px solid rgba(167,139,250,.42);border-radius:20px;color:#f7f4ff;background:radial-gradient(ellipse at 12% 0%,rgba(139,92,246,.25),transparent 55%),linear-gradient(135deg,#11152d,#211638 58%,#11152d);box-shadow:0 14px 40px rgba(7,8,24,.35),inset 0 1px rgba(255,255,255,.08);font-family:inherit}
+    .halloween-countdown{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px 500px;margin:20px auto;padding:18px 22px;width:min(900px,calc(100% - 28px));border:1px solid rgba(167,139,250,.42);border-radius:20px;color:#f7f4ff;background:radial-gradient(ellipse at 12% 0%,rgba(139,92,246,.25),transparent 55%),linear-gradient(135deg,#11152d,#211638 58%,#11152d);box-shadow:0 14px 40px rgba(7,8,24,.35),inset 0 1px rgba(255,255,255,.08);font-family:inherit}
     .halloween-countdown__copy{display:grid;gap:2px;text-align:left}
     .halloween-countdown__eyebrow{color:#c4b5fd;font-size:.76rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
     .halloween-countdown__title{font-size:1.08rem;color:#fff}
@@ -30,32 +17,63 @@ document.addEventListener("DOMContentLoaded", () => {
     .halloween-countdown__clock{min-width:142px;padding:7px 16px;border:1px solid rgba(251,191,36,.3);border-radius:14px;color:#ffd18a;background:rgba(7,10,27,.56);font:800 clamp(2rem,5vw,2.8rem)/1.15 ui-monospace,SFMono-Regular,Consolas,monospace;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.04em}
     .halloween-countdown__link{padding:11px 15px;border-radius:12px;color:#17152c;background:linear-gradient(120deg,#ffd18a,#f3ad58);font-weight:800;text-decoration:none;transition:transform .2s,filter .2s}
     .halloween-countdown__link:hover{transform:translateY(-2px);filter:brightness(1.06)}
-    .halloween-countdown[hidden],.halloween-countdown__link[hidden]{display:none}
-    @media(max-width:560px){.halloween-countdown{gap:12px;padding:16px;text-align:center}.halloween-countdown__copy{width:100%;text-align:center}.halloween-countdown__clock{min-width:132px}.halloween-countdown__link{width:100%;text-align:center}}
+    .halloween-countdown__link[hidden]{display:none}
+    #app-mobile .halloween-countdown{width:100%;margin:18px auto 24px;padding:16px 12px;gap:10px}
+    #app-mobile .halloween-countdown__copy{width:100%;text-align:center}
+    #app-mobile .halloween-countdown__clock{min-width:132px}
+    #app-mobile .halloween-countdown__link{width:100%;text-align:center}
     @media(prefers-reduced-motion:reduce){.halloween-countdown__link{transition:none}}
   `;
   document.head.append(style);
 
-  if (offersPage) mount.insertBefore(panel, mount.firstChild);
-  else mount.append(panel);
+  const panels = mounts.map((mount) => {
+    const panel = document.createElement("section");
+    panel.className = "halloween-countdown";
+    panel.setAttribute("aria-live", "polite");
+    panel.innerHTML = [
+      '<div class="halloween-countdown__copy">',
+      '<span class="halloween-countdown__eyebrow">🎃 Événement spécial</span>',
+      '<strong class="halloween-countdown__title">Halloween approche…</strong>',
+      '<span class="halloween-countdown__caption">Ouverture dans</span>',
+      '</div>',
+      '<time class="halloween-countdown__clock" aria-label="Temps restant">--:--</time>',
+      '<a class="halloween-countdown__link" hidden>Entrer dans l’événement</a>',
+    ].join("");
+    if (mount === desktop) mount.insertBefore(panel, mount.firstChild);
+    else if (mount === mobile) mount.insertBefore(panel, mount.firstChild);
+    else mount.append(panel);
+    return {
+      title: panel.querySelector(".halloween-countdown__title"),
+      caption: panel.querySelector(".halloween-countdown__caption"),
+      clock: panel.querySelector(".halloween-countdown__clock"),
+      link: panel.querySelector(".halloween-countdown__link"),
+    };
+  });
 
-  const title = panel.querySelector(".halloween-countdown__title");
-  const caption = panel.querySelector(".halloween-countdown__caption");
-  const clock = panel.querySelector(".halloween-countdown__clock");
-  const link = panel.querySelector(".halloween-countdown__link");
   let startAt = 0;
+  let endAt = 0;
   let serverOffset = 0;
-  let opened = false;
+  let eventActive = false;
+  let eventEnded = false;
 
   function render() {
-    if (opened || !startAt) return;
-    const leftMs = Math.max(0, startAt - (Date.now() + serverOffset));
-    const totalSeconds = Math.ceil(leftMs / 1000);
-    // Minutes totales (pas d'heures) pour conserver le format MM:SS demandé.
-    const minutes = Math.floor(totalSeconds / 60);
+    if (eventEnded) return;
+    const targetAt = eventActive ? endAt : startAt;
+    if (!targetAt) return;
+    const totalSeconds = Math.ceil(Math.max(0, targetAt - (Date.now() + serverOffset)) / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    clock.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    if (totalSeconds === 0) caption.textContent = "Vérification de l’ouverture…";
+    const display = eventActive
+      ? `${days ? `${days}j ` : ""}${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+      : `${String(Math.floor(totalSeconds / 60)).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    panels.forEach((panel) => {
+      panel.clock.textContent = display;
+      if (eventActive) panel.caption.textContent = "Fin de l’événement dans";
+      else panel.caption.textContent = "Ouverture dans";
+      if (totalSeconds === 0) panel.caption.textContent = eventActive ? "Vérification de la fin…" : "Vérification de l’ouverture…";
+    });
   }
 
   async function refresh() {
@@ -65,27 +83,42 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
       serverOffset = Number(data.serverNow) - Date.now();
       startAt = Number(data.startsAt);
+      endAt = Number(data.endsAt);
 
       if (data.active && typeof data.eventUrl === "string") {
-        opened = true;
-        title.textContent = "L’événement Halloween est ouvert !";
-        caption.textContent = "Bienvenue dans l’événement";
-        clock.textContent = "C’EST PARTI";
-        link.href = data.eventUrl;
-        link.hidden = false;
+        eventActive = true;
+        eventEnded = false;
+        panels.forEach((panel) => {
+          panel.title.textContent = "L’événement Halloween est ouvert !";
+          panel.caption.textContent = "Fin de l’événement dans";
+          panel.link.href = data.eventUrl;
+          panel.link.hidden = false;
+        });
+        render();
       } else if (data.ended) {
-        title.textContent = "L’événement Halloween est terminé";
-        caption.textContent = "À l’année prochaine !";
-        clock.textContent = "🎃";
+        eventActive = false;
+        eventEnded = true;
+        panels.forEach((panel) => {
+          panel.title.textContent = "L’événement Halloween est terminé";
+          panel.caption.textContent = "À l’année prochaine !";
+          panel.clock.textContent = "🎃";
+          panel.link.hidden = true;
+        });
       } else {
+        eventActive = false;
+        eventEnded = false;
+        panels.forEach((panel) => {
+          panel.title.textContent = "Halloween approche…";
+          panel.link.hidden = true;
+        });
         render();
       }
     } catch (error) {
-      caption.textContent = "Connexion au serveur…";
+      panels.forEach((panel) => { panel.caption.textContent = "Connexion au serveur…"; });
     }
   }
 
   refresh();
   window.setInterval(render, 1000);
-  window.setInterval(() => { if (!opened) refresh(); }, 15000);
+  window.setInterval(() => { if (!eventEnded) refresh(); }, 15000);
 });
