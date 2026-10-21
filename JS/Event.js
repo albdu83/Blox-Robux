@@ -1,6 +1,9 @@
-/* Les données de jeu et les récompenses viennent exclusivement de l'API Express. */
 document.addEventListener("DOMContentLoaded", async () => {
-  const API = typeof API_BASE_URL === "string" ? API_BASE_URL : (window.API_BASE_URL || "");
+  const { auth, db } = await initFirebase();
+  if (!auth || !db) return console.error("Firebase non initialisé");
+
+  const API =
+    typeof API_BASE_URL === "string" ? API_BASE_URL : window.API_BASE_URL || "";
   const configs = [
     { id: "blood", button: "openButton", threshold: 5 },
     { id: "vampire", button: "openButton2", threshold: 10 },
@@ -19,14 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }));
   let eventActive = false;
 
-  function getAuth() {
-    if (window.auth?.currentUser) return window.auth;
-    if (window.firebase?.apps?.length) return window.firebase.auth();
-    return null;
-  }
-
   async function api(path, options = {}) {
-    const auth = getAuth();
     const user = auth?.currentUser;
     if (!user) throw new Error("Connecte-toi pour participer à l’événement.");
     const token = await user.getIdToken();
@@ -73,13 +69,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function load() {
     try {
-      const statusResponse = await fetch(API + "/api/halloween/status", { cache: "no-store" });
+      const statusResponse = await fetch(API + "/api/halloween/status", {
+        cache: "no-store",
+      });
       const status = await statusResponse.json();
       eventActive = Boolean(status.active);
       if (!eventActive) {
-        buttons.forEach((item) => { if (item.element) item.element.disabled = true; });
+        buttons.forEach((item) => {
+          if (item.element) item.element.disabled = true;
+        });
         if (trickButton) trickButton.disabled = true;
-        showMessage(status.ended ? "L’événement est terminé." : "Les jeux ouvriront à 18 h (heure de Paris).", false);
+        showMessage(
+          status.ended
+            ? "L’événement est terminé."
+            : "Les jeux ouvriront à 18 h (heure de Paris).",
+          false,
+        );
         return;
       }
       const data = await api("/api/halloween/me");
@@ -97,9 +102,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           method: "POST",
           body: JSON.stringify({ chestId: item.id }),
         });
-        showMessage(result.reward > 0
-          ? `🎃 ${result.message} +${result.reward} R$ ont été ajoutés !`
-          : `👻 ${result.message}`);
+        showMessage(
+          result.reward > 0
+            ? `🎃 ${result.message} +${result.reward} R$ ont été ajoutés !`
+            : `👻 ${result.message}`,
+        );
         render(result);
       } catch (error) {
         showMessage(error.message, true);
@@ -114,9 +121,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const result = await api("/api/halloween/trick-or-treat", {
         method: "POST",
       });
-      showMessage(result.reward > 0
-        ? `🍬 Tu as gagné ${result.reward} R$ !`
-        : "👻 Un sort ! Pas de récompense aujourd’hui.");
+      showMessage(
+        result.reward > 0
+          ? `🍬 Tu as gagné ${result.reward} R$ !`
+          : "👻 Un sort ! Pas de récompense aujourd’hui.",
+      );
       render(result);
     } catch (error) {
       showMessage(error.message, true);
@@ -124,7 +133,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  const auth = getAuth();
   if (auth) {
     auth.onAuthStateChanged((user) => {
       if (user) {
@@ -133,9 +141,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (!eventActive) load();
           else window.clearInterval(refresh);
         }, 15000);
-      }
-      else {
-        buttons.forEach((item) => { if (item.element) item.element.disabled = true; });
+      } else {
+        buttons.forEach((item) => {
+          if (item.element) item.element.disabled = true;
+        });
         if (trickButton) trickButton.disabled = true;
         showMessage("Connecte-toi pour participer à l’événement.");
       }
