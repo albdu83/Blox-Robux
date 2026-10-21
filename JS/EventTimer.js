@@ -1,7 +1,7 @@
 /* Compte à rebours Halloween réutilisable sur Offres et sur la page Event. */
 document.addEventListener("DOMContentLoaded", () => {
   const API = typeof API_BASE_URL === "string" ? API_BASE_URL : (window.API_BASE_URL || "");
-  const offersPage = document.getElementById("app-desktop");
+  const offersPage = document.getElementById("body");
   const mount = offersPage
     ? (document.querySelector("#app-desktop .page-wrap") || offersPage)
     : document.querySelector("#event .event-intro");
