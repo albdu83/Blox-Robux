@@ -584,13 +584,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         throw new Error(data.error || "Impossible de vérifier le retrait.");
       }
 
-      if (data.status === "success" || data.orderStatus === "completed") {
+      if (data.status === "success" || data.status === "completed") {
         return data;
       }
 
       if (
         data.status === "error" ||
-        ["failed", "cancelled"].includes(data.orderStatus) ||
         ["failed", "cancelled"].includes(data.status)
       ) {
         throw new Error(data.error || "Le retrait n'a pas pu être effectué.");
