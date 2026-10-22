@@ -50,6 +50,7 @@ body > * {
   z-index: 2; /* pour que le contenu soit au-dessus du grain */
 }
 
+
 .stock-card {
   display: flex;
   align-items: center;
@@ -64,6 +65,7 @@ body > * {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
+.pass-stock-icon,
 .stock-icon {
   display: grid;
   place-items: center;
@@ -77,24 +79,31 @@ body > * {
   font-size: 15px;
 }
 
+
+.pass-stock-content,
 .stock-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+
+.pass-stock-content h4,
 .stock-content h4 {
   color: #6b7280;
   font-size: 14px;
   font-weight: 600;
 }
 
+.pass-stock-content span,
 .stock-content span {
   color: #b4b4b4;
   font-size: 23px;
   font-weight: 600;
 }
 
+
+.pass-stock-content strong,
 .stock-content strong {
   color: #111827;
   font-size: 24px;
@@ -107,6 +116,7 @@ body > * {
     padding: 12px 14px;
   }
 
+  .pass-stock-content strong,
   .stock-content strong {
     font-size: 21px;
   }
