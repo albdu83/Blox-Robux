@@ -590,7 +590,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (
         data.status === "error" ||
-        ["failed", "cancelled"].includes(data.orderStatus)
+        ["failed", "cancelled"].includes(data.orderStatus) ||
+        ["failed", "cancelled"].includes(data.status)
       ) {
         throw new Error(data.error || "Le retrait n'a pas pu être effectué.");
       }
