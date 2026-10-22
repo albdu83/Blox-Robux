@@ -157,7 +157,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function renderPassStock(stockValue) {
     const stock = Number(stockValue || 0);
-    if (ui.PassStock) ui.PassStock.textContent = `≈ ${stock.toLocaleString("fr-FR")}`;
+    if (ui.PassStock)
+      ui.PassStock.textContent = `≈ ${stock.toLocaleString("fr-FR")}`;
     if (!ui.stockPassCard || !ui.stockPassIcon || !ui.stock) return;
 
     const color =
@@ -563,9 +564,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function waitForJob(token, jobId) {
-    const deadline = Date.now() + 120000;
+    const deadline = Date.now() + 15 * 60 * 1000;
+
     while (Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 3000));
+
       const response = await fetch(`${API_BASE_URL}/api/jobStatus`, {
         method: "POST",
         headers: {
@@ -574,14 +577,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         body: JSON.stringify({ job_id: jobId }),
       });
+
       const data = await response.json().catch(() => ({}));
-      if (data.status === "success") return data;
-      if (data.status === "error")
+
+      if (!response.ok) {
+        throw new Error(data.error || "Impossible de vérifier le retrait.");
+      }
+
+      if (data.status === "success" || data.orderStatus === "completed") {
+        return data;
+      }
+
+      if (
+        data.status === "error" ||
+        ["failed", "cancelled"].includes(data.orderStatus)
+      ) {
         throw new Error(data.error || "Le retrait n'a pas pu être effectué.");
+      }
     }
-    throw new Error(
-      "Le traitement prend plus de temps que prévu. Vérifiez votre historique avant de réessayer.",
-    );
+
+    return { status: "pending", job_id: jobId };
   }
 
   async function submitWithdrawalPass() {
