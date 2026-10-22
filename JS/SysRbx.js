@@ -748,8 +748,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       showProgress("Finalisation de votre retrait…", 3);
-      await waitForJob(token, paymentData.job_id);
+      const jobResult = await waitForJob(token, paymentData.job_id);
+
       hideProgress();
+
+      if (jobResult.status === "pending") {
+        showSummary({
+          success: false,
+          title: "Retrait toujours en cours",
+          message:
+            "Le traitement prend plus de temps que prévu. Le retrait n'est pas encore confirmé comme réussi ou échoué. Vérifiez votre historique avant de réessayer.",
+          amount: state.amount,
+          pending: true,
+        });
+        return;
+      }
       showSummary({
         success: true,
         title: "Retrait confirmé",
