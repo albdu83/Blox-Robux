@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     stockPassCard: document.getElementById("pass-stock-card"),
     PassStock: document.getElementById("remainingStockPass"),
     stockPassIcon: document.querySelector(".pass-stock-icon"),
-    stockPassCard: document.querySelector(".pass-stock-card"),
     overlay: document.getElementById("background"),
     withdrawalStep: document.getElementById("finalStep"),
     helpStep: document.getElementById("finalStep2"),
