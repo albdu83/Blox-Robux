@@ -66,8 +66,8 @@
             <button id="PrivateServerBtn" class="withdrawal-type-btn">
               Serveur Privé
               <p>
-                Paiement garantie et instantané de votre serveur privé. Nécessite d'avoir un
-                jeu conforme et public.
+                Paiement garantie et instantané de votre serveur privé.
+                Nécessite d'avoir un jeu conforme et public.
               </p>
             </button>
           </div>
@@ -145,7 +145,8 @@
             </div>
             <div class="tuto-footer">
               <p class="finish-text">
-                Une fois que le Game-Pass est créé avec le bon montant, cliquez sur "Retirer"
+                Une fois que le Game-Pass est créé avec le bon montant, cliquez
+                sur "Retirer"
               </p>
               <button id="buttonretraitPass">Retirer</button>
             </div>
@@ -203,9 +204,7 @@
             </div>
 
             <div class="tuto-footer">
-              <p class="finish-text">
-                Cliquez sur "Retirer" une fois terminé.
-              </p>
+              <p class="finish-text">Cliquez sur "Retirer" une fois terminé.</p>
               <button id="buttonretrait">Retirer</button>
               <button id="buttonhelp">Besoin d'aide ?</button>
             </div>
@@ -1031,11 +1030,18 @@
 
           <div id="error" class="error" style="display: none"></div>
 
-          <div class="stock-card">
+          <div class="stock-card" id="stock-card">
             <div class="stock-icon">R$</div>
             <div class="stock-content">
               <h4>Stock restant</h4>
               <strong><span id="remainingStock">0</span> R$</strong>
+            </div>
+          </div>
+          <div class="stock-card" id="pass-stock-card">
+            <div class="pass-stock-icon">R$</div>
+            <div class="pass-stock-content">
+              <h4>Stock restant Pour les Game-Pass</h4>
+              <strong><span id="remainingStockPass">0</span> R$</strong>
             </div>
           </div>
         </section>
