@@ -27,7 +27,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     error: document.getElementById("error"),
     stock: document.getElementById("remainingStock"),
     stockIcon: document.querySelector(".stock-icon"),
-    stockCard: document.querySelector(".stock-card"),
+    stockCard: document.getElementById("stock-card"),
+    stockPassCard: document.getElementById("pass-stock-card"),
+    PassStock: document.getElementById("remainingStockPass"),
+    stockPassIcon: document.querySelector(".pass-stock-icon"),
+    stockPassCard: document.querySelector(".pass-stock-card"),
     overlay: document.getElementById("background"),
     withdrawalStep: document.getElementById("finalStep"),
     helpStep: document.getElementById("finalStep2"),
@@ -150,6 +154,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     [ui.balance, ui.balanceMobile].filter(Boolean).forEach((element) => {
       element.textContent = money(state.balance);
     });
+  }
+
+  function renderPassStock(stockValue) {
+    const stock = Number(stockValue || 0);
+    if (ui.PassStock) ui.PassStock.textContent = `≈ ${stock.toLocaleString("fr-FR")}`;
+    if (!ui.stockPassCard || !ui.stockPassIcon || !ui.stock) return;
+
+    const color =
+      stock <= 15 ? "#da1414" : stock <= 100 ? "#FFC107" : "#28d42e";
+    const background =
+      stock <= 15 ? "#a51e1e11" : stock <= 100 ? "#ffc1071a" : "#4caf4f1c";
+    const border =
+      stock <= 15 ? "#961d1d48" : stock <= 100 ? "#ffc1072f" : "#4caf4f54";
+    ui.PassStock.style.color = color;
+    ui.stockPassIcon.style.background = color;
+    ui.stockPassCard.style.background = background;
+    ui.stockPassCard.style.borderColor = border;
+  }
+
+  async function GetPassStock(user) {
+    const token = await user.getIdToken();
+    const StockRes = await fetch(`${API_BASE_URL}/GET_PASS_STOCK`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const StockData = await StockRes.json();
+
+    renderPassStock(StockData.Stock);
   }
 
   function renderStock(stockValue) {
@@ -835,6 +871,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     setButtonLoading(ui.startButton, false);
     startBalanceStream(user);
+    GetPassStock(user);
   });
 
   if (closenotif) closenotif.addEventListener("click", closeNotif);
