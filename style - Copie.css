@@ -40,9 +40,8 @@ body::before {
   position: absolute;
   inset: 0;
 
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%23ffffff' fill-opacity='.055' stroke='%23ffffff' stroke-opacity='.07' stroke-width='1'%3E%3Cpath d='M60 37 C51 29 58 23 65 24 C59 27 61 30 65 31 L64 38 C77 31 91 43 91 59 C91 76 79 85 60 85 C41 85 29 76 29 59 C29 43 43 31 56 38 Z'/%3E%3Cpath d='M60 38 C48 44 45 67 52 83 M60 38 C56 49 56 70 60 85 M60 38 C72 45 76 68 68 83 M45 41 C35 54 40 73 52 80 M75 41 C85 54 80 73 68 80' fill='none' stroke='%230b0b0f' stroke-opacity='.8' stroke-width='2.5'/%3E%3Cpath d='M42 51 L54 56 L46 64 Z M78 51 L66 56 L74 64 Z M60 59 L55 68 L64 68 Z' fill='%230b0b0f' stroke='none'/%3E%3Cpath d='M43 67 Q60 83 77 67 L73 76 L67 73 L61 79 L55 73 L48 76 Z' fill='%230b0b0f' stroke='none'/%3E%3Cpath d='M50 70 L54 75 M62 74 L66 70 M70 70 L72 73' fill='none' stroke='%23ffffff' stroke-opacity='.12'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: repeat;
-  /*  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="white" fill-opacity="0.03"><path d="M20,30 C25,10 35,10 40,30 C35,25 25,25 20,30 Z"/><path d="M60,40 C65,20 75,20 80,40 C75,35 65,35 60,40 Z"/><path d="M40,70 C45,50 55,50 60,70 C55,65 45,65 40,70 Z"/></g></svg>') repeat;*/
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><g fill="white" fill-opacity="0.03"><path d="M20,30 C25,10 35,10 40,30 C35,25 25,25 20,30 Z"/><path d="M60,40 C65,20 75,20 80,40 C75,35 65,35 60,40 Z"/><path d="M40,70 C45,50 55,50 60,70 C55,65 45,65 40,70 Z"/></g></svg>')
+    repeat;
 
   background-size: 50px 50px; /* avant 100px → moins de pixels à calculer */
   pointer-events: none;
