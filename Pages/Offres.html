@@ -64,6 +64,27 @@
 
       <div class="header-shadow"></div>
 
+      <div style="width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+        <div id="message-infos-container" style="width: 67vw; min-height: 10vh; background-color: rgba(255, 0, 0, 0.479); display: flex; justify-content: center; align-items: center; border-radius: 10px; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border: 3px solid #b6000098;">
+          <div id="message-infos" style="display: flex; flex-direction: column; text-align: start; width: 100%; gap: 20px; font-weight: 500;">
+            <div style="text-decoration: underline; font-weight: 600;">À tous les utilisateurs :</div>
+            <span id="message-infos-content"
+              >Nos services sont actuellement en maintenance. Notre système
+              d'ajout des R$ est temporairement indisponible. Vous ne pouvez donc pas gagner de R$ pour le moment. Nous travaillons activement à la résolution de ce problème et nous vous tiendrons informés dès que tout sera rétabli.</span>
+            <span>Nous vous remercions de votre patience et de votre compréhension.</span>
+            </span>
+            <span>Merci de bien vouloir nous en excuser.</span>
+          </div>
+        </div>
+      </div>
+      <style>
+        @media (max-width: 460px) {
+          #message-infos-container {
+            width: 90vw !important;
+          }
+        }
+      </style>
+
       <div class="navigation" id="navigation">
         <div class="nav-panel" id="nav-panel">
           <div class="logo2" id="logo2">
