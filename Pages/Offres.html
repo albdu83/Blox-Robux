@@ -211,14 +211,6 @@
                     />
                     Lootably
                   </button>
-                  <button class="tab-btn" data-tab="applixir">
-                    <img
-                      src="../img/AppLixir.png"
-                      alt="AppLixir"
-                      class="tab-btn-icon"
-                    />
-                    AppLixir
-                  </button>
                 </div>
               </div>
             </div>
@@ -348,36 +340,6 @@
                 <div id="lootablycontainer"></div>
               </div>
             </div>
-
-            <div class="tab-panel" data-panel="applixir">
-              <div class="panel-card">
-                <h3>🎬 AppLixir</h3>
-                <p>Regarde une publicité vidéo et gagne des R$.</p>
-
-                <div id="applixir-container">
-                  <div class="ad-empty-state">
-                    <div class="ad-block">
-                      <div class="ad-text">
-                        <h3>Gagnez des R$ en regardant des vidéos</h3>
-                        <p>
-                          Lancez une publicité AppLixir, regardez-la jusqu'à la
-                          fin et votre récompense sera créditée sur votre compte
-                          une fois la vidéo validée.
-                        </p>
-                        <small class="ad-status">
-                          La disponibilité dépend des campagnes publicitaires et
-                          de votre région.
-                        </small>
-                      </div>
-
-                      <button id="watchAd" class="watch-ad-btn" type="button">
-                        Regarder une publicité
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </main>
@@ -421,18 +383,6 @@
           <div class="offer-card" data-offer="cpx">
             <img src="../img/cpx.jpg" />
             <span>CPX Research</span>
-          </div>
-        </div>
-
-        <p class="offers_pres">📺 Pubs</p>
-        <p class="offers_desc">
-          Regardez des publicités et gagnez des R$ instantanément.
-        </p>
-
-        <div class="offers-grid">
-          <div class="offer-card" data-offer="applixir">
-            <img src="../img/AppLixir.png" />
-            <span>AppLixir</span>
           </div>
         </div>
 
@@ -502,39 +452,13 @@
             <button id="open-btn">Ouvrir</button>
           </div>
 
-          <div id="iframe-container">
-            <div class="ad-empty-state2">
-              <div class="ad-block">
-                <div class="ad-text">
-                  <h3>Gagnez des R$ en regardant des vidéos</h3>
-                  <p>
-                    Lancez une publicité AppLixir, regardez-la jusqu'à la fin et
-                    votre récompense sera créditée sur votre compte une fois la
-                    vidéo validée.
-                  </p>
-                  <small class="ad-status">
-                    La disponibilité dépend des campagnes publicitaires et de
-                    votre région.
-                  </small>
-                </div>
-
-                <button id="watchAd2" class="watch-ad-btn" type="button">
-                  Regarder une publicité
-                </button>
-              </div>
-            </div>
-          </div>
+          <div id="iframe-container"></div>
         </div>
       </div>
       <!-- TRANSITION -->
       <div class="separator" style="visibility: hidden"></div>
       <div class="separator hub-fade"></div>
       <!-- SCRIPT reach ET FIREBASE -->
-      <script
-        type="text/javascript"
-        src="https://cdn.applixir.com/applixir.app.v6.1.0.js"
-        defer
-      ></script>
       <script src="https://code.jquery.com/jquery-3.2.1.min.js" defer></script>
       <script
         src="https://s3.us-east-1.amazonaws.com/cdn.theoremreach/v3/theorem_reach.min.js"
