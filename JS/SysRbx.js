@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     helpSelect: document.getElementById("HelpType"),
     priceHint: document.getElementById("robuxadd"),
     accessLink: document.getElementById("href"),
+    accessLink2: document.getElementById("href2"),
     priceText: document.getElementById("priceText"),
     questionnaireLink: document.getElementById("href2"),
     progressFrame: document.getElementById("hacker-frame"),
@@ -449,8 +450,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function prepareTutorial(placeId) {
     state.selectedPlaceId = placeId;
-    if (ui.accessLink)
-      ui.accessLink.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/access`;
+    if (ui.accessLink2)
+      ui.accessLink2.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/access`;
     if (ui.questionnaireLink)
       ui.questionnaireLink.href = `https://create.roblox.com/dashboard/creations/experiences/${placeId}/experience-questionnaire`;
     if (state.tutorialWasOpened) {
