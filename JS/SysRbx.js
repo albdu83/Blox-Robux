@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     helpSelect: document.getElementById("HelpType"),
     priceHint: document.getElementById("robuxadd"),
     accessLink: document.getElementById("href"),
-    accessLink2: document.getElementById("href2"),
+    accessLink2: document.getElementById("href3"),
     priceText: document.getElementById("priceText"),
     questionnaireLink: document.getElementById("href2"),
     progressFrame: document.getElementById("hacker-frame"),
