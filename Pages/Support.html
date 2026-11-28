@@ -154,8 +154,7 @@
             </label>
 
             <button type="button" id="sendSupport">Envoyer la demande</button>
-            <p class="form-note" id="supportFeedback">
-            </p>
+            <p class="form-note" id="supportFeedback"></p>
           </form>
         </article>
 
@@ -163,7 +162,12 @@
           <span class="badge">Mes demandes</span>
           <div class="header-tickets">
             <h2>Suivi de mes tickets</h2>
-            <img src="../img/Refresh.png" alt="Rafraîchir" id="refreshTickets" title="Rafraîchir mes tickets" />
+            <img
+              src="../img/Refresh.png"
+              alt="Rafraîchir"
+              id="refreshTickets"
+              title="Rafraîchir mes tickets"
+            />
           </div>
           <div id="myTickets">
             <p class="form-note">Chargement de tes tickets...</p>
@@ -205,6 +209,47 @@
       <p>Blox R$ - Support actif</p>
     </footer>
 
+    <div class="notifications-wrapper">
+      <button
+        id="notificationsButton"
+        class="notifications-button"
+        type="button"
+        aria-label="Afficher les notifications"
+        aria-controls="notificationsPanel"
+        aria-expanded="false"
+      >
+        <span aria-hidden="true">🔔</span>
+        <span id="notificationsBadge" class="notifications-badge" hidden
+          >1</span
+        >
+      </button>
+
+      <section
+        id="notificationsPanel"
+        class="notifications-panel"
+        aria-labelledby="notificationsTitle"
+        hidden
+      >
+        <header class="notifications-header">
+          <div>
+            <h2 id="notificationsTitle">Notifications</h2>
+            <p>Retrouve ici les dernières nouvelles de ton compte.</p>
+          </div>
+
+          <button
+            id="closeNotificationsButton"
+            class="notifications-close"
+            type="button"
+            aria-label="Fermer les notifications"
+          >
+            &times;
+          </button>
+        </header>
+
+        <div id="notifications" class="notifications-list"></div>
+      </section>
+    </div>
+
     <script
       src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
       defer
@@ -223,6 +268,7 @@
     ></script>
     <script src="../JS/Animation.js" defer></script>
     <script src="../JS/Server.js" defer></script>
+    <script src="../JS/SysRbx.js" defer></script>
     <script src="../JS/Support.js" defer></script>
 
     <div id="Block">
@@ -240,7 +286,12 @@
               <li><a href="Bio">Biographie du site</a></li>
               <li><a href="Security">Paiements sécurisés</a></li>
               <li><a href="Support">Support</a></li>
-              <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=contact@bloxrbx.fr">Nous contacter</a></li>
+              <li>
+                <a
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=contact@bloxrbx.fr"
+                  >Nous contacter</a
+                >
+              </li>
             </ul>
           </div>
 
