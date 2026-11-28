@@ -1055,6 +1055,46 @@
           </div>
         </section>
       </main>
+      <div class="notifications-wrapper">
+        <button
+          id="notificationsButton"
+          class="notifications-button"
+          type="button"
+          aria-label="Afficher les notifications"
+          aria-controls="notificationsPanel"
+          aria-expanded="false"
+        >
+          <span aria-hidden="true">🔔</span>
+          <span id="notificationsBadge" class="notifications-badge" hidden
+            >1</span
+          >
+        </button>
+
+        <section
+          id="notificationsPanel"
+          class="notifications-panel"
+          aria-labelledby="notificationsTitle"
+          hidden
+        >
+          <header class="notifications-header">
+            <div>
+              <h2 id="notificationsTitle">Notifications</h2>
+              <p>Retrouve ici les dernières nouvelles de ton compte.</p>
+            </div>
+
+            <button
+              id="closeNotificationsButton"
+              class="notifications-close"
+              type="button"
+              aria-label="Fermer les notifications"
+            >
+              &times;
+            </button>
+          </header>
+
+          <div id="notifications" class="notifications-list"></div>
+        </section>
+      </div>
       <script
         src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
         defer
