@@ -90,28 +90,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         ])
       : Object.entries(notifications ?? {});
 
-    const currentIds = new Set(
-      entries
-        .map(([key, notification]) =>
-          String(notification.notifId ?? notification.id ?? key),
-        )
-        .filter(Boolean),
+    // On garde uniquement les notifications non lues (read === false ou non défini)
+    const unreadEntries = entries.filter(
+      ([, notification]) => notification && notification.read === false,
     );
 
-    if (!firstNotificationUpdate) {
-      for (const id of currentIds) {
-        if (!knownNotificationIds.has(id)) {
-          newNotificationCount++;
-        }
-      }
-    }
-
-    currentIds.forEach((id) => knownNotificationIds.add(id));
-    firstNotificationUpdate = false;
+    const unreadCount = unreadEntries.length;
 
     if (ui.notificationsBadge) {
-      ui.notificationsBadge.textContent = String(newNotificationCount);
-      ui.notificationsBadge.hidden = newNotificationCount === 0;
+      ui.notificationsBadge.textContent = String(unreadCount);
+      ui.notificationsBadge.hidden = unreadCount === 0;
     }
   }
 
@@ -168,11 +156,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isOpen = !ui.notificationsPanel.hidden;
     ui.notificationsPanel.hidden = isOpen;
     ui.notificationsButton.setAttribute("aria-expanded", String(!isOpen));
-
-    if (!isOpen && ui.notificationsBadge) {
-      newNotificationCount = 0;
-      ui.notificationsBadge.hidden = true;
-    }
   });
 
   ui.closeNotificationsButton?.addEventListener("click", closeNotifications);
@@ -1061,13 +1044,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isOpen = !ui.notificationsContainer.hidden;
     ui.notificationsContainer.hidden = isOpen;
     ui.notificationsButton.setAttribute("aria-expanded", String(!isOpen));
-
-    if (!isOpen) {
-      newNotificationCount = 0;
-      if (ui.notificationsBadge) {
-        ui.notificationsBadge.hidden = true;
-      }
-    }
   });
 
   ui.startButton?.addEventListener("click", validateAmount);
