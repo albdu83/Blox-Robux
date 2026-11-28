@@ -12,6 +12,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const sousnotifbackground = document.getElementById("sous-notifbackground");
 
   const ui = {
+    notificationsPanel: document.getElementById("notificationsPanel"),
+    notificationsButton: document.getElementById("notificationsButton"),
+    closeNotificationsButton: document.getElementById(
+      "closeNotificationsButton",
+    ),
+    notificationsButton: document.getElementById("notificationsButton"),
+    notificationsBadge: document.getElementById("notificationsBadge"),
+    notificationsContainer: document.getElementById("notifications"),
     balance: document.getElementById("balance"),
     balanceMobile: document.getElementById("balance2"),
     amount: document.getElementById("amount"),
@@ -64,7 +72,45 @@ document.addEventListener("DOMContentLoaded", async () => {
     isSubmitting: false,
     tutorialWasOpened: false,
     withdrawalMethod: null,
+    notifications: [],
   };
+
+  const knownNotificationIds = new Set();
+  let firstNotificationUpdate = true;
+  let newNotificationCount = 0;
+
+  function updateNotificationBadge(notifications) {
+    const entries = Array.isArray(notifications)
+      ? notifications.map((notification, index) => [
+          notification.notifId ?? notification.id ?? String(index),
+          notification,
+        ])
+      : Object.entries(notifications ?? {});
+
+    const currentIds = new Set(
+      entries
+        .map(([key, notification]) =>
+          String(notification.notifId ?? notification.id ?? key),
+        )
+        .filter(Boolean),
+    );
+
+    if (!firstNotificationUpdate) {
+      for (const id of currentIds) {
+        if (!knownNotificationIds.has(id)) {
+          newNotificationCount++;
+        }
+      }
+    }
+
+    currentIds.forEach((id) => knownNotificationIds.add(id));
+    firstNotificationUpdate = false;
+
+    if (ui.notificationsBadge) {
+      ui.notificationsBadge.textContent = String(newNotificationCount);
+      ui.notificationsBadge.hidden = newNotificationCount === 0;
+    }
+  }
 
   let pendingNotifications = [];
   let userIsActive = true;
@@ -106,6 +152,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     element.style.display = visible ? "flex" : "none";
     element.classList.toggle("show", visible);
   }
+
+  function closeNotifications() {
+    if (!ui.notificationsPanel) return;
+    ui.notificationsPanel.hidden = true;
+    ui.notificationsButton?.setAttribute("aria-expanded", "false");
+  }
+
+  ui.notificationsButton?.addEventListener("click", () => {
+    if (!ui.notificationsPanel) return;
+
+    const isOpen = !ui.notificationsPanel.hidden;
+    ui.notificationsPanel.hidden = isOpen;
+    ui.notificationsButton.setAttribute("aria-expanded", String(!isOpen));
+
+    if (!isOpen && ui.notificationsBadge) {
+      newNotificationCount = 0;
+      ui.notificationsBadge.hidden = true;
+    }
+  });
+
+  ui.closeNotificationsButton?.addEventListener("click", closeNotifications);
 
   function OpenWithdrawalType() {
     if (!ui.overlay) return;
@@ -153,6 +220,95 @@ document.addEventListener("DOMContentLoaded", async () => {
   function renderBalance() {
     [ui.balance, ui.balanceMobile].filter(Boolean).forEach((element) => {
       element.textContent = money(state.balance);
+    });
+  }
+
+  function renderNotifications() {
+    if (!ui.notificationsContainer) return;
+
+    ui.notificationsContainer.replaceChildren();
+
+    const entries = Array.isArray(state.notifications)
+      ? state.notifications.map((notification, index) => [
+          notification.notifId ?? String(index),
+          notification,
+        ])
+      : Object.entries(state.notifications ?? {});
+
+    const notifications = entries
+      .map(([notifId, notification]) => ({ ...notification, notifId }))
+      .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+
+    if (notifications.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "notifications-empty";
+      empty.textContent = "Tu n’as aucune notification pour le moment.";
+      ui.notificationsContainer.appendChild(empty);
+      return;
+    }
+
+    notifications.forEach((notification) => {
+      const card = document.createElement("article");
+      card.className = "notification";
+
+      if (notification.read === false) {
+        card.classList.add("notification--unread");
+      }
+
+      const top = document.createElement("div");
+      top.className = "notification__top";
+
+      const title = document.createElement("h3");
+      title.className = "notification__title";
+      title.textContent = notification.title ?? "Notification";
+
+      const type = document.createElement("span");
+      type.className = "notification__type";
+      type.textContent = notification.type ?? "Info";
+
+      const message = document.createElement("p");
+      message.className = "notification__message";
+      message.textContent = notification.message ?? "";
+
+      const date = document.createElement("small");
+      date.className = "notification__date";
+      date.textContent = notification.createdAt
+        ? new Date(notification.createdAt).toLocaleString("fr-FR")
+        : "";
+
+      let linkElement = null;
+
+      if (typeof notification.link === "string") {
+        try {
+          const url = new URL(notification.link, window.location.origin);
+
+          if (
+            url.protocol === "https:" ||
+            url.origin === window.location.origin
+          ) {
+            linkElement = document.createElement("a");
+            linkElement.className = "notification__link";
+            linkElement.href = url.href;
+            linkElement.textContent = "Voir";
+
+            if (url.origin !== window.location.origin) {
+              linkElement.target = "_blank";
+              linkElement.rel = "noopener noreferrer";
+            }
+          }
+        } catch {
+          // L'URL est invalide : aucun lien n'est affiché.
+        }
+      }
+
+      top.append(title, type);
+      card.append(top, message, date);
+
+      if (linkElement) {
+        card.appendChild(linkElement);
+      }
+
+      ui.notificationsContainer.appendChild(card);
     });
   }
 
@@ -806,6 +962,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           state.transactions = Array.isArray(payload.transactions)
             ? payload.transactions
             : [];
+          state.notifications = payload.notifications ?? {};
+          updateNotificationBadge(state.notifications);
+          renderNotifications();
           renderBalance();
           renderTransactions();
           renderStock(payload.stock_data?.remaining_solde);
@@ -827,6 +986,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     })();
   }
+
+  ui.notificationsButton?.addEventListener("click", () => {
+    if (!ui.notificationsContainer) return;
+
+    const isOpen = !ui.notificationsContainer.hidden;
+    ui.notificationsContainer.hidden = isOpen;
+    ui.notificationsButton.setAttribute("aria-expanded", String(!isOpen));
+
+    if (!isOpen) {
+      newNotificationCount = 0;
+      if (ui.notificationsBadge) {
+        ui.notificationsBadge.hidden = true;
+      }
+    }
+  });
 
   ui.startButton?.addEventListener("click", validateAmount);
   ui.placeSelect?.addEventListener("change", (event) => {
@@ -892,6 +1066,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       state.eventSource?.close();
       state.balance = 0;
       state.transactions = [];
+      state.notifications = [];
+      renderNotifications();
       renderBalance();
       renderTransactions();
       setButtonLoading(ui.startButton, true);
