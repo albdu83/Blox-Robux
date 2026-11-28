@@ -110,7 +110,10 @@
 
   <section class="card">
     <h2>Création de Giveaway</h2>
-    <div class="giveaway-form" style="gap: 10px; display: flex; flex-direction: column;">
+    <div
+      class="giveaway-form"
+      style="gap: 10px; display: flex; flex-direction: column"
+    >
       <input
         type="text"
         id="giveawayPrize"
@@ -318,6 +321,30 @@
       <button class="btn clear-input" type="button">Nettoyer les champs</button>
       <button class="btn create-announce" type="button">
         Publier l'annonce
+      </button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Créer une notification globale</h2>
+      <input
+        id="NotificationTitle"
+        type="text"
+        placeholder="Titre : exemple Sujet du jour..."
+      />
+      <input
+        id="NotificationLink"
+        type="text"
+        placeholder="Lien : exemple https://example.com"
+      />
+      <textarea
+        id="NotificationContent"
+        placeholder="Contenu : exemple Bonjour..."
+      ></textarea>
+
+      <button class="btn clear-notification" type="button">Nettoyer les champs</button>
+      <button class="btn create-notification" type="button">
+        Publier la notification
       </button>
     </div>
   </section>
