@@ -1395,6 +1395,36 @@ footer {
   box-shadow: none;
 }
 
+.notification__read-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 6px 10px;
+  border: 1px solid #4b5563;
+  border-radius: 8px;
+  background: #2a2a31;
+  color: #d4d4d8;
+  box-shadow: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.notification .notification__read-button:hover {
+  transform: none;
+  border-color: #6366f1;
+  background: #3730a3;
+  color: #fff;
+  box-shadow: none;
+}
+
+.notification__read-button:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+
 @media (max-width: 480px) {
   .notifications-wrapper {
     top: auto;
