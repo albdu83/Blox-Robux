@@ -64,15 +64,55 @@
 
       <div class="header-shadow"></div>
 
-      <div style="width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-        <div id="message-infos-container" style="width: 67vw; min-height: 10vh; background-color: rgba(255, 167, 53, 0.479); display: flex; justify-content: center; align-items: center; border-radius: 10px; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border: 3px solid #b6610098;">
-          <div id="message-infos" style="display: flex; flex-direction: column; text-align: start; width: 100%; gap: 20px; font-weight: 500;">
-            <div style="text-decoration: underline; font-weight: 600;">À tou(te)s les utilisateur(rice)s :</div>
+      <div
+        style="
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-bottom: 20px;
+        "
+      >
+        <div
+          id="message-infos-container"
+          style="
+            width: 67vw;
+            min-height: 10vh;
+            background-color: rgba(255, 167, 53, 0.479);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: 3px solid #b6610098;
+          "
+        >
+          <div
+            id="message-infos"
+            style="
+              display: flex;
+              flex-direction: column;
+              text-align: start;
+              width: 100%;
+              gap: 20px;
+              font-weight: 500;
+            "
+          >
+            <div style="text-decoration: underline; font-weight: 600">
+              À tou(te)s les utilisateur(rice)s :
+            </div>
             <span id="message-infos-content"
-              >Nous rencontrons quelques problèmes derniers problèmes. Notre système
-              d'ajout des R$ est temporairement indisponible pour le partenaire <strong>Theoreme Reach</strong>. Vous pouvez toujours continuez vos activités sur <strong>CPX Research</strong>, <strong>Lootably</strong> et <strong>TimeWall</strong>.</span>
-            <span>Nous vous remercions de votre patience et de votre compréhension.</span>
-            </span>
+              >Nous rencontrons quelques problèmes derniers problèmes. Notre
+              système d'ajout des R$ est temporairement indisponible pour le
+              partenaire <strong>Theoreme Reach</strong>. Vous pouvez toujours
+              continuez vos activités sur <strong>CPX Research</strong>,
+              <strong>Lootably</strong> et <strong>TimeWall</strong>.</span
+            >
+            <span
+              >Nous vous remercions de votre patience et de votre
+              compréhension.</span
+            >
             <span>Merci de bien vouloir nous en excuser.</span>
           </div>
         </div>
@@ -455,6 +495,48 @@
           <div id="iframe-container"></div>
         </div>
       </div>
+
+      <div class="notifications-wrapper">
+        <button
+          id="notificationsButton"
+          class="notifications-button"
+          type="button"
+          aria-label="Afficher les notifications"
+          aria-controls="notificationsPanel"
+          aria-expanded="false"
+        >
+          <span aria-hidden="true">🔔</span>
+          <span id="notificationsBadge" class="notifications-badge" hidden
+            >1</span
+          >
+        </button>
+
+        <section
+          id="notificationsPanel"
+          class="notifications-panel"
+          aria-labelledby="notificationsTitle"
+          hidden
+        >
+          <header class="notifications-header">
+            <div>
+              <h2 id="notificationsTitle">Notifications</h2>
+              <p>Retrouve ici les dernières nouvelles de ton compte.</p>
+            </div>
+
+            <button
+              id="closeNotificationsButton"
+              class="notifications-close"
+              type="button"
+              aria-label="Fermer les notifications"
+            >
+              &times;
+            </button>
+          </header>
+
+          <div id="notifications" class="notifications-list"></div>
+        </section>
+      </div>
+
       <!-- TRANSITION -->
       <div class="separator" style="visibility: hidden"></div>
       <div class="separator hub-fade"></div>
