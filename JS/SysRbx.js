@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const sousnotifbackground = document.getElementById("sous-notifbackground");
 
   const ui = {
+    notificationAsReadButton: document.querySelectorAll(
+      ".notificationAsReadButton",
+    ),
     notificationsPanel: document.getElementById("notificationsPanel"),
     notificationsButton: document.getElementById("notificationsButton"),
     closeNotificationsButton: document.getElementById(
@@ -276,6 +279,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? new Date(notification.createdAt).toLocaleString("fr-FR")
         : "";
 
+      const readButton = document.createElement("button");
+      readButton.className = "notification__read-button";
+      readButton.textContent = "Marquer comme lu";
+      readButton.setAttribute("data-notif-id", notification.sourceNotifId);
+
       let linkElement = null;
 
       if (typeof notification.link === "string") {
@@ -308,8 +316,49 @@ document.addEventListener("DOMContentLoaded", async () => {
         card.appendChild(linkElement);
       }
 
+      if (notification.read === false) {
+        card.appendChild(readButton);
+      }
+
       ui.notificationsContainer.appendChild(card);
     });
+  }
+
+  async function setNotificationsRead(notificationId) {
+    const notifId = String(notificationId ?? "");
+    const user = auth.currentUser;
+
+    if (!user || !notifId) return;
+
+    try {
+      const [csrfToken, token] = await Promise.all([
+        fetchCsrfToken(),
+        user.getIdToken(),
+      ]);
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/notifications/${encodeURIComponent(notifId)}/read`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "X-CSRF-Token": csrfToken,
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || `Erreur HTTP ${response.status}`);
+      }
+    } catch (error) {
+      console.error(
+        "Erreur lors du marquage de la notification comme lue :",
+        error,
+      );
+    }
   }
 
   function renderPassStock(stockValue) {
@@ -942,6 +991,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  function sendNotificationRead(notifId) {
+    ui.notificationsContainer
+      .querySelectorAll(".notification__read-button")
+      .forEach((button) => {
+        button.addEventListener("click", (e) => {
+          const notifId = e.currentTarget.dataset.notifId;
+          if (!notifId) return;
+
+          setNotificationsRead(notifId).catch((error) => {
+            console.error(
+              "Impossible de marquer la notification comme lue.",
+              error,
+            );
+          });
+        });
+      });
+  }
+
   function startBalanceStream(user) {
     state.eventSource?.close();
     (async () => {
@@ -965,6 +1032,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           state.notifications = payload.notifications ?? {};
           updateNotificationBadge(state.notifications);
           renderNotifications();
+          sendNotificationRead();
           renderBalance();
           renderTransactions();
           renderStock(payload.stock_data?.remaining_solde);
