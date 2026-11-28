@@ -111,6 +111,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const giveawayWinners = document.getElementById("giveawayWinners");
     const giveawayValue = document.getElementById("giveawayConditionValue");
     const giveawayBtn = document.getElementById("giveawayBtn");
+    const notificationTitle = document.getElementById("NotificationTitle");
+    const notificationLink = document.getElementById("NotificationLink");
+    const notificationContent = document.getElementById("NotificationContent");
+    const clearNotificationBtn = document.querySelector(".clear-notification");
+    const createNotificationBtn = document.querySelector(".create-notification");
 
     if (loadinggif) loadinggif.style.display = "flex";
     if (btnprofil) btnprofil.style.display = "none";
@@ -142,7 +147,63 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    async function GiveawayCreate(prize, condition, robux, duration, winners, value) {
+    async function createGlobalNotification(title, content, link) {
+      if (!title || !content) throw new Error("Titre et contenu requis");
+      try {
+        const token = await firebase.auth().currentUser.getIdToken();
+        const res = await fetch(
+          `${API_BASE_URL}/api/admin/notifications/create`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ title, content, link }),
+          },
+        );
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(
+            data.error || "Erreur lors de la création de la notification",
+          );
+        return data;
+      } catch (error) {
+        console.error("Erreur lors de la création de la notification :", error);
+        throw error;
+      }
+    }
+
+    clearNotificationBtn?.addEventListener("click", () => {
+      notificationTitle.value = "";
+      notificationLink.value = "";
+      notificationContent.value = "";
+    });
+
+    createNotificationBtn?.addEventListener("click", async () => {
+      const title = notificationTitle.value.trim();
+      const content = notificationContent.value.trim();
+      const link = notificationLink.value.trim();
+      const confirmCreate = confirm("Confirmer la création de cette notification globale ?");
+
+      if (!confirmCreate) return;
+
+      try {
+        await createGlobalNotification(title, content, link);
+        alert("Notification créée avec succès !");
+      } catch (error) {
+        alert("Erreur lors de la création de la notification.");
+      }
+    });
+
+    async function GiveawayCreate(
+      prize,
+      condition,
+      robux,
+      duration,
+      winners,
+      value,
+    ) {
       try {
         const token = await firebase.auth().currentUser.getIdToken();
         const res = await fetch(`${API_BASE_URL}/api/giveaways/create`, {
@@ -161,7 +222,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Erreur lors de la création du giveaway");
+        if (!res.ok)
+          throw new Error(
+            data.error || "Erreur lors de la création du giveaway",
+          );
         return data;
       } catch (error) {
         console.error("Erreur lors de la création du giveaway :", error);
@@ -177,7 +241,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const winners = parseInt(giveawayWinners?.value.trim(), 10);
       const value = parseInt(giveawayValue?.value.trim(), 10);
 
-      if (!prize || !condition || isNaN(robux) || isNaN(duration) || isNaN(winners) || isNaN(value)) {
+      if (
+        !prize ||
+        !condition ||
+        isNaN(robux) ||
+        isNaN(duration) ||
+        isNaN(winners) ||
+        isNaN(value)
+      ) {
         alert("Veuillez remplir tous les champs correctement.");
         return;
       }
@@ -507,11 +578,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       document
         .getElementById("deleteTicket")
         .addEventListener("click", deleteTicket);
-      document.getElementById("refreshTickets").addEventListener("click", () => {
-        document.getElementById("refreshTickets").classList.add("refresh-spin");
-        loadTickets();
-        openTicket(ticketId);
-      });
+      document
+        .getElementById("refreshTickets")
+        .addEventListener("click", () => {
+          document
+            .getElementById("refreshTickets")
+            .classList.add("refresh-spin");
+          loadTickets();
+          openTicket(ticketId);
+        });
 
       loadTickets();
     }
@@ -614,7 +689,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     loadTickets();
-    
+
     /* ===== CHARGER LES UTILISATEURS ===== */
     let allUsers = [];
 
